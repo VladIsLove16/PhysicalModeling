@@ -1,24 +1,43 @@
-﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using UniRx;
-using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
-[CreateAssetMenu(fileName = "LinearMotionModel",menuName = "MotionModels/Linear")]
+﻿using UnityEngine;
+
+[CreateAssetMenu(fileName = "LinearMotionModel", menuName = "MotionModels/Linear")]
 public class LinearMotionModel : MotionModel
 {
-    public override Vector3 CalculatePosition(float deltaTime)
+    public override Vector3 UpdatePosition(float deltaTime)
     {
-        Vector3 speed = (Vector3)Parameters[ParamName.velocity].Value;
-        ReactiveProperty<object> timeRx = Parameters[ParamName.time];
-        float timeValue = (float)timeRx.Value;
-        timeValue += deltaTime;
-        timeRx.Value = timeValue;
-        Vector3 newPosition = speed * timeValue;
-        Parameters[ParamName.pathTraveled].Value = newPosition.magnitude;
-        Parameters[ParamName.distance].Value = newPosition.magnitude;
+        Vector3 velocity = GetParameter<Vector3>(ParamName.velocity);
+        Vector3 position = GetParameter<Vector3>(ParamName.position);
+        float time = GetParameter<float>(ParamName.time);
+        float path = GetParameter<float>(ParamName.pathTraveled);
+
+        Vector3 delta = velocity * deltaTime;
+        Vector3 newPosition = position + delta;
+        float newTime = time + deltaTime;
+        float newPath = path + velocity.magnitude * deltaTime;
+
+        SetParameter(ParamName.position, newPosition.ToString());
+        SetParameter(ParamName.time, newTime.ToString());
+        SetParameter(ParamName.pathTraveled, newPath.ToString());
+        SetParameter(ParamName.distance, newPosition.magnitude.ToString());
+
+        Debug.Log("UpdatePosition: " + newPosition);
+        return newPosition;
+    }
+
+    public override Vector3 CalculatePosition(float time)
+    {
+        Vector3 velocity = GetParameter<Vector3>(ParamName.velocity);
+        Vector3 startPosition = GetParameter<Vector3>(ParamName.position);
+
+        Vector3 delta = velocity * time;
+        Vector3 newPosition = startPosition + delta;
+
+        SetParameter(ParamName.time, time.ToString());
+        SetParameter(ParamName.position, newPosition.ToString());
+        SetParameter(ParamName.pathTraveled, delta.magnitude.ToString());
+        SetParameter(ParamName.distance, newPosition.magnitude.ToString());
+
+        Debug.Log("CalculatePosition: " + newPosition);
         return newPosition;
     }
 }
-
-

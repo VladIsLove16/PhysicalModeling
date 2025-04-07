@@ -1,70 +1,93 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UniRx;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 public class MotionViewModel
 {
-    public ReactiveProperty<string> Title { get; } = new ReactiveProperty<string>("Движение");
-    public ReactiveDictionary<ParamName, ReactiveProperty<object>> Properties { get; } = new();
+    public ReactiveProperty<string> Title { get; } = new("Движение");
+    public Dictionary<ParamName, ReactiveProperty<object>> Properties { get; } = new();
     public ReactiveProperty<MotionModel> CurrentModel { get; } = new();
-    public ReactiveProperty<bool> isSimulating = new ReactiveProperty<bool>();
+    public ReactiveProperty<SimulationState> simulationState = new(SimulationState.stoped);
+
+    public enum SimulationState
+    {
+        paused,
+        running,
+        stoped
+    }
+
     public MotionViewModel(MotionModel model)
     {
-        Properties = model.Parameters
-           .ToReactiveDictionary(
-               kvp => kvp.Key,
-               kvp => kvp.Value.ToReadOnlyReactiveProperty() as IReadOnlyReactiveProperty<object>);
-        CurrentModel.Value = motionModel;
-        isSimulating.Value = false;
-        SetTheme(motionModel);
+        SetModel(model);
     }
 
-    public void SetTheme(MotionModel newModel)
+    public void SetModel(MotionModel model)
     {
+        CurrentModel.Value = model;
+        model.InitializeParameters();
         Properties.Clear();
 
-        foreach (var param in newModel.Parameters)
+        var fieldList = model.Parameters.ToList();  // Создаём копию коллекции для безопасной итерации
+        foreach (var kvp in fieldList)
         {
-            if (!Properties.ContainsKey(param.Key))
-                Properties[param.Key] = new ReactiveProperty<object>(param.Value.Value);
+            ParamName paramName = kvp.Key;
+            string modelValue = kvp.Value.Value;
 
-            // Только подписка из Model -> ViewModel
-            param.Value.Subscribe(value =>
-            {
-                if (!object.Equals(Properties[param.Key].Value, value))
-                    Properties[param.Key].Value = value;
-            });
+            var property = new ReactiveProperty<object>(modelValue);
+            property.Subscribe(newValue => OnPropertyChanged(paramName,modelValue));
+            Properties[paramName] = property;
+        }
+
+        SyncFromModel();
+    }
+
+    private void OnPropertyChanged(ParamName paramName,object newValue   )
+    {
+        if (paramName == ParamName.time && simulationState.Value == SimulationState.stoped)
+        {
+            CurrentModel.Value.SetParameter(paramName, newValue);
+            CurrentModel.Value.CalculatePosition((float)newValue);
+            return;
+        }
+        CurrentModel.Value.SetParameter(paramName, newValue);
+
+    }
+
+    public void SyncFromModel()
+    {
+        var model = CurrentModel.Value;
+        var keys = model.Parameters.Keys.ToList();
+        foreach (var key in keys)
+        {
+            if (Properties.ContainsKey(key))
+                Properties[key].SetValueAndForceNotify(model.Parameters[key]);
         }
     }
 
-    public FieldType GetFieldType(object value)
-    {
-        return CurrentModel.Value.GetFieldType(value);
-    }
-    public FieldType GetFieldType(ParamName paramName)
-    {
-        if (CurrentModel.Value.Parameters.ContainsKey(paramName))
-        {
-            return CurrentModel.Value.GetFieldType(CurrentModel.Value.Parameters[paramName].Value);
-        }
+    public FieldType GetFieldType(object value) => CurrentModel.Value.GetFieldType(value);
 
-        return FieldType.Float;
-    }
+    public FieldType GetFieldType(ParamName paramName) =>
+        CurrentModel.Value.GetFieldType(paramName);
 
-    public void StartSimulation()
-    {
-        isSimulating.Value = true;
-    }
+    public void StartSimulation() => simulationState.Value = SimulationState.running;
+
     public void StopSimulation()
     {
-        CurrentModel.Value.ResetParam(ParamName.time);
-        isSimulating.Value = false;
+        CurrentModel.Value.ResetParams();
+        simulationState.Value = SimulationState.stoped;
+        SyncFromModel();
     }
+
+    public void PauseSimulation() => simulationState.Value = SimulationState.paused;
 
     public Vector3 Update(float deltaTime)
     {
-       return CurrentModel.Value.CalculatePosition(deltaTime);
+        var newPosition = CurrentModel.Value.UpdatePosition(deltaTime);
+        SyncFromModel();
+        return newPosition;
     }
 }
-

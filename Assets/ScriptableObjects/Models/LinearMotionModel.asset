@@ -13,12 +13,19 @@ MonoBehaviour:
   m_Name: LinearMotionModel
   m_EditorClassIdentifier: 
   TopicFields:
-    Fields:
+    fields:
     - label: 0
       type: 1
+      isReadOnly: 0
     - label: 3
       type: 0
+      isReadOnly: 0
     - label: 1
       type: 0
+      isReadOnly: 1
     - label: 2
       type: 0
+      isReadOnly: 1
+    - label: 4
+      type: 1
+      isReadOnly: 0

@@ -1,4 +1,5 @@
-﻿using UnityEngine.UI;
+﻿// MotionView.cs
+using UnityEngine.UI;
 using UnityEngine;
 using UniRx;
 using System.Collections.Generic;
@@ -6,81 +7,90 @@ using TMPro;
 
 public class MotionView : MonoBehaviour
 {
-    public TextMeshProUGUI titleText;
-    public Button toggleSimulationButton;
-    public TextMeshProUGUI toggleSimulationButtonText;
-    public Transform inputFieldsContainer;
-    public InputFieldController inputPrefab;
+    [SerializeField] Transform MovingObject;
+    [SerializeField] TextMeshProUGUI titleText;
+    [SerializeField] Button toggleSimulationButton;
+    [SerializeField] Button stopSimulationButton;
+    [SerializeField] TextMeshProUGUI toggleSimulationButtonText;
+    [SerializeField] Transform inputFieldsContainer;
+    [SerializeField] InputFieldController inputPrefab;
+
     private MotionViewModel viewModel;
     private Dictionary<ParamName, InputFieldController> inputFields = new();
+
+    private readonly Dictionary<MotionViewModel.SimulationState, string> simButtonTexts = new()
+    {
+        { MotionViewModel.SimulationState.running, "Пауза" },
+        { MotionViewModel.SimulationState.paused, "Продолжить" },
+        { MotionViewModel.SimulationState.stoped, "Старт" },
+    };
+
+    private void Update()
+    {
+        if (viewModel == null) return;
+
+        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
+        {
+            var currentPosition = viewModel.Update(Time.deltaTime);
+            MovingObject.position = currentPosition;
+        }
+    }
+
     public void Init(MotionViewModel motionViewModel)
     {
         viewModel = motionViewModel;
-        viewModel.CurrentModel.Subscribe(_ => RedrawUI());
-        RedrawUI();
-        titleText.text = viewModel.Title.Value;
+        viewModel.CurrentModel.Subscribe(_ => RebuildUI()).AddTo(this);
+        viewModel.simulationState.Subscribe(_ => UpdateSimulationState()).AddTo(this);
+
         toggleSimulationButton.onClick.AddListener(OnToggleSimulationButtonClicked);
-        viewModel.isSimulating.Subscribe(_ => OnSimulatingChanged());
-        
+        stopSimulationButton.onClick.AddListener(OnStopSimulationButtonClicked);
+
+        titleText.text = viewModel.Title.Value;
+        RebuildUI();
     }
+
+    private void OnStopSimulationButtonClicked() => viewModel.StopSimulation();
 
     private void OnToggleSimulationButtonClicked()
     {
-        if (viewModel.isSimulating.Value)
-        {
-            viewModel.StopSimulation();
-        }
+        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
+            viewModel.PauseSimulation();
         else
             viewModel.StartSimulation();
     }
-    private void OnSimulatingChanged()
+
+    private void UpdateSimulationState()
     {
-        if (viewModel.isSimulating.Value)
-            toggleSimulationButtonText.text = "Стоп";
-        else
-            toggleSimulationButtonText.text = "Старт";
+        var state = viewModel.simulationState.Value;
+        toggleSimulationButtonText.text = simButtonTexts[state];
     }
-    void RedrawUI()
+
+    private void RebuildUI()
     {
-        foreach (var obj in inputFields.Values)
-            Destroy(obj.gameObject);
-        inputFields.Clear();
+        ClearUI();
 
         foreach (var pair in viewModel.Properties)
         {
-            FieldType fieldType = viewModel.GetFieldType(pair.Key);
-            ParamName paramName= pair.Key;
-            ReactiveProperty<object> property = pair.Value;
+            var paramName = pair.Key;
+            var fieldType = viewModel.GetFieldType(paramName);
+            var property = pair.Value;
 
-            InputFieldController inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
-            inputFields[paramName] = inputFieldController;
-            inputFieldController.Setup(paramName, fieldType);
-            inputFieldController.inputField.text = GetValue(property);
-            //property.Subscribe(newValue => OnViewModelParamChanged(property, inputFieldController));
-            inputFieldController.inputField.onValueChanged.AddListener(value => { Debug.Log("new value" + value); property.SetValueAndForceNotify (inputFieldController.GetValue()); });
+            var input = Instantiate(inputPrefab, inputFieldsContainer);
+            input.Setup(paramName, fieldType);
+            input.BindProperty(property);
+
+            if (viewModel.CurrentModel.Value.TopicFields.IsReadOnly(paramName))
+                input.SetReadOnly(true);
+
+            inputFields[paramName] = input;
         }
     }
-    private void OnViewModelParamChanged(ReactiveProperty<object> reactiveProperty, InputFieldController inputFieldController)
-    {
-        inputFieldController.inputField.text = GetValue(reactiveProperty);
-    }
-    private string GetValue(ReactiveProperty<object> reactiveProperty)
-    {
-        string valueText = reactiveProperty.Value switch
-        {
-            float floatValue => floatValue.ToString(),
-            int intValue => intValue.ToString(),
-            Vector3 vectorValue => vectorValue.ToString("F2"),
-            _ => reactiveProperty.Value.ToString()
-        };
-        return valueText;
-    }
-    public  FieldType GetFieldType(object value)
-    {
-        return viewModel.GetFieldType(value);
-    }
-    private void CreateUIForVector()
-    {
 
+    private void ClearUI()
+    {
+        foreach (var input in inputFields.Values)
+            Destroy(input.gameObject);
+
+        inputFields.Clear();
     }
 }

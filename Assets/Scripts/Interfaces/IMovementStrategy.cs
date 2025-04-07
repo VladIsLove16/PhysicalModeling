@@ -2,7 +2,7 @@
 
 public interface IMovementStrategy
 {
-    Vector3 CalculatePosition(float deltaTime);
+    Vector3 UpdatePosition(float deltaTime);
    void ResetParams();
    void ResetParam(ParamName parametrName);
 }
