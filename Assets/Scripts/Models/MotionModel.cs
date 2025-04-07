@@ -2,14 +2,17 @@
 using System.Linq;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 public abstract class MotionModel : ScriptableObject, IMovementStrategy
 {
-    public ReactiveDictionary<ParamName, ReactiveProperty<object>> Parameters { get; } = new();
-    public ReactiveDictionary<FieldType, object> DefaultValues = new ReactiveDictionary<FieldType, object>()
+    protected ReactiveDictionary<ParamName, ReactiveProperty<object>> parameters = new();
+    public ReactiveDictionary<ParamName, ReactiveProperty<object>> Parameters => parameters;
+
+    private ReactiveDictionary<FieldType, object> DefaultValues = new ReactiveDictionary<FieldType, object>()
     {
         { FieldType.Float, 0f },
-        { FieldType.Vector3, Vector3.forward },
+        { FieldType.Vector3, Vector3.zero },
         { FieldType.Int, 0 },
     };
     [SerializeField] public TopicFields TopicFields;
@@ -17,7 +20,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     {
         foreach (var field in TopicFields.Fields)
         {
-            Parameters[field.ParamName] = CreateReactiveProperty(field.Type);
+            parameters[field.ParamName] = CreateReactiveProperty(field.Type);
         }
     }
 
@@ -37,24 +40,42 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     }
 
 
-    public abstract Vector3 CalculatePosition(float deltaTime);
+    public abstract Vector3 UpdatePosition(float deltaTime);
+    public abstract Vector3 CalculatePosition(float Time);
 
     public void ResetParams()
     {
-        foreach (var pair in Parameters)
+        foreach (var pair in parameters)
         {
             ResetParam(pair.Key);
 
         }
     }
-
-    public FieldType GetFieldType(object value)
+    public FieldType GetFieldType(ParamName value)
     {
-        return TopicField.GetFieldType(value);
+        return TopicFields.GetFieldType(value);
     }
 
+    
+    public object GetDefaultValue(FieldType fieldType)
+    {
+        return DefaultValues[fieldType];
+    }
+    public object GetDefaultValue(ParamName paramName)
+    {
+        return DefaultValues[TopicFields.Fields.First(x => x.ParamName == paramName).Type];
+    }
     public void ResetParam(ParamName parametrName)
     {
-        Parameters[parametrName].Value = DefaultValues[TopicFields.Fields.First(x => x.ParamName == parametrName).Type];
+        parameters[parametrName].Value = GetDefaultValue(parametrName);
     }
+    public object GetParam(ParamName paramName)
+    {
+        return parameters[paramName].Value;
+    }
+    public void SetParam(ParamName paramName, object value)
+    {
+        parameters[paramName].SetValueAndForceNotify(value);
+    }
+
 }

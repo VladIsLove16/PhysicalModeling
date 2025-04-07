@@ -2,23 +2,37 @@
 using TMPro;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InputFieldController : MonoBehaviour
 {
-    public TextMeshProUGUI label;
-    public TMP_InputField inputField;
-    public ReactiveProperty<object> valueChanged;
+    [SerializeField] private TextMeshProUGUI label;
+    [SerializeField] private TMP_InputField inputField;
+    public Action<string> OnInputFieldTextChanged;
+    public Action<string> OnInputFieldEndEdited;
+    public bool IsInvokeOnTextChanged;
     private FieldType fieldType;
-    private void Awake()
+    public ParamName ParamName;
+    private string previousValue;
+    private void Start()
     {
-        inputField.onValueChanged.AddListener((x) => valueChanged.Value = x);
+        inputField.onEndEdit.RemoveAllListeners();
+        inputField.onEndEdit.AddListener(_ => OnInputFieldEndEdit());
+        inputField.onValueChanged.AddListener(OnTextChanged);
+        inputField.onSelect.AddListener(OnSelect);
     }
-    public void Setup(ParamName ParametrName, FieldType type)
+
+    private void OnSelect(string arg0)
     {
-        Debug.Log("field type: " + type);
+        previousValue = arg0;
+    }
+
+    public void Setup(ParamName ParametrName, FieldType type,string defaultValue = "enter value")
+    {
+        ParamName = ParametrName;
         label.text = ParametrName.ToString();
         fieldType = type;
-
+        SetText(defaultValue);
         switch (fieldType)
         {
             case FieldType.Float:
@@ -29,31 +43,36 @@ public class InputFieldController : MonoBehaviour
                 break;
             case FieldType.Vector3:
                 inputField.contentType = TMP_InputField.ContentType.Standard;
-                inputField.text = "0,0,0";
                 break;
         }
     }
-
-    public object GetValue()
+    public void SetReadOnly(bool value)
     {
-        switch (fieldType)
-        {
-            case FieldType.Float:
-                return float.TryParse(inputField.text, out float floatValue) ? floatValue : 0f;
-            case FieldType.Int:
-                return int.TryParse(inputField.text, out int intValue) ? intValue : 0;
-            case FieldType.Vector3:
-                string[] values = inputField.text.Split(',');
-                if (values.Length == 3 &&
-                    float.TryParse(values[0], out float x) &&
-                    float.TryParse(values[1], out float y) &&
-                    float.TryParse(values[2], out float z))
-                {
-                    return new Vector3(x, y, z);
-                }
-                return Vector3.zero;
-            default:
-                return null;
-        }
+        inputField.interactable = !value;
     }
+
+    
+    internal void SetText(string v)
+    {
+        inputField.text = v;
+    }
+
+    private void OnTextChanged(string newValue)
+    {
+        if (!IsInvokeOnTextChanged)
+            return;
+        OnInputFieldTextChanged.Invoke(newValue);
+    }
+
+    private void OnInputFieldEndEdit()
+    {
+         OnInputFieldEndEdited.Invoke(GetText());
+
+    }
+    private string GetText()
+    {
+        return inputField.text;
+    }
+
+
 }

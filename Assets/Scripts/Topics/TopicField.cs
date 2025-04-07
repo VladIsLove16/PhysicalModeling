@@ -7,26 +7,16 @@ public class TopicField
 {
     [SerializeField] private ParamName label;
     [SerializeField] private FieldType type;
-
+    [SerializeField] private bool isReadOnly;
     public ParamName ParamName => label;
     public FieldType Type => type;
-
+    public bool IsReadOnly => isReadOnly;
     public TopicField() { }
 
     public TopicField(ParamName label, FieldType type)
     {
         this.label = label;
         this.type = type;
-    }
-    public static FieldType GetFieldType(object value)
-    {
-        return value switch
-        {
-            Vector3 => FieldType.Vector3,
-            float => FieldType.Float,
-            int => FieldType.Int,
-            _ => FieldType.Float
-        };
     }
     public static Type GetFieldValueType(FieldType fieldType)
     {
@@ -45,6 +35,8 @@ public enum ParamName
     velocity,
     distance,
     pathTraveled,
-    time
+    time,
+    position,
+    acceleration
 }
 public enum FieldType { Float, Vector3, Int }
