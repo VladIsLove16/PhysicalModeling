@@ -1,11 +1,12 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
-
 public abstract class MotionModel : ScriptableObject, IMovementStrategy
 {
+    [SerializeField] public string Title;
+    //идея фикс: поставить реактивное свойство в TopicField, а TopicField в модель. Тогда методы получения значения(разных типов) можно переопределить в самом классе TopicField а не здесь, в модели.
+    //вторая идея: добавить метод, который будет пересчитывать другие параметры на основе измененного пользователем, как со временем. 
     protected ReactiveDictionary<ParamName, ReactiveProperty<object>> parameters = new();
     public ReactiveDictionary<ParamName, ReactiveProperty<object>> Parameters => parameters;
 
@@ -18,13 +19,14 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     [SerializeField] public TopicFields TopicFields;
     public virtual void InitializeParameters()
     {
+        parameters.Clear();
         foreach (var field in TopicFields.Fields)
         {
             parameters[field.ParamName] = CreateReactiveProperty(field.Type);
         }
     }
 
-    private ReactiveProperty<object> CreateReactiveProperty(FieldType fieldType)
+    protected ReactiveProperty<object> CreateReactiveProperty(FieldType fieldType)
     {
         switch (fieldType)
         {
@@ -42,6 +44,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
 
     public abstract Vector3 UpdatePosition(float deltaTime);
     public abstract Vector3 CalculatePosition(float Time);
+    public abstract List<TopicField> GetRequiredParams();
 
     public void ResetParams()
     {

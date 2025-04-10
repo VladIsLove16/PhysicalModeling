@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
-[CreateAssetMenu(fileName = "LinearMotionModel", menuName = "MotionModels/Linear")]
+[CreateAssetMenu(fileName = "LinearMotionModel", menuName = "MotionModelsDropdown/Linear")]
 public class LinearMotionModel : MotionModel
 {
     public override Vector3 UpdatePosition(float deltaTime)
@@ -33,4 +33,8 @@ public class LinearMotionModel : MotionModel
         return newPosition;
     }
 
+    public override List<TopicField> GetRequiredParams()
+    {
+        throw new NotImplementedException();
+    }
 }

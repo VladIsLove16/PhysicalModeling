@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 using UnityEngine;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
-using static UnityEngine.Rendering.DebugUI;
 
 public class MotionViewModel
 {
     public ReactiveProperty<string> Title { get; } = new ReactiveProperty<string>("Движение");
     public Dictionary<ParamName, ReactiveProperty<object>> Properties { get; } = new();
-    public ReactiveProperty<MotionModel> CurrentModel { get; } = new();
+    public MotionModel CurrentModel;
+    public Action CurrentModelChanged;
     public ReactiveProperty<SimulationState> simulationState = new ReactiveProperty<SimulationState>();
     public enum SimulationState
     {
@@ -18,39 +16,51 @@ public class MotionViewModel
         running,
         stoped
     }
-    public MotionViewModel(MotionModel model)
+    public MotionViewModel(MotionModel motionModel)
     {
+        Init(motionModel);
+    }
+    public void Init(MotionModel newModel)
+    {
+        if (newModel == null)
+        {
+            Debug.LogWarning("MotionModel is null");
+            return;
+        }
         simulationState.Value = SimulationState.stoped;
-        SetTheme(model);
+        InitProperies(newModel);
+        CurrentModel = newModel;
+        CurrentModelChanged?.Invoke();
+        Debug.Log("newModel.Parameters " + newModel.Parameters.Count);
+        Debug.Log("MotionViewModel.Properties " + Properties.Count);
     }
 
-    public void SetTheme(MotionModel newModel)
+    private void InitProperies(MotionModel newModel)
     {
         Properties.Clear();
-        CurrentModel.Value = newModel;
         foreach (var modelParam in newModel.Parameters)
         {
+            ReactiveProperty<object> property = new ReactiveProperty<object>(modelParam.Value.Value);
             if (!Properties.ContainsKey(modelParam.Key))
-                Properties[modelParam.Key] = new ReactiveProperty<object>(modelParam.Value.Value);
-            modelParam.Value.Subscribe(value => OnModelChanged(modelParam.Key, Properties[modelParam.Key], value));
+            {
+                Properties[modelParam.Key] = property;
+                modelParam.Value.Subscribe(value => OnModelChanged(modelParam.Key, property, value));
+            }
         }
     }
+
     private void OnModelChanged(ParamName paramName, ReactiveProperty<object> property, object value)
     {
-        if (paramName == ParamName.time)
-        {
-            if (simulationState.Value == SimulationState.stoped)
-            {
-                CurrentModel.Value.CalculatePosition((float)property.Value);
-                return;
-            }
+        if (CurrentModel == null || CurrentModel == null)
+        { 
+            return;
         }
         property.SetValueAndForceNotify(value);
     }
 
     public FieldType GetFieldType(ParamName value)
     {
-        return CurrentModel.Value.GetFieldType(value);
+        return CurrentModel.GetFieldType(value);
     }
 
     public void StartSimulation()
@@ -59,7 +69,7 @@ public class MotionViewModel
     }
     public void StopSimulation()
     {
-        CurrentModel.Value.ResetParams();
+        CurrentModel.ResetParams();
         simulationState.Value = SimulationState.stoped;
     }
 
@@ -70,7 +80,7 @@ public class MotionViewModel
 
     public Vector3 Update(float deltaTime)
     {
-        return CurrentModel.Value.UpdatePosition(deltaTime);
+        return CurrentModel.UpdatePosition(deltaTime);
     }
 
     internal bool SetParam(ParamName paramName, string obj)
@@ -97,15 +107,15 @@ public class MotionViewModel
         if (paramName == ParamName.time)
         {
             PauseSimulation();
-            CurrentModel.Value.CalculatePosition((float)newValue);
+            CurrentModel.CalculatePosition((float)newValue);
         }
-        CurrentModel.Value.SetParam(paramName, newValue);
+        CurrentModel.SetParam(paramName, newValue);
     }
 
     private object GetValueFromString(ParamName paramName, string value, out bool result)
     {
 
-        FieldType fieldType = CurrentModel.Value.GetFieldType(paramName); 
+        FieldType fieldType = CurrentModel.GetFieldType(paramName); 
         Debug.Log("param: " + paramName + " " + fieldType);
         switch (fieldType)
         {
@@ -144,10 +154,4 @@ public class MotionViewModel
     {
         return Properties[paramName].Value;
     }
-    //public object SetParam(ParamName paramName)
-    //{
-    //    return Properties[paramName].Value;
-    //}
-
-   
 }

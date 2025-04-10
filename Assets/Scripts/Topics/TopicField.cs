@@ -13,10 +13,11 @@ public class TopicField
     public bool IsReadOnly => isReadOnly;
     public TopicField() { }
 
-    public TopicField(ParamName label, FieldType type)
+    public TopicField(ParamName label, FieldType type, bool isReadonly = false)
     {
         this.label = label;
         this.type = type;
+        this.isReadOnly = isReadonly;
     }
     public static Type GetFieldValueType(FieldType fieldType)
     {
@@ -37,6 +38,15 @@ public enum ParamName
     pathTraveled,
     time,
     position,
-    acceleration
+    acceleration,
+    angularVelocity,
+    angularAcceleration,
+    angleRadTraveled,
+    angleRad,
+    period,
+    radius,
+    rotationFrequency,
+    numberOfRevolutions
+
 }
 public enum FieldType { Float, Vector3, Int }

@@ -28,6 +28,9 @@ public class MotionView : MonoBehaviour
         { MotionViewModel.SimulationState.stoped, "Старт" },
     };
 
+
+   
+
     private void Update()
     {
         if (viewModel == null)
@@ -41,13 +44,12 @@ public class MotionView : MonoBehaviour
     public void Init(MotionViewModel motionViewModel)
     {
         viewModel = motionViewModel;
-        viewModel.CurrentModel.Subscribe(_ => RebuildUI()).AddTo(this);
+        viewModel.CurrentModelChanged += () => RebuildUI();
         viewModel.simulationState.Subscribe(_ => UpdateSimulationState()).AddTo(this);
 
         toggleSimulationButton.onClick.AddListener(OnToggleSimulationButtonClicked);
         stopSimulationButton.onClick.AddListener(OnStopSimulationButtonClicked);
 
-        titleText.text = viewModel.Title.Value;
         RebuildUI();
     }
 
@@ -83,6 +85,7 @@ public class MotionView : MonoBehaviour
     
     private void RebuildUI()
     {
+        Debug.Log("Rebuilding UI" + viewModel.Properties.Count);
         ClearUI();
 
         foreach (var pair in viewModel.Properties)
@@ -91,18 +94,19 @@ public class MotionView : MonoBehaviour
             var fieldType = viewModel.GetFieldType(paramName);
             var property = pair.Value;
 
+            Debug.Log("Instantiate");
             var inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
             inputFieldController.Setup(paramName, fieldType,GetStringValue(paramName));
-            if (viewModel.CurrentModel.Value.TopicFields.IsReadOnly(paramName))
+            if (viewModel.CurrentModel.TopicFields.IsReadOnly(paramName))
                 inputFieldController.SetReadOnly(true);
-            property.Subscribe(value =>OnViewModelPositionChanged(inputFieldController, value));
+            property.Subscribe(value => OnViewModelPropertyChanged(inputFieldController, value));
             inputFields[paramName] = inputFieldController;
             inputFieldController.OnInputFieldTextChanged += value => InputFieldController_OnInputFieldTextChanged(inputFieldController, value);
             inputFieldController.OnInputFieldEndEdited += value => InputFieldController_OnInputFieldEndEdited(inputFieldController, value);
         }
     }
 
-    private void OnViewModelPositionChanged(InputFieldController inputFieldController, object newValue)
+    private void OnViewModelPropertyChanged(InputFieldController inputFieldController, object newValue)
     {
         inputFieldController.SetText(GetStringValue(inputFieldController.ParamName));
         if(inputFieldController.ParamName == ParamName.position)
