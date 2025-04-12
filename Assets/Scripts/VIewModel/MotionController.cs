@@ -22,7 +22,8 @@ public class MotionController : MonoBehaviour
         CurrentMotionModel = MotionModels[0];
         CurrentMotionModel.InitializeParameters();
 
-        ViewModel = new MotionViewModel(CurrentMotionModel);
+        ViewModel = new MotionViewModel(CurrentMotionModel);    
+
         View.Init(ViewModel);
 
         MotionModelsDropdown.onValueChanged.AddListener(OnMotionModelChanged);

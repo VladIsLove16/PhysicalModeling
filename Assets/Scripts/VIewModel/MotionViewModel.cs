@@ -5,10 +5,9 @@ using UnityEngine;
 
 public class MotionViewModel
 {
-    public ReactiveProperty<string> Title { get; } = new ReactiveProperty<string>("Движение");
-    public Dictionary<ParamName, ReactiveProperty<object>> Properties { get; } = new();
-    public MotionModel CurrentModel;
+    private MotionModel CurrentModel;
     public Action CurrentModelChanged;
+    private Dictionary<ParamName, ReactiveProperty<object>> properties { get; } = new();
     public ReactiveProperty<SimulationState> simulationState = new ReactiveProperty<SimulationState>();
     public enum SimulationState
     {
@@ -26,24 +25,27 @@ public class MotionViewModel
         {
             Debug.LogWarning("MotionModel is null");
             return;
+
         }
+        else
+            Debug.Log("initing viewmodel with" + newModel.ToString());
         simulationState.Value = SimulationState.stoped;
         InitProperies(newModel);
         CurrentModel = newModel;
         CurrentModelChanged?.Invoke();
-        Debug.Log("newModel.Parameters " + newModel.Parameters.Count);
-        Debug.Log("MotionViewModel.Properties " + Properties.Count);
+        Debug.Log("newModel.Params " + newModel.Params.Count);
+        Debug.Log("MotionViewModel.Properties " + properties.Count);
     }
 
     private void InitProperies(MotionModel newModel)
     {
-        Properties.Clear();
-        foreach (var modelParam in newModel.Parameters)
+        properties.Clear();
+        foreach (var modelParam in newModel.Params)
         {
             ReactiveProperty<object> property = new ReactiveProperty<object>(modelParam.Value.Value);
-            if (!Properties.ContainsKey(modelParam.Key))
+            if (!properties.ContainsKey(modelParam.Key))
             {
-                Properties[modelParam.Key] = property;
+                properties[modelParam.Key] = property;
                 modelParam.Value.Subscribe(value => OnModelChanged(modelParam.Key, property, value));
             }
         }
@@ -152,6 +154,20 @@ public class MotionViewModel
     }
     public object GetParam(ParamName paramName)
     {
-        return Properties[paramName].Value;
+        return GetProperties()[paramName].Value;
+    }
+    public bool IsReadonly(ParamName paramName)
+    {
+        return CurrentModel.IsReadonly(paramName);
+    }
+
+    internal Dictionary<ParamName,ReactiveProperty<object>> GetProperties()
+    {
+        if (properties == null
+                 || properties.Count == 0)
+        {
+            InitProperies(CurrentModel);
+        }
+        return properties;
     }
 }

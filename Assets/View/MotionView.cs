@@ -75,20 +75,18 @@ public class MotionView : MonoBehaviour
         {
             float floatValue => floatValue.ToString("0.00"),
             int intValue => intValue.ToString(),
-            Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.0000")}",
+            Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.000")}",
             string stringValue => stringValue,
-            _ => obj.ToString()
+            _ => "not avaialable type"
         };
         return valueText;
     }
-
     
     private void RebuildUI()
     {
-        Debug.Log("Rebuilding UI" + viewModel.Properties.Count);
         ClearUI();
 
-        foreach (var pair in viewModel.Properties)
+        foreach (var pair in viewModel.GetProperties())
         {
             var paramName = pair.Key;
             var fieldType = viewModel.GetFieldType(paramName);
@@ -96,9 +94,7 @@ public class MotionView : MonoBehaviour
 
             Debug.Log("Instantiate");
             var inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
-            inputFieldController.Setup(paramName, fieldType,GetStringValue(paramName));
-            if (viewModel.CurrentModel.TopicFields.IsReadOnly(paramName))
-                inputFieldController.SetReadOnly(true);
+            inputFieldController.Setup(paramName, fieldType, viewModel.IsReadonly(paramName));
             property.Subscribe(value => OnViewModelPropertyChanged(inputFieldController, value));
             inputFields[paramName] = inputFieldController;
             inputFieldController.OnInputFieldTextChanged += value => InputFieldController_OnInputFieldTextChanged(inputFieldController, value);
@@ -111,7 +107,7 @@ public class MotionView : MonoBehaviour
         inputFieldController.SetText(GetStringValue(inputFieldController.ParamName));
         if(inputFieldController.ParamName == ParamName.position)
         {
-            MovingObject.position =(Vector3) newValue;
+            MovingObject.position = (Vector3) newValue;
         }
     }
 

@@ -1,44 +1,56 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using Unity.VisualScripting;
 using UnityEngine;
 public abstract class MotionModel : ScriptableObject, IMovementStrategy
 {
     [SerializeField] public string Title;
-    //идея фикс: поставить реактивное свойство в TopicField, а TopicField в модель. Тогда методы получения значения(разных типов) можно переопределить в самом классе TopicField а не здесь, в модели.
     //вторая идея: добавить метод, который будет пересчитывать другие параметры на основе измененного пользователем, как со временем. 
-    protected ReactiveDictionary<ParamName, ReactiveProperty<object>> parameters = new();
-    public ReactiveDictionary<ParamName, ReactiveProperty<object>> Parameters => parameters;
+    protected Dictionary<ParamName, TopicField> topicFields = new();
+    protected Dictionary<ParamName, TopicField> TopicFields
+    {
+        get
+        {
+            if(topicFields==null || topicFields.Count == 0)
+            {
+                InitializeParameters(true);
+            }
+            return topicFields;
+        }
+    }
 
+    private Dictionary<ParamName, ReactiveProperty<object>> paramValues;
+    public Dictionary<ParamName, ReactiveProperty<object>> Params
+    {
+        get
+        {
+            if (paramValues == null || paramValues.Count == 0)
+                paramValues = TopicFields.ToDictionary(
+            x => x.Key,
+            x => x.Value.Property);
+            return paramValues;
+        }
+    }
+    private bool isInitialized;
     private ReactiveDictionary<FieldType, object> DefaultValues = new ReactiveDictionary<FieldType, object>()
     {
         { FieldType.Float, 0f },
         { FieldType.Vector3, Vector3.zero },
         { FieldType.Int, 0 },
     };
-    [SerializeField] public TopicFields TopicFields;
-    public virtual void InitializeParameters()
+    [SerializeField] protected List<TopicField> TopicFieldsList;
+    public virtual void InitializeParameters(bool isForce = false)
     {
-        parameters.Clear();
-        foreach (var field in TopicFields.Fields)
+        if (isInitialized && !isForce)
+            return;
+        TopicFieldsList = GetRequiredParams();
+        foreach (var field in TopicFieldsList)
         {
-            parameters[field.ParamName] = CreateReactiveProperty(field.Type);
+            topicFields[field.ParamName] = field;
+            field.SetValue(DefaultValues[field.Type]);
         }
-    }
-
-    protected ReactiveProperty<object> CreateReactiveProperty(FieldType fieldType)
-    {
-        switch (fieldType)
-        {
-            case FieldType.Float:
-                return new ReactiveProperty<object>(DefaultValues[FieldType.Float]);
-            case FieldType.Vector3:
-                return new ReactiveProperty<object>(DefaultValues[FieldType.Vector3]);
-            case FieldType.Int:
-                return new ReactiveProperty<object>(DefaultValues[FieldType.Int]);
-            default:
-                return new ReactiveProperty<object>(DefaultValues[FieldType.Float]);
-        }
+        isInitialized= true;
     }
 
 
@@ -48,7 +60,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
 
     public void ResetParams()
     {
-        foreach (var pair in parameters)
+        foreach (var pair in topicFields)
         {
             ResetParam(pair.Key);
 
@@ -56,7 +68,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     }
     public FieldType GetFieldType(ParamName value)
     {
-        return TopicFields.GetFieldType(value);
+        return topicFields[value].Type;
     }
 
     
@@ -66,19 +78,23 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     }
     public object GetDefaultValue(ParamName paramName)
     {
-        return DefaultValues[TopicFields.Fields.First(x => x.ParamName == paramName).Type];
+        return DefaultValues[topicFields[paramName].Type];
     }
     public void ResetParam(ParamName parametrName)
     {
-        parameters[parametrName].Value = GetDefaultValue(parametrName);
+        paramValues[parametrName].Value = GetDefaultValue(parametrName);
     }
     public object GetParam(ParamName paramName)
     {
-        return parameters[paramName].Value;
+        return topicFields[paramName].Value;
     }
     public void SetParam(ParamName paramName, object value)
     {
-        parameters[paramName].SetValueAndForceNotify(value);
+        paramValues[paramName].SetValueAndForceNotify(value);
+    }
+    public bool IsReadonly(ParamName paramName)
+    {
+        return topicFields[paramName].IsReadOnly;
     }
 
 }

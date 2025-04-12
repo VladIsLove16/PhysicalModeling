@@ -9,32 +9,38 @@ public class LinearMotionModel : MotionModel
 {
     public override Vector3 UpdatePosition(float deltaTime)
     {
-        Vector3 speed = (Vector3)parameters[ParamName.velocity].Value;
-        Vector3 newPosition = (Vector3)parameters[ParamName.position].Value + speed * deltaTime;
+        Vector3 velocity = (Vector3)topicFields[ParamName.velocity].Value;
+        Vector3 newPosition = (Vector3)topicFields[ParamName.position].Value + velocity * deltaTime;
 
-        parameters[ParamName.time].SetValueAndForceNotify((float)parameters[ParamName.time].Value + deltaTime);
-        parameters[ParamName.position].SetValueAndForceNotify((Vector3)parameters[ParamName.position].Value + speed * deltaTime);
-        parameters[ParamName.pathTraveled].SetValueAndForceNotify((float)parameters[ParamName.pathTraveled].Value + speed.magnitude * deltaTime);
-        parameters[ParamName.distance].SetValueAndForceNotify(newPosition.magnitude);
-        Debug.Log("speed" + speed);
+        SetParam(ParamName.time,(float)topicFields[ParamName.time].Value + deltaTime);
+        SetParam(ParamName.position,(Vector3)topicFields[ParamName.position].Value + velocity * deltaTime);
+        SetParam(ParamName.pathTraveled,(float)topicFields[ParamName.pathTraveled].Value + velocity.magnitude * deltaTime);
+        SetParam(ParamName.distance,newPosition.magnitude);
+        Debug.Log(" velocity" + velocity);
         return newPosition;
     }
 
     public override Vector3 CalculatePosition(float time)
     {
-        Vector3 speed = (Vector3)parameters[ParamName.velocity].Value;
-        Vector3 deltaPosition = speed * time;
-        Vector3 oldPosition = (Vector3)parameters[ParamName.position].Value;
-        Vector3 newPosition = oldPosition + deltaPosition;
-        parameters[ParamName.time].SetValueAndForceNotify(time);
-        parameters[ParamName.position].SetValueAndForceNotify(newPosition);
-        parameters[ParamName.pathTraveled].SetValueAndForceNotify(deltaPosition.magnitude);
-        parameters[ParamName.distance].SetValueAndForceNotify(newPosition.magnitude);
+        Vector3 velocity = (Vector3)topicFields[ParamName.velocity].Value;
+        Vector3 newPosition = velocity * time;
+
+        SetParam(ParamName.time, time);
+        SetParam(ParamName.position, newPosition);
+        SetParam(ParamName.pathTraveled, newPosition.magnitude);
+        SetParam(ParamName.distance, newPosition.magnitude);
         return newPosition;
     }
 
     public override List<TopicField> GetRequiredParams()
     {
-        throw new NotImplementedException();
+        return new List<TopicField>
+        {
+           new TopicField(ParamName.velocity, FieldType.Vector3,false),
+           new TopicField(ParamName.time, FieldType.Float,false),
+           new TopicField(ParamName.position, FieldType.Vector3,false),
+           new TopicField(ParamName.pathTraveled,FieldType.Float,true),
+           new TopicField(ParamName.distance,FieldType.Float, true),
+        };
     }
 }

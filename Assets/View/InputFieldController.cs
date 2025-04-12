@@ -27,11 +27,12 @@ public class InputFieldController : MonoBehaviour
         previousValue = arg0;
     }
 
-    public void Setup(ParamName ParametrName, FieldType type,string defaultValue = "enter value")
+    public void Setup(ParamName ParametrName, FieldType type,bool isReadonly = false, string defaultValue = "enter property")
     {
         ParamName = ParametrName;
         label.text = ParametrName.ToString();
         fieldType = type;
+        SetReadOnly(isReadonly);
         SetText(defaultValue);
         switch (fieldType)
         {
