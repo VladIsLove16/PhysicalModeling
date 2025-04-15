@@ -12,24 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3ff4b6df8d01204b9207b3ca2076c23, type: 3}
   m_Name: LinearAcceleratingMotionModel
   m_EditorClassIdentifier: 
-  Title: "\u0414\u0432\u0438\u0436\u0435\u043D\u0438\u0435 \u0441 \u0443\u0441\u043A\u043E\u0440\u0435\u043D\u0438\u0435\u043C"
-  TopicFields:
-    fields:
-    - label: 0
-      type: 1
-      isReadOnly: 0
-    - label: 1
-      type: 0
-      isReadOnly: 1
-    - label: 2
-      type: 0
-      isReadOnly: 1
-    - label: 3
-      type: 0
-      isReadOnly: 0
-    - label: 4
-      type: 1
-      isReadOnly: 0
-    - label: 5
-      type: 1
-      isReadOnly: 0
+  Title: "\u041B\u0438\u043D\u0435\u0439\u043D\u043E\u0435 \u0441 \u0443\u0441\u043A\u043E\u0440\u0435\u043D\u0438\u0435\u043C"
+  TopicFieldsList: []

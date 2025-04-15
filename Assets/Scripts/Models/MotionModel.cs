@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using Unity.VisualScripting;
@@ -82,7 +83,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     }
     public void ResetParam(ParamName parametrName)
     {
-        paramValues[parametrName].Value = GetDefaultValue(parametrName);
+        Params[parametrName].Value = GetDefaultValue(parametrName);
     }
     public object GetParam(ParamName paramName)
     {
@@ -90,11 +91,15 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     }
     public void SetParam(ParamName paramName, object value)
     {
-        paramValues[paramName].SetValueAndForceNotify(value);
+        if(!Params.TryGetValue(paramName, out ReactiveProperty<object> property))
+        {
+            Debug.LogWarning(paramName + " not found");
+            return;
+        }
+        property.SetValueAndForceNotify(value);
     }
     public bool IsReadonly(ParamName paramName)
     {
         return topicFields[paramName].IsReadOnly;
     }
-
 }

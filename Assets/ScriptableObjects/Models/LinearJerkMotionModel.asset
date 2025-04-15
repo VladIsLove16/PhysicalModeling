@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13bfaaba0ed6d5f41bb3600550dfbea4, type: 3}
   m_Name: LinearJerkMotionModel
   m_EditorClassIdentifier: 
-  Title: "\u0414\u0432\u0438\u0436\u0435\u043D\u0438\u0435 \u0441 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u044B\u043C
+  Title: "\u041B\u0438\u043D\u0435\u0439\u043D\u043E\u0435 \u0441 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u044B\u043C
     \u0443\u0441\u043A\u043E\u0440\u0435\u043D\u0438\u0435\u043C"
   TopicFieldsList: []

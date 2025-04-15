@@ -18,6 +18,7 @@ public class TopicField
     public object Value => property.Value;
     public TopicField() { }
 
+
     public TopicField(ParamName label, FieldType type, bool isReadonly = false)
     {
         this.label = label;
@@ -66,6 +67,7 @@ public class TopicField
 public enum ParamName
 {
     velocity,
+    velocityMagnitude,
     distance,
     pathTraveled,
     time,
@@ -73,14 +75,17 @@ public enum ParamName
     acceleration,
     jerk,
     angularVelocity,
-    angularAcceleration,
     angleRadTraveled,
     angleRad,
     period,
     radius,
     rotationFrequency,
+    rotationFrequencyAcceleration,
+    rotationFrequencyJerk,
     numberOfRevolutions,
-    step
+    step,
+    deltaPosition,
+    deltaPathTraveled
 
 }
 public enum FieldType { Float, Vector3, Int }

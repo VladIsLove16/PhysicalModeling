@@ -60,6 +60,7 @@ public class InputFieldController : MonoBehaviour
 
     private void OnTextChanged(string newValue)
     {
+        Debug.Log("new text:  " +  newValue);
         if (!IsInvokeOnTextChanged)
             return;
         OnInputFieldTextChanged.Invoke(newValue);
