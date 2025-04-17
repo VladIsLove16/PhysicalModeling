@@ -38,6 +38,7 @@ public class HelicalAcceleratingMotionModel : HelicalMotionModel
         RotationalMotionModel.SetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
         RotationalMotionModel.SetParam(ParamName.rotationFrequencyAcceleration, GetParam(ParamName.rotationFrequencyAcceleration));
         RotationalMotionModel.SetParam(ParamName.radius, GetParam(ParamName.radius));
+        RotationalMotionModel.SetParam(ParamName.velocity, GetParam(ParamName.velocity));
     }
     public override List<TopicField> GetRequiredParams()
     {

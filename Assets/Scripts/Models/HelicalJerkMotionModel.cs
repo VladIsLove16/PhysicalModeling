@@ -40,6 +40,7 @@ public class HelicalJerkMotionModel : HelicalAcceleratingMotionModel
         RotationalMotionModel.SetParam(ParamName.rotationFrequencyAcceleration, GetParam(ParamName.rotationFrequencyAcceleration));
         RotationalMotionModel.SetParam(ParamName.rotationFrequencyJerk , GetParam(ParamName.rotationFrequencyJerk));
         RotationalMotionModel.SetParam(ParamName.radius, GetParam(ParamName.radius));
+        RotationalMotionModel.SetParam(ParamName.velocity, GetParam(ParamName.velocity));
     }
     public override List<TopicField> GetRequiredParams()
     {

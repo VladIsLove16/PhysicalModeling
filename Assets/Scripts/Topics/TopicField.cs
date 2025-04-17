@@ -85,7 +85,11 @@ public enum ParamName
     numberOfRevolutions,
     step,
     deltaPosition,
-    deltaPathTraveled
-
+    deltaPathTraveled,
+    accelerationStartTime,
+    flightTime,
+    landingVelocity,
+    range,
+    averageSpeed
 }
 public enum FieldType { Float, Vector3, Int }

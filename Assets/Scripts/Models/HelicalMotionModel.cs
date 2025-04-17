@@ -65,14 +65,6 @@ public class HelicalMotionModel : MotionModel
         helicalPosition = pos + helicalDeltaPosition;
     }
 
-    protected void CalculateDeltaPath(out float helicalDeltaPath, out float helicalPath)
-    {
-        float linearDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
-        float rotationalDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
-        helicalDeltaPath = (float)Mathf.Sqrt(linearDeltaPath * linearDeltaPath + rotationalDeltaPath * rotationalDeltaPath);
-        helicalPath = (float)GetParam(ParamName.pathTraveled) + helicalDeltaPath;
-    }
-
     protected Vector3 GetLinearDeltaPosition(float deltaTime)
     {
         InitLinearMotionModelParams();
@@ -80,6 +72,7 @@ public class HelicalMotionModel : MotionModel
         Vector3 linearDeltaPosition = (Vector3)LinearMotionModel.GetParam(ParamName.deltaPosition);
         return linearDeltaPosition;
     }
+
     protected Vector3 GetRotationalDeltaPosition(float deltaTime)
     {
         InitRotationalMotionModelParams();
@@ -92,7 +85,13 @@ public class HelicalMotionModel : MotionModel
     {
         return UpdatePosition(time);
     }
-
+    protected void CalculateDeltaPath(out float helicalDeltaPath, out float helicalPath)
+    {
+        float linearDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
+        float rotationalDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
+        helicalDeltaPath = (float)Mathf.Sqrt(linearDeltaPath * linearDeltaPath + rotationalDeltaPath * rotationalDeltaPath);
+        helicalPath = (float)GetParam(ParamName.pathTraveled) + helicalDeltaPath;
+    }
     protected virtual void InitLinearMotionModelParams()
     {
         LinearMotionModel.SetParam(ParamName.velocity, GetParam(ParamName.velocity));
