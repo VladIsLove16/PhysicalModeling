@@ -9,8 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1fe09e7335817be45b4b8dce5d1cc2be, type: 3}
-  m_Name: LinearMotionModel
+  m_Script: {fileID: 11500000, guid: 13bfaaba0ed6d5f41bb3600550dfbea4, type: 3}
+  m_Name: LinearJerkMotionModel
   m_EditorClassIdentifier: 
-  Title: "\u041B\u0438\u043D\u0435\u0439\u043D\u043E\u0435 \u0434\u0432\u0438\u0436\u0435\u043D\u0438\u0435"
+  Title: "\u041B\u0438\u043D\u0435\u0439\u043D\u043E\u0435 \u0441 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u044B\u043C
+    \u0443\u0441\u043A\u043E\u0440\u0435\u043D\u0438\u0435\u043C"
   TopicFieldsList: []

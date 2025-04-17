@@ -1,0 +1,127 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "HelicalMotionModel", menuName = "MotionModelsDropdown/HelicalMotionModel")]
+public class HelicalMotionModel : MotionModel
+{
+    protected MotionModel rotationalMotionModel;
+    protected MotionModel linearMotionModel;
+    protected virtual MotionModel RotationalMotionModel
+    {
+        get {
+            if (rotationalMotionModel == null)
+            { 
+                rotationalMotionModel = ScriptableObject.CreateInstance<RotationalMotionModel>();
+                rotationalMotionModel.InitializeParameters();
+            }
+            return rotationalMotionModel; 
+        }
+    }
+    protected virtual MotionModel LinearMotionModel
+    {
+        get {
+            if (linearMotionModel == null)
+            {
+                linearMotionModel = ScriptableObject.CreateInstance<LinearMotionModel>(); 
+                linearMotionModel.InitializeParameters();
+            }
+            return linearMotionModel; 
+        }
+    }
+
+        
+    public override Vector3 UpdatePosition(float deltaTime)
+    {
+        float radius = (float)GetParam(ParamName.radius);
+        float rotationFrequency = (float)GetParam(ParamName.rotationFrequency);
+        Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
+        float time = (float)GetParam(ParamName.time)+deltaTime;
+
+        Vector3 helicalDeltaPosition, helicalPosition;
+        CalculateDeltaPosition(deltaTime, out helicalDeltaPosition, out helicalPosition);
+
+        float helicalDeltaPath, helicalPath;
+        CalculateDeltaPath(out helicalDeltaPath, out helicalPath);
+
+        SetParam(ParamName.time, time);
+        SetParam(ParamName.position, helicalPosition);
+        SetParam(ParamName.pathTraveled, helicalPath);
+        SetParam(ParamName.angularVelocity, RotationalMotionModel.GetParam(ParamName.angularVelocity));
+        SetParam(ParamName.period, RotationalMotionModel.GetParam(ParamName.period));
+        SetParam(ParamName.velocity, velocity);
+        SetParam(ParamName.angleRadTraveled, RotationalMotionModel.GetParam(ParamName.angleRadTraveled));
+        SetParam(ParamName.angleRad, RotationalMotionModel.GetParam(ParamName.angleRad));
+        SetParam(ParamName.numberOfRevolutions, RotationalMotionModel.GetParam(ParamName.numberOfRevolutions));
+        SetParam(ParamName.rotationFrequency, rotationFrequency);
+        return helicalPosition;
+    }
+
+    protected void CalculateDeltaPosition(float deltaTime, out Vector3 helicalDeltaPosition, out Vector3 helicalPosition)
+    {
+        Vector3 linearDeltaPosition = GetLinearDeltaPosition(deltaTime);
+        Vector3 rotationalDeltaPosition = GetRotationalDeltaPosition(deltaTime);
+        helicalDeltaPosition = linearDeltaPosition + rotationalDeltaPosition;
+        Vector3 pos = (Vector3)GetParam(ParamName.position);
+        helicalPosition = pos + helicalDeltaPosition;
+    }
+
+    protected Vector3 GetLinearDeltaPosition(float deltaTime)
+    {
+        InitLinearMotionModelParams();
+        LinearMotionModel.UpdatePosition(deltaTime);
+        Vector3 linearDeltaPosition = (Vector3)LinearMotionModel.GetParam(ParamName.deltaPosition);
+        return linearDeltaPosition;
+    }
+
+    protected Vector3 GetRotationalDeltaPosition(float deltaTime)
+    {
+        InitRotationalMotionModelParams();
+        RotationalMotionModel.UpdatePosition(deltaTime);
+        Vector3 rotationalDeltaPosition = (Vector3)RotationalMotionModel.GetParam(ParamName.deltaPosition);
+        return rotationalDeltaPosition;
+    }
+
+    public override Vector3 CalculatePosition(float time)
+    {
+        return UpdatePosition(time);
+    }
+    protected void CalculateDeltaPath(out float helicalDeltaPath, out float helicalPath)
+    {
+        float linearDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
+        float rotationalDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
+        helicalDeltaPath = (float)Mathf.Sqrt(linearDeltaPath * linearDeltaPath + rotationalDeltaPath * rotationalDeltaPath);
+        helicalPath = (float)GetParam(ParamName.pathTraveled) + helicalDeltaPath;
+    }
+    protected virtual void InitLinearMotionModelParams()
+    {
+        LinearMotionModel.SetParam(ParamName.velocity, GetParam(ParamName.velocity));
+    }
+
+
+    protected virtual void InitRotationalMotionModelParams()
+    {
+        RotationalMotionModel.SetParam(ParamName.radius, GetParam(ParamName.radius));
+        RotationalMotionModel.SetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
+        RotationalMotionModel.SetParam(ParamName.velocity,GetParam(ParamName.velocity));
+    }
+
+    public override List<TopicField> GetRequiredParams()
+    {
+        return new List<TopicField>
+        {
+            new TopicField(ParamName.velocity, FieldType.Vector3, false),
+            new TopicField(ParamName.radius, FieldType.Float, false),
+            new TopicField(ParamName.rotationFrequency, FieldType.Float, false),
+            new TopicField(ParamName.time, FieldType.Float, true),
+            new TopicField(ParamName.position, FieldType.Vector3, true),
+            new TopicField(ParamName.velocityMagnitude, FieldType.Float, true),
+            new TopicField(ParamName.pathTraveled, FieldType.Float, true),
+            new TopicField(ParamName.angularVelocity, FieldType.Float, true),
+            new TopicField(ParamName.period, FieldType.Float, true),
+            new TopicField(ParamName.angleRad, FieldType.Float, true),
+            new TopicField(ParamName.numberOfRevolutions, FieldType.Float, true)
+        };
+    }
+}
+
+    

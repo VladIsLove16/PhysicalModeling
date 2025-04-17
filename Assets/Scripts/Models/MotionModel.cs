@@ -2,95 +2,104 @@
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
-using Unity.Android.Gradle;
+using Unity.VisualScripting;
 using UnityEngine;
-
 public abstract class MotionModel : ScriptableObject, IMovementStrategy
 {
-    public Dictionary<ParamName, FormulaProperty> Parameters { get; private set; } = new();
-    public Dictionary<FieldType, object> DefaultValues = new()
+    [SerializeField] public string Title;
+    //вторая идея: добавить метод, который будет пересчитывать другие параметры на основе измененного пользователем, как со временем. 
+    protected Dictionary<ParamName, TopicField> topicFields = new();
+    protected Dictionary<ParamName, TopicField> TopicFields
+    {
+        get
+        {
+            if(topicFields==null || topicFields.Count == 0)
+            {
+                InitializeParameters(true);
+            }
+            return topicFields;
+        }
+    }
+
+    private Dictionary<ParamName, ReactiveProperty<object>> paramValues;
+    public Dictionary<ParamName, ReactiveProperty<object>> Params
+    {
+        get
+        {
+            if (paramValues == null || paramValues.Count == 0)
+                paramValues = TopicFields.ToDictionary(
+            x => x.Key,
+            x => x.Value.Property);
+            return paramValues;
+        }
+    }
+    private bool isInitialized;
+    private ReactiveDictionary<FieldType, object> DefaultValues = new ReactiveDictionary<FieldType, object>()
     {
         { FieldType.Float, 0f },
-        { FieldType.Vector3, "0,0,0" },
+        { FieldType.Vector3, Vector3.zero },
         { FieldType.Int, 0 },
     };
-
-    [SerializeField] public TopicFields TopicFields;
-
-    public virtual void InitializeParameters()
+    [SerializeField] protected List<TopicField> TopicFieldsList;
+    public virtual void InitializeParameters(bool isForce = false)
     {
-        Parameters.Clear();
-        foreach (var field in TopicFields.Fields)
+        if (isInitialized && !isForce)
+            return;
+        TopicFieldsList = GetRequiredParams();
+        foreach (var field in TopicFieldsList)
         {
-            Parameters[field.ParamName] = CreateFormulaProperty(field.Type, field.ParamName);
+            topicFields[field.ParamName] = field;
+            field.SetValue(DefaultValues[field.Type]);
         }
+        isInitialized= true;
     }
 
-    private FormulaProperty CreateFormulaProperty(FieldType fieldType, ParamName paramName)
-    {
-        return new FormulaProperty(paramName, fieldType, DefaultValues[fieldType].ToString());
-        //switch (fieldType)
-        //{ 
-        //     case FieldType.Float:
-        //     return new FormulaProperty(paramName, fieldType,DefaultValues[fieldType].ToString());
-        //case FieldType.Vector3:
-        //    return new ReactiveProperty<object>(DefaultValues[FieldType.Vector3]);
-        //case FieldType.Int:
-        //    return new ReactiveProperty<object>(DefaultValues[FieldType.Int]);
-        //default:
-        //    return new ReactiveProperty<object>(DefaultValues[FieldType.Float]);
-        //}
-    }
-    private object GetDefaultValue(FieldType fieldType)
-    {
-        return DefaultValues.TryGetValue(fieldType, out var defaultValue)
-            ? defaultValue
-            : 0f;
-    }
 
-    public void SetParameter(ParamName paramName, object value)
-    {
-        if (Parameters.ContainsKey(paramName))
-        {
-            Debug.Log(paramName + " " + value);
-            Parameters[paramName].SetValue(value);
-        }
-    }
-
-    public T GetParameter<T>(ParamName paramName)
-    {
-        if (Parameters.TryGetValue(paramName, out var value) && value.Value is T casted)
-        {
-            Debug.Log("casted " + value);
-            return casted;
-        }
-        return default;
-    }
+    public abstract Vector3 UpdatePosition(float deltaTime);
+    public abstract Vector3 CalculatePosition(float Time);
+    public abstract List<TopicField> GetRequiredParams();
 
     public void ResetParams()
     {
-        foreach (var field in TopicFields.Fields)
+        foreach (var pair in topicFields)
         {
-            ResetParam(field.ParamName);
+            ResetParam(pair.Key);
+
         }
     }
-    public void ResetParam(ParamName paramName)
+    public FieldType GetFieldType(ParamName value)
     {
-        FieldType fieldType =  TopicFields.Fields.First(x => x.ParamName == paramName).Type;
-        Parameters[paramName].SetValue(GetDefaultValue(fieldType));
+        return topicFields[value].Type;
     }
 
-    public FieldType GetFieldType(object value)
+    
+    public object GetDefaultValue(FieldType fieldType)
     {
-        return TopicField.GetFieldType(value);
+        return DefaultValues[fieldType];
     }
-
-    public FieldType GetFieldType(ParamName paramName)
+    public object GetDefaultValue(ParamName paramName)
     {
-        var field = TopicFields.Fields.FirstOrDefault(f => f.ParamName == paramName);
-        return field.Type;
+        return DefaultValues[topicFields[paramName].Type];
     }
-
-    public abstract Vector3 UpdatePosition(float deltaTime);
-    public abstract Vector3 CalculatePosition(float time);
+    public void ResetParam(ParamName parametrName)
+    {
+        Params[parametrName].Value = GetDefaultValue(parametrName);
+    }
+    public object GetParam(ParamName paramName)
+    {
+        return topicFields[paramName].Value;
+    }
+    public void SetParam(ParamName paramName, object value)
+    {
+        if(!Params.TryGetValue(paramName, out ReactiveProperty<object> property))
+        {
+            Debug.LogWarning(paramName + " not found");
+            return;
+        }
+        property.SetValueAndForceNotify(value);
+    }
+    public bool IsReadonly(ParamName paramName)
+    {
+        return topicFields[paramName].IsReadOnly;
+    }
 }

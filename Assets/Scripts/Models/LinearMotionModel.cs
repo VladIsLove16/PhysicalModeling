@@ -1,43 +1,54 @@
-﻿using UnityEngine;
-
-[CreateAssetMenu(fileName = "LinearMotionModel", menuName = "MotionModels/Linear")]
+﻿using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using UniRx;
+using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
+[CreateAssetMenu(fileName = "LinearMotionModel", menuName = "MotionModelsDropdown/Linear")]
 public class LinearMotionModel : MotionModel
 {
     public override Vector3 UpdatePosition(float deltaTime)
     {
-        Vector3 velocity = GetParameter<Vector3>(ParamName.velocity);
-        Vector3 position = GetParameter<Vector3>(ParamName.position);
-        float time = GetParameter<float>(ParamName.time);
-        float path = GetParameter<float>(ParamName.pathTraveled);
+        Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
+        Vector3 postion = (Vector3)GetParam(ParamName.position);
 
-        Vector3 delta = velocity * deltaTime;
-        Vector3 newPosition = position + delta;
-        float newTime = time + deltaTime;
-        float newPath = path + velocity.magnitude * deltaTime;
+        Vector3 deltaPosition = velocity * deltaTime;
+        Vector3 newPosition = postion + deltaPosition;
 
-        SetParameter(ParamName.position, newPosition.ToString());
-        SetParameter(ParamName.time, newTime.ToString());
-        SetParameter(ParamName.pathTraveled, newPath.ToString());
-        SetParameter(ParamName.distance, newPosition.magnitude.ToString());
-
-        Debug.Log("UpdatePosition: " + newPosition);
+        SetParam(ParamName.time, (float)GetParam(ParamName.time) + deltaTime);
+        SetParam(ParamName.position, newPosition);
+        SetParam(ParamName.pathTraveled, (float)GetParam(ParamName.pathTraveled) + deltaPosition.magnitude);
+        SetParam(ParamName.distance,newPosition.magnitude);
+        SetParam(ParamName.deltaPosition, deltaPosition);
+        SetParam(ParamName.velocityMagnitude, velocity.magnitude);
         return newPosition;
     }
 
     public override Vector3 CalculatePosition(float time)
     {
-        Vector3 velocity = GetParameter<Vector3>(ParamName.velocity);
-        Vector3 startPosition = GetParameter<Vector3>(ParamName.position);
+        Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
+        Vector3 deltaPosition = velocity * time;
+        Vector3 newPosition = deltaPosition;
 
-        Vector3 delta = velocity * time;
-        Vector3 newPosition = startPosition + delta;
-
-        SetParameter(ParamName.time, time.ToString());
-        SetParameter(ParamName.position, newPosition.ToString());
-        SetParameter(ParamName.pathTraveled, delta.magnitude.ToString());
-        SetParameter(ParamName.distance, newPosition.magnitude.ToString());
-
-        Debug.Log("CalculatePosition: " + newPosition);
+        SetParam(ParamName.time, time);
+        SetParam(ParamName.position, newPosition);
+        SetParam(ParamName.pathTraveled, newPosition.magnitude);
+        SetParam(ParamName.distance, newPosition.magnitude);
+        SetParam(ParamName.deltaPosition, deltaPosition);
         return newPosition;
+    }
+
+    public override List<TopicField> GetRequiredParams()
+    {
+        return new List<TopicField>
+        {
+           new TopicField(ParamName.velocity, FieldType.Vector3,false),
+           new TopicField(ParamName.time, FieldType.Float,false),
+           new TopicField(ParamName.position, FieldType.Vector3,false),
+           new TopicField(ParamName.velocityMagnitude, FieldType.Float,true),
+           new TopicField(ParamName.pathTraveled,FieldType.Float,true),
+           new TopicField(ParamName.distance,FieldType.Float, true),
+           new TopicField(ParamName.deltaPosition,FieldType.Vector3, true),
+        };
     }
 }

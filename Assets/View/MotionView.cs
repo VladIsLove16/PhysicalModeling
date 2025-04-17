@@ -1,19 +1,22 @@
-﻿// MotionView.cs
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using UnityEngine;
 using UniRx;
 using System.Collections.Generic;
 using TMPro;
+using System.Linq;
+using System;
 
 public class MotionView : MonoBehaviour
 {
-    [SerializeField] Transform MovingObject;
-    [SerializeField] TextMeshProUGUI titleText;
-    [SerializeField] Button toggleSimulationButton;
-    [SerializeField] Button stopSimulationButton;
-    [SerializeField] TextMeshProUGUI toggleSimulationButtonText;
-    [SerializeField] Transform inputFieldsContainer;
-    [SerializeField] InputFieldController inputPrefab;
+    private const int DECIMALCOUNT = 4;
+    [SerializeField] private Transform MovingObject;
+    [SerializeField] private TextMeshProUGUI titleText;
+    [SerializeField] private Button toggleSimulationButton;
+    [SerializeField] private Button stopSimulationButton;
+    [SerializeField] private TextMeshProUGUI toggleSimulationButtonText;
+    [SerializeField] private Transform inputFieldsContainer;
+    [SerializeField] private InputFieldController inputPrefab;
+
 
     private MotionViewModel viewModel;
     private Dictionary<ParamName, InputFieldController> inputFields = new();
@@ -25,27 +28,28 @@ public class MotionView : MonoBehaviour
         { MotionViewModel.SimulationState.stoped, "Старт" },
     };
 
+
+   
+
     private void Update()
     {
-        if (viewModel == null) return;
-
+        if (viewModel == null)
+            return;
         if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
         {
             var currentPosition = viewModel.Update(Time.deltaTime);
-            MovingObject.position = currentPosition;
         }
     }
 
     public void Init(MotionViewModel motionViewModel)
     {
         viewModel = motionViewModel;
-        viewModel.CurrentModel.Subscribe(_ => RebuildUI()).AddTo(this);
+        viewModel.CurrentModelChanged += () => RebuildUI();
         viewModel.simulationState.Subscribe(_ => UpdateSimulationState()).AddTo(this);
 
         toggleSimulationButton.onClick.AddListener(OnToggleSimulationButtonClicked);
         stopSimulationButton.onClick.AddListener(OnStopSimulationButtonClicked);
 
-        titleText.text = viewModel.Title.Value;
         RebuildUI();
     }
 
@@ -64,28 +68,62 @@ public class MotionView : MonoBehaviour
         var state = viewModel.simulationState.Value;
         toggleSimulationButtonText.text = simButtonTexts[state];
     }
-
+    private string GetStringValue(ParamName paramName)
+    {
+        var obj = viewModel.GetParam(paramName);
+        string valueText = obj switch
+        {
+            float floatValue => floatValue.ToString("0.00"),
+            int intValue => intValue.ToString(),
+            Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.000")}",
+            string stringValue => stringValue,
+            _ => "not avaialable type"
+        };
+        return valueText;
+    }
+    
     private void RebuildUI()
     {
         ClearUI();
 
-        foreach (var pair in viewModel.Properties)
+        foreach (var pair in viewModel.GetProperties())
         {
             var paramName = pair.Key;
             var fieldType = viewModel.GetFieldType(paramName);
             var property = pair.Value;
 
-            var input = Instantiate(inputPrefab, inputFieldsContainer);
-            input.Setup(paramName, fieldType);
-            input.BindProperty(property);
-
-            if (viewModel.CurrentModel.Value.TopicFields.IsReadOnly(paramName))
-                input.SetReadOnly(true);
-
-            inputFields[paramName] = input;
+            Debug.Log("Instantiate");
+            var inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
+            inputFieldController.Setup(paramName, fieldType, viewModel.IsReadonly(paramName));
+            property.Subscribe(value => OnViewModelPropertyChanged(inputFieldController, value));
+            inputFields[paramName] = inputFieldController;
+            inputFieldController.OnInputFieldTextChanged += value => InputFieldController_OnInputFieldTextChanged(inputFieldController, value);
+            inputFieldController.OnInputFieldEndEdited += value => InputFieldController_OnInputFieldEndEdited(inputFieldController, value);
         }
     }
 
+    private void OnViewModelPropertyChanged(InputFieldController inputFieldController, object newValue)
+    {
+        inputFieldController.SetText(GetStringValue(inputFieldController.ParamName));
+        if(inputFieldController.ParamName == ParamName.position)
+        {
+            MovingObject.position = (Vector3) newValue;
+        }
+    }
+
+    private void InputFieldController_OnInputFieldTextChanged(InputFieldController controller, string obj)
+    {
+        bool res = viewModel.SetParam(controller.ParamName, obj);
+    }
+
+    private void InputFieldController_OnInputFieldEndEdited(InputFieldController controller, string obj)
+    {
+        bool res = viewModel.SetParam(controller.ParamName, obj);
+        if (!res)
+        {
+            controller.SetText(GetStringValue(controller.ParamName));
+        }
+    }
     private void ClearUI()
     {
         foreach (var input in inputFields.Values)

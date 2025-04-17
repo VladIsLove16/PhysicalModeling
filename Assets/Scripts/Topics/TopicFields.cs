@@ -11,21 +11,20 @@ public class TopicFields
     private Dictionary<ParamName, TopicField> fieldLookup;
     private Dictionary<ParamName, TopicField> FieldLookup
     {
-        get
+        get 
         {
-            if (fieldLookup == null)
+            if(fieldLookup == null)
             {
-                BuildLookup();
+                fieldLookup = BuildLookup();
             }
-            return fieldLookup;
+            return fieldLookup; 
         }
     }
 
     public List<TopicField> Fields => fields;
-
-    public void BuildLookup()
+    public Dictionary<ParamName, TopicField> BuildLookup()
     {
-        fieldLookup = fields.ToDictionary(f => f.ParamName, f => f);
+       return fields.ToDictionary(f => f.ParamName, f => f);
     }
 
     public bool IsReadOnly(ParamName paramName)
@@ -37,4 +36,6 @@ public class TopicFields
     {
         return FieldLookup.TryGetValue(paramName, out var field) ? field.Type : FieldType.Float;
     }
+
+
 }

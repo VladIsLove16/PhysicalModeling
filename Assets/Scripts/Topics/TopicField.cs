@@ -1,99 +1,95 @@
 ﻿using System;
 using UniRx;
+using Unity.Collections;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
+using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 [Serializable]
 public class TopicField
 {
     [SerializeField] private ParamName label;
-    [SerializeField] private FieldType type;
-    [SerializeField] private bool isReadOnly;
-    private string value;
-    private object Value
-    {
-        get { return value; }
-    }
+    [SerializeField, NonSerialized] private FieldType type;
+    [SerializeField, NonSerialized] private bool isReadOnly;
+    [SerializeField,ReadOnly] private string stringValue;
+    private ReactiveProperty<object> property = new ReactiveProperty<object>();
     public ParamName ParamName => label;
     public FieldType Type => type;
     public bool IsReadOnly => isReadOnly;
+    public object Value => property.Value;
+    public TopicField() { }
 
-    public TopicField(ParamName label, FieldType type, bool isReadOnly = false)
+
+    public TopicField(ParamName label, FieldType type, bool isReadonly = false)
     {
         this.label = label;
         this.type = type;
-        this.isReadOnly = isReadOnly;
-    }
-    public bool SetValue<T>(T obj)
-    {
-        switch (obj)
-        {
-            float floatValue => floatValue.ToString(),
-            int intValue => intValue.ToString(),
-            Vector3 v => $"{v.x},{v.y},{v.z}",
-            string stringValue => stringValue,
-            _ => Value
-        };
-        Value = valueText;
-        return valueText;
-    }
-    private object GetValue(out bool result)
-    {
-        switch (type)
-        {
-            case FieldType.Float:
-                result = float.TryParse(Value, out float floatValue);
-                return floatValue;
-            case FieldType.Int:
-                result = int.TryParse(Value, out int intValue);
-                return intValue;
-            case FieldType.Vector3:
-                string[] values = Value.Split(',');
-                if (values.Length == 3 &&
-                    float.TryParse(values[0], out float x) &&
-                    float.TryParse(values[1], out float y) &&
-                    float.TryParse(values[2], out float z))
-                {
-                    result = true;
-                    return new Vector3(x, y, z);
-                }
-                result = false;
-                return Vector3.zero;
-            default:
-                result = false;
-                return null;
-        }
+        this.isReadOnly = isReadonly;
+        property.Subscribe(_ => OnPropertyChanged());
     }
 
-    public static FieldType GetFieldType(object value)
+    private void OnPropertyChanged()
     {
-        return value switch
-        {
-            Vector3 => FieldType.Vector3,
-            float => FieldType.Float,
-            int => FieldType.Int,
-            _ => FieldType.Float
-        };
+        stringValue = GetStringValue();
     }
+
+    public ReactiveProperty<object> Property => property;
     public static Type GetFieldValueType(FieldType fieldType)
     {
         return fieldType switch
         {
-            FieldType.Float => typeof(float),
+            FieldType.Float =>typeof( float),
 
             FieldType.Int => typeof(int),
             FieldType.Vector3 => typeof(Vector3),
             _ => typeof(float)
         };
     }
+    private string GetStringValue()
+    {
+        var obj = property.Value;
+        if(obj == null)
+            return "null value";
+        string valueText = obj switch
+        {
+            float floatValue => floatValue.ToString("0.00"),
+            int intValue => intValue.ToString(),
+            Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.0000")}",
+            string stringValue => stringValue,
+            _ => obj.ToString()
+        };
+        return valueText;
+    }
+    public void SetValue(object value)
+    {
+        property.SetValueAndForceNotify(value);
+    }
 }
-
 public enum ParamName
 {
     velocity,
+    velocityMagnitude,
     distance,
     pathTraveled,
     time,
-    position
+    position,
+    acceleration,
+    jerk,
+    angularVelocity,
+    angleRadTraveled,
+    angleRad,
+    period,
+    radius,
+    rotationFrequency,
+    rotationFrequencyAcceleration,
+    rotationFrequencyJerk,
+    numberOfRevolutions,
+    step,
+    deltaPosition,
+    deltaPathTraveled,
+    accelerationStartTime,
+    flightTime,
+    landingVelocity,
+    range,
+    averageSpeed
 }
 public enum FieldType { Float, Vector3, Int }

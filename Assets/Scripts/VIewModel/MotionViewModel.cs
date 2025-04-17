@@ -1,93 +1,173 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UniRx;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class MotionViewModel
 {
-    public ReactiveProperty<string> Title { get; } = new("Движение");
-    public Dictionary<ParamName, ReactiveProperty<object>> Properties { get; } = new();
-    public ReactiveProperty<MotionModel> CurrentModel { get; } = new();
-    public ReactiveProperty<SimulationState> simulationState = new(SimulationState.stoped);
-
+    private MotionModel CurrentModel;
+    public Action CurrentModelChanged;
+    private Dictionary<ParamName, ReactiveProperty<object>> properties { get; } = new();
+    public ReactiveProperty<SimulationState> simulationState = new ReactiveProperty<SimulationState>();
     public enum SimulationState
     {
         paused,
         running,
         stoped
     }
-
-    public MotionViewModel(MotionModel model)
+    public MotionViewModel(MotionModel motionModel)
     {
-        SetModel(model);
+        Init(motionModel);
     }
-
-    public void SetModel(MotionModel model)
+    public void Init(MotionModel newModel)
     {
-        CurrentModel.Value = model;
-        model.InitializeParameters();
-        Properties.Clear();
-
-        var fieldList = model.Parameters.ToList();  // Создаём копию коллекции для безопасной итерации
-        foreach (var kvp in fieldList)
+        if (newModel == null)
         {
-            ParamName paramName = kvp.Key;
-            string modelValue = kvp.Value.Value;
+            Debug.LogWarning("MotionModel is null");
+            return;
 
-            var property = new ReactiveProperty<object>(modelValue);
-            property.Subscribe(newValue => OnPropertyChanged(paramName,modelValue));
-            Properties[paramName] = property;
         }
-
-        SyncFromModel();
+        else
+            Debug.Log("initing viewmodel with" + newModel.ToString());
+        simulationState.Value = SimulationState.stoped;
+        InitProperies(newModel);
+        CurrentModel = newModel;
+        CurrentModelChanged?.Invoke();
+        Debug.Log("newModel.Params " + newModel.Params.Count);
+        Debug.Log("MotionViewModel.Properties " + properties.Count);
     }
 
-    private void OnPropertyChanged(ParamName paramName,object newValue   )
+    private void InitProperies(MotionModel newModel)
     {
-        if (paramName == ParamName.time && simulationState.Value == SimulationState.stoped)
+        properties.Clear();
+        foreach (var modelParam in newModel.Params)
         {
-            CurrentModel.Value.SetParameter(paramName, newValue);
-            CurrentModel.Value.CalculatePosition((float)newValue);
+            ReactiveProperty<object> property = new ReactiveProperty<object>(modelParam.Value.Value);
+            if (!properties.ContainsKey(modelParam.Key))
+            {
+                properties[modelParam.Key] = property;
+                modelParam.Value.Subscribe(value => OnModelChanged(modelParam.Key, property, value));
+            }
+        }
+    }
+
+    private void OnModelChanged(ParamName paramName, ReactiveProperty<object> property, object value)
+    {
+        if (CurrentModel == null || CurrentModel == null)
+        { 
             return;
         }
-        CurrentModel.Value.SetParameter(paramName, newValue);
-
+        property.SetValueAndForceNotify(value);
     }
 
-    public void SyncFromModel()
+    public FieldType GetFieldType(ParamName value)
     {
-        var model = CurrentModel.Value;
-        var keys = model.Parameters.Keys.ToList();
-        foreach (var key in keys)
-        {
-            if (Properties.ContainsKey(key))
-                Properties[key].SetValueAndForceNotify(model.Parameters[key]);
-        }
+        return CurrentModel.GetFieldType(value);
     }
 
-    public FieldType GetFieldType(object value) => CurrentModel.Value.GetFieldType(value);
-
-    public FieldType GetFieldType(ParamName paramName) =>
-        CurrentModel.Value.GetFieldType(paramName);
-
-    public void StartSimulation() => simulationState.Value = SimulationState.running;
-
+    public void StartSimulation()
+    {
+        simulationState.Value = SimulationState.running;
+    }
     public void StopSimulation()
     {
-        CurrentModel.Value.ResetParams();
+        CurrentModel.ResetParams();
         simulationState.Value = SimulationState.stoped;
-        SyncFromModel();
     }
 
-    public void PauseSimulation() => simulationState.Value = SimulationState.paused;
+    public void PauseSimulation()
+    {
+        simulationState.Value = SimulationState.paused;
+    }
 
     public Vector3 Update(float deltaTime)
     {
-        var newPosition = CurrentModel.Value.UpdatePosition(deltaTime);
-        SyncFromModel();
-        return newPosition;
+        return CurrentModel.UpdatePosition(deltaTime);
+    }
+
+    internal bool SetParam(ParamName paramName, string obj)
+    {
+        Debug.Log("Setting Param" + paramName + " " + obj);
+        TryParse(paramName, obj, out bool result);
+        return result;
+    }
+    private void TryParse(ParamName paramName, string obj, out bool result)
+    {
+        var newValue = GetValueFromString(paramName, obj, out result);
+        if (result)
+        {
+            CommitChanges(paramName, newValue);
+
+        }
+        else
+            Debug.Log("wrong");
+    }
+
+    private void CommitChanges(ParamName paramName, object newValue)
+    {
+        Debug.Log("Success");
+        if (paramName == ParamName.time)
+        {
+            PauseSimulation();
+            CurrentModel.CalculatePosition((float)newValue);
+        }
+        CurrentModel.SetParam(paramName, newValue);
+    }
+
+    private object GetValueFromString(ParamName paramName, string value, out bool result)
+    {
+
+        FieldType fieldType = CurrentModel.GetFieldType(paramName); 
+        Debug.Log("param: " + paramName + " " + fieldType);
+        switch (fieldType)
+        {
+            case FieldType.Float:
+                result = float.TryParse(value, out float floatValue);
+                if (result)
+                    return floatValue;
+                break;
+            case FieldType.Int:
+                result = int.TryParse(value, out int intValue);
+                if (result)
+                    return intValue;
+                break;
+            case FieldType.Vector3:
+                string[] values = value.Split(';');
+               
+                if (values.Length == 3 &&
+                    float.TryParse(values[0], out float x) &&
+                    float.TryParse(values[1], out float y) &&
+                    float.TryParse(values[2], out float z))
+                {
+                    result = true;
+                    return new Vector3(x, y, z);
+                }
+                result = false;
+                if (result)
+                    return Vector3.zero;
+                break;
+            default:
+                result = false;
+                return null;
+        }
+        return false;
+    }
+    public object GetParam(ParamName paramName)
+    {
+        return GetProperties()[paramName].Value;
+    }
+    public bool IsReadonly(ParamName paramName)
+    {
+        return CurrentModel.IsReadonly(paramName);
+    }
+
+    internal Dictionary<ParamName,ReactiveProperty<object>> GetProperties()
+    {
+        if (properties == null
+                 || properties.Count == 0)
+        {
+            InitProperies(CurrentModel);
+        }
+        return properties;
     }
 }
