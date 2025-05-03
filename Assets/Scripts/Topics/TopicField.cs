@@ -2,7 +2,6 @@
 using UniRx;
 using Unity.Collections;
 using UnityEngine;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 [Serializable]
 public class TopicField
