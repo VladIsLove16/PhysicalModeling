@@ -11,15 +11,18 @@ public class ProjectileMotionModel : MotionModel
         float currentTime = (float)GetParam(ParamName.time);
         float accelerationTime = (float)GetParam(ParamName.accelerationStartTime); // момент, когда началось ускорение
         Vector3 acceleration = (Vector3)GetParam(ParamName.acceleration);
+        Vector3 currentAcceleration;
+        if (currentTime > accelerationTime)
+            currentAcceleration = acceleration;
+        else
+            currentAcceleration = Vector3.zero;
 
-        if (currentTime < accelerationTime)
-            acceleration = Vector3.zero;
 
-        SetParam(ParamName.time, currentTime + deltaTime);
+            SetParam(ParamName.time, currentTime + deltaTime);
 
         Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
         Vector3 position = (Vector3)GetParam(ParamName.position);
-        Vector3 totalAcceleration = acceleration + gravity;
+        Vector3 totalAcceleration = currentAcceleration + gravity;
 
         Vector3 deltaPosition = velocity * deltaTime + 0.5f * totalAcceleration * deltaTime * deltaTime;
         Vector3 newVelocity = velocity + totalAcceleration * deltaTime;
