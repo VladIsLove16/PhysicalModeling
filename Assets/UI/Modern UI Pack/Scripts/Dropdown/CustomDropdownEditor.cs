@@ -166,8 +166,8 @@ namespace Michsky.MUIP
 
                 case 2:
                     MUIPEditorHandler.DrawHeader(customSkin, "Customization Header", 6);
-                    enableIcon.boolValue = MUIPEditorHandler.DrawToggle(enableIcon.boolValue, customSkin, "Enable Header Icon");
-                    enableScrollbar.boolValue = MUIPEditorHandler.DrawToggle(enableScrollbar.boolValue, customSkin, "Enable Scrollbar");
+                    enableIcon.boolValue = MUIPEditorHandler.DrawToggle(enableIcon.boolValue, customSkin, "OnEnabled Header Icon");
+                    enableScrollbar.boolValue = MUIPEditorHandler.DrawToggle(enableScrollbar.boolValue, customSkin, "OnEnabled Scrollbar");
                     extendEvents.boolValue = MUIPEditorHandler.DrawToggle(extendEvents.boolValue, customSkin, "Extend Events");
                     MUIPEditorHandler.DrawPropertyCW(itemSpacing, customSkin, "Item Spacing", 90);
 
@@ -216,7 +216,7 @@ namespace Michsky.MUIP
                         }                       
                     }
 
-                    enableTrigger.boolValue = MUIPEditorHandler.DrawToggle(enableTrigger.boolValue, customSkin, "Enable Trigger");
+                    enableTrigger.boolValue = MUIPEditorHandler.DrawToggle(enableTrigger.boolValue, customSkin, "OnEnabled Trigger");
                     if (enableTrigger.boolValue == true && dTarget.triggerObject == null) { EditorGUILayout.HelpBox("'Trigger Object' is missing from the resources.", MessageType.Warning); }
 
                     setHighPriority.boolValue = MUIPEditorHandler.DrawToggle(setHighPriority.boolValue, customSkin, "Set High Priority");
@@ -227,7 +227,7 @@ namespace Michsky.MUIP
                     GUILayout.BeginVertical(EditorStyles.helpBox);
                     GUILayout.Space(-3);
                    
-                    enableDropdownSounds.boolValue = MUIPEditorHandler.DrawTogglePlain(enableDropdownSounds.boolValue, customSkin, "Enable Dropdown Sounds");
+                    enableDropdownSounds.boolValue = MUIPEditorHandler.DrawTogglePlain(enableDropdownSounds.boolValue, customSkin, "OnEnabled Dropdown Sounds");
                    
                     GUILayout.Space(3);
 
@@ -236,7 +236,7 @@ namespace Michsky.MUIP
                         GUILayout.BeginVertical(EditorStyles.helpBox);
                         GUILayout.Space(-3);
 
-                        useHoverSound.boolValue = MUIPEditorHandler.DrawTogglePlain(useHoverSound.boolValue, customSkin, "Enable Hover Sound");
+                        useHoverSound.boolValue = MUIPEditorHandler.DrawTogglePlain(useHoverSound.boolValue, customSkin, "OnEnabled Hover Sound");
                      
                         GUILayout.Space(3);
 
@@ -247,7 +247,7 @@ namespace Michsky.MUIP
                         GUILayout.BeginVertical(EditorStyles.helpBox);
                         GUILayout.Space(-3);
                         
-                        useClickSound.boolValue = MUIPEditorHandler.DrawTogglePlain(useClickSound.boolValue, customSkin, "Enable Click Sound");
+                        useClickSound.boolValue = MUIPEditorHandler.DrawTogglePlain(useClickSound.boolValue, customSkin, "OnEnabled Click Sound");
                        
                         GUILayout.Space(3);
 
@@ -297,7 +297,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

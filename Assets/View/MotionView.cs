@@ -5,68 +5,84 @@ using System.Collections.Generic;
 using TMPro;
 using System.Linq;
 using System;
+using static UnityEngine.GraphicsBuffer;
+using System.Collections;
 
-public class MotionView : MonoBehaviour
+public abstract class MotionView : MonoBehaviour
 {
-    private const int DECIMALCOUNT = 4;
-    [SerializeField] private Transform MovingObject;
-    [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private Button toggleSimulationButton;
     [SerializeField] private Button stopSimulationButton;
     [SerializeField] private TextMeshProUGUI toggleSimulationButtonText;
     [SerializeField] private Transform inputFieldsContainer;
     [SerializeField] private InputFieldController inputPrefab;
-
-
-    private MotionViewModel viewModel;
+    [SerializeField] protected Camera _Camera;
+    [SerializeField] protected Vector3 CameraNewPosition;
+    [SerializeField] protected Vector3 CameraRotation;
+    protected MotionViewModel viewModel;
     private Dictionary<ParamName, InputFieldController> inputFields = new();
 
-    private readonly Dictionary<MotionViewModel.SimulationState, string> simButtonTexts = new()
+    private CompositeDisposable disposables = new();
+    private List<IDisposable> uiDisposables = new();
+
+    private readonly Dictionary<MotionViewModel.SimulationState, string> simulationButtonTexts = new()
     {
         { MotionViewModel.SimulationState.running, "Пауза" },
         { MotionViewModel.SimulationState.paused, "Продолжить" },
         { MotionViewModel.SimulationState.stoped, "Старт" },
     };
+    protected virtual void Start()
+    {
 
-
+    }
    
-
     private void Update()
     {
         if (viewModel == null)
             return;
-        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
+        if (viewModel.simulationStateChanged.Value == MotionViewModel.SimulationState.running)
         {
             var currentPosition = viewModel.Update(Time.deltaTime);
         }
     }
 
-    public void Init(MotionViewModel motionViewModel)
+    public virtual void Init(MotionViewModel motionViewModel)
     {
-        viewModel = motionViewModel;
-        viewModel.CurrentModelChanged += () => RebuildUI();
-        viewModel.simulationState.Subscribe(_ => UpdateSimulationState()).AddTo(this);
+        disposables.Clear();
 
+        viewModel = motionViewModel;
+
+        viewModel.simulationStateChanged.Subscribe(_ => ViewModel_OnSimulationStateChanged()).AddTo(disposables);
+
+        toggleSimulationButton.onClick.RemoveAllListeners();
         toggleSimulationButton.onClick.AddListener(OnToggleSimulationButtonClicked);
+
+        stopSimulationButton.onClick.RemoveAllListeners();
         stopSimulationButton.onClick.AddListener(OnStopSimulationButtonClicked);
 
         RebuildUI();
     }
 
-    private void OnStopSimulationButtonClicked() => viewModel.StopSimulation();
 
-    private void OnToggleSimulationButtonClicked()
+    protected virtual void OnStopSimulationButtonClicked()
     {
-        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
+        viewModel.StopSimulation();
+        Debug.Log("OnToggleSimulationButtonClicked");
+    }
+
+    protected virtual void OnToggleSimulationButtonClicked()
+    {
+        Debug.Log("OnToggleSimulationButtonClicked");
+        if (viewModel.simulationStateChanged.Value == MotionViewModel.SimulationState.running)
             viewModel.PauseSimulation();
         else
             viewModel.StartSimulation();
     }
 
-    private void UpdateSimulationState()
+    protected virtual void ViewModel_OnSimulationStateChanged()
     {
-        var state = viewModel.simulationState.Value;
-        toggleSimulationButtonText.text = simButtonTexts[state];
+        var state = viewModel.simulationStateChanged.Value;
+        toggleSimulationButtonText.text = simulationButtonTexts[state];
+        Debug.Log("MotionView +  Simulation state Setted " + state);
     }
     private string GetStringValue(ParamName paramName)
     {
@@ -94,21 +110,19 @@ public class MotionView : MonoBehaviour
 
             Debug.Log("Instantiate");
             var inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
-            inputFieldController.Setup(paramName, fieldType, viewModel.IsReadonly(paramName));
-            property.Subscribe(value => OnViewModelPropertyChanged(inputFieldController, value));
+            inputFieldController.Setup(paramName, fieldType, viewModel.IsReadonly(paramName)); 
+            var subscription = property.Subscribe(value => ViewModel_OnPropertyChanged(inputFieldController, value));
+            uiDisposables.Add(subscription);
             inputFields[paramName] = inputFieldController;
             inputFieldController.OnInputFieldTextChanged += value => InputFieldController_OnInputFieldTextChanged(inputFieldController, value);
             inputFieldController.OnInputFieldEndEdited += value => InputFieldController_OnInputFieldEndEdited(inputFieldController, value);
         }
     }
 
-    private void OnViewModelPropertyChanged(InputFieldController inputFieldController, object newValue)
+    protected virtual void ViewModel_OnPropertyChanged(InputFieldController inputFieldController, object newValue)
     {
         inputFieldController.SetText(GetStringValue(inputFieldController.ParamName));
-        if(inputFieldController.ParamName == ParamName.position)
-        {
-            MovingObject.position = (Vector3) newValue;
-        }
+        
     }
 
     private void InputFieldController_OnInputFieldTextChanged(InputFieldController controller, string obj)
@@ -126,9 +140,46 @@ public class MotionView : MonoBehaviour
     }
     private void ClearUI()
     {
-        foreach (var input in inputFields.Values)
-            Destroy(input.gameObject);
+        foreach (var d in uiDisposables)
+            d.Dispose();
+        uiDisposables.Clear();
+
+        for (int i = 0; i < inputFieldsContainer.childCount; i++)
+            Destroy(inputFieldsContainer.GetChild(i).gameObject);
 
         inputFields.Clear();
+    }
+
+    public virtual void OnDisabled()
+    {
+         disposables.Clear();
+    }
+
+    public virtual void OnEnabled()
+    {
+        MoveCamera(CameraNewPosition, CameraRotation);
+    }
+
+    public void MoveCamera(Vector3 mewPos, Vector3 newRot)
+    {
+        StartCoroutine(MoveToPositionAndRotate(mewPos, newRot, 1f));
+    }
+
+    private IEnumerator MoveToPositionAndRotate(Vector3 targetPos, Vector3 targetRot, float duration)
+    {
+        Vector3 startPos = _Camera.transform.position;
+        Vector3 startRot = _Camera.transform.eulerAngles;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            _Camera.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
+            _Camera.transform.eulerAngles = Vector3.Lerp(startRot, targetRot, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        _Camera.transform.position = targetPos;
+        _Camera.transform.eulerAngles = targetRot;
     }
 }

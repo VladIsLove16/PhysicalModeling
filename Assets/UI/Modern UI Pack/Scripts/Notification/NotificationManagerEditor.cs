@@ -151,7 +151,7 @@ namespace Michsky.MUIP
                     MUIPEditorHandler.DrawProperty(closeBehaviour, customSkin, "Close Behaviour");
                     useCustomContent.boolValue = MUIPEditorHandler.DrawToggle(useCustomContent.boolValue, customSkin, "Use Custom Content");
                     useStacking.boolValue = MUIPEditorHandler.DrawToggle(useStacking.boolValue, customSkin, "Use Stacking");
-                    enableTimer.boolValue = MUIPEditorHandler.DrawToggle(enableTimer.boolValue, customSkin, "Enable Timer");
+                    enableTimer.boolValue = MUIPEditorHandler.DrawToggle(enableTimer.boolValue, customSkin, "OnEnabled Timer");
 
                     if (enableTimer.boolValue == true)
                         MUIPEditorHandler.DrawProperty(timer, customSkin, "Timer");
@@ -167,7 +167,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

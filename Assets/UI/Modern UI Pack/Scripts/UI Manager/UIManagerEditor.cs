@@ -463,7 +463,7 @@ namespace Michsky.MUIP
             GUILayout.BeginVertical(EditorStyles.helpBox);
             GUILayout.Space(-2);
             GUILayout.BeginHorizontal();
-            enableDynamicUpdate.boolValue = GUILayout.Toggle(enableDynamicUpdate.boolValue, new GUIContent("Enable Dynamic Update"), customSkin.FindStyle("Toggle"));
+            enableDynamicUpdate.boolValue = GUILayout.Toggle(enableDynamicUpdate.boolValue, new GUIContent("OnEnabled Dynamic Update"), customSkin.FindStyle("Toggle"));
             enableDynamicUpdate.boolValue = GUILayout.Toggle(enableDynamicUpdate.boolValue, new GUIContent(""), customSkin.FindStyle("Toggle Helper"));
             GUILayout.EndHorizontal();
             GUILayout.Space(4);

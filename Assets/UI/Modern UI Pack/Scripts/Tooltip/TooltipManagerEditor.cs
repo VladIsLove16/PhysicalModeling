@@ -99,10 +99,10 @@ namespace Michsky.MUIP
                     MUIPEditorHandler.DrawProperty(preferredWidth, customSkin, "Preferred Width");
                     MUIPEditorHandler.DrawProperty(tooltipSmoothness, customSkin, "Smoothness");
                     MUIPEditorHandler.DrawProperty(dampSpeed, customSkin, "Damp Speed");
-                    MUIPEditorHandler.DrawProperty(cameraSource, customSkin, "Camera Source");
+                    MUIPEditorHandler.DrawProperty(cameraSource, customSkin, "_Camera Source");
 
                     if (tooltipTarget.cameraSource == TooltipManager.CameraSource.Custom)
-                        MUIPEditorHandler.DrawProperty(targetCamera, customSkin, "Target Camera");
+                        MUIPEditorHandler.DrawProperty(targetCamera, customSkin, "Target _Camera");
 
                     MUIPEditorHandler.DrawHeader(customSkin, "UIM Header", 10);
 
@@ -113,7 +113,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

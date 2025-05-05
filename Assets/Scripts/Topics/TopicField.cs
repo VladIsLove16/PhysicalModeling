@@ -91,6 +91,7 @@ public enum ParamName
     range,
     averageSpeed,
     mass,
-    mass2
+    mass2,
+    velocity2
 }
 public enum FieldType { Float, Vector3, Int }
