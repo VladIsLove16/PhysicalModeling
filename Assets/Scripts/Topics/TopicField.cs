@@ -89,6 +89,8 @@ public enum ParamName
     flightTime,
     landingVelocity,
     range,
-    averageSpeed
+    averageSpeed,
+    mass,
+    mass2
 }
 public enum FieldType { Float, Vector3, Int }
