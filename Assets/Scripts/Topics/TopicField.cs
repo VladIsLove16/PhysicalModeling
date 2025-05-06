@@ -11,6 +11,7 @@ public class TopicField
     [SerializeField, NonSerialized] private bool isReadOnly;
     [SerializeField,ReadOnly] private string stringValue;
     private ReactiveProperty<object> property = new ReactiveProperty<object>();
+    public ViewType viewType = ViewType.inputField;//относится ко виду, а не модели и портит MVVM паттерн, но эту лучше, чем делать новый класс для создания соотвествия переменной и вида отображения(не требуется)
     public ParamName ParamName => label;
     public FieldType Type => type;
     public bool IsReadOnly => isReadOnly;
@@ -18,12 +19,13 @@ public class TopicField
     public TopicField() { }
 
 
-    public TopicField(ParamName label, FieldType type, bool isReadonly = false)
+    public TopicField(ParamName label, FieldType type, bool isReadonly = false, ViewType viewType = ViewType.inputField)
     {
         this.label = label;
         this.type = type;
         this.isReadOnly = isReadonly;
         property.Subscribe(_ => OnPropertyChanged());
+        this.viewType = viewType;
     }
 
     private void OnPropertyChanged()
@@ -37,9 +39,9 @@ public class TopicField
         return fieldType switch
         {
             FieldType.Float =>typeof( float),
-
             FieldType.Int => typeof(int),
             FieldType.Vector3 => typeof(Vector3),
+            FieldType.Bool => typeof(bool),
             _ => typeof(float)
         };
     }
@@ -54,6 +56,7 @@ public class TopicField
             int intValue => intValue.ToString(),
             Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.0000")}",
             string stringValue => stringValue,
+            bool boolValue => boolValue == true? "true" : "false",
             _ => obj.ToString()
         };
         return valueText;
@@ -74,8 +77,9 @@ public enum ParamName
     acceleration,
     jerk,
     angularVelocity,
-    angleRadTraveled,
+    angle,
     angleRad,
+    angleRadTraveled,
     period,
     radius,
     rotationFrequency,
@@ -91,6 +95,10 @@ public enum ParamName
     range,
     averageSpeed,
     mass,
-    mass2
+    mass2,
+    obstaclesMass,
+    velocity2,
+    pointAReached,
+    seed
 }
-public enum FieldType { Float, Vector3, Int }
+public enum FieldType { Float, Vector3, Int,Bool }

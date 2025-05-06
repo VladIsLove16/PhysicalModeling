@@ -22,7 +22,7 @@ namespace Michsky.MUIP
         protected override void Set(float input, bool sendCallback)
         {
             if (minSlider == null)
-                minSlider = transform.parent.Find("Min Slider").GetComponent<RangeMinSlider>();
+                minSlider = transform.parent.Find("Min SeedSlider").GetComponent<RangeMinSlider>();
 
             if (!assignedRealValue)
             {

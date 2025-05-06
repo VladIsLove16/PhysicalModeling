@@ -22,7 +22,7 @@ namespace Michsky.MUIP
             
             if (sliderManager == null) 
             { 
-                Debug.LogWarning("'Slider Manager' is missing!"); 
+                Debug.LogWarning("'SeedSlider Manager' is missing!"); 
                 return; 
             }
 

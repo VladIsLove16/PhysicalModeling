@@ -8,7 +8,7 @@ public class MotionViewModel
     private MotionModel CurrentModel;
     public Action CurrentModelChanged;
     private Dictionary<ParamName, ReactiveProperty<object>> properties { get; } = new();
-    public ReactiveProperty<SimulationState> simulationState = new ReactiveProperty<SimulationState>();
+    public ReactiveProperty<SimulationState> simulationStateChanged = new ReactiveProperty<SimulationState>();
     public enum SimulationState
     {
         paused,
@@ -28,8 +28,8 @@ public class MotionViewModel
 
         }
         else
-            Debug.Log("initing viewmodel with" + newModel.ToString());
-        simulationState.Value = SimulationState.stoped;
+            Debug.Log("Initing viewmodel with" + newModel.ToString());
+        simulationStateChanged.Value = SimulationState.stoped;
         InitProperies(newModel);
         CurrentModel = newModel;
         CurrentModelChanged?.Invoke();
@@ -67,17 +67,17 @@ public class MotionViewModel
 
     public void StartSimulation()
     {
-        simulationState.Value = SimulationState.running;
+        simulationStateChanged.Value = SimulationState.running;
     }
     public void StopSimulation()
     {
         CurrentModel.ResetParams();
-        simulationState.Value = SimulationState.stoped;
+        simulationStateChanged.Value = SimulationState.stoped;
     }
 
     public void PauseSimulation()
     {
-        simulationState.Value = SimulationState.paused;
+        simulationStateChanged.Value = SimulationState.paused;
     }
 
     public Vector3 Update(float deltaTime)
@@ -85,10 +85,11 @@ public class MotionViewModel
         return CurrentModel.UpdatePosition(deltaTime);
     }
 
-    internal bool SetParam(ParamName paramName, string obj)
+    internal bool SetParam(ParamName paramName, string value)
     {
-        Debug.Log("Setting Param" + paramName + " " + obj);
-        TryParse(paramName, obj, out bool result);
+        Debug.Log("Setting Param" + paramName + " " + value);
+        TryParse(paramName, value, out bool result);
+        Debug.LogAssertion("parse error" +  paramName + " " + value);
         return result;
     }
     private void TryParse(ParamName paramName, string obj, out bool result)
@@ -97,7 +98,6 @@ public class MotionViewModel
         if (result)
         {
             CommitChanges(paramName, newValue);
-
         }
         else
             Debug.Log("wrong");

@@ -25,7 +25,7 @@ namespace Michsky.MUIP
 
         public override void OnInspectorGUI()
         {
-            MUIPEditorHandler.DrawComponentHeader(customSkin, "Slider Top Header");
+            MUIPEditorHandler.DrawComponentHeader(customSkin, "SeedSlider Top Header");
 
             GUIContent[] toolbarTabs = new GUIContent[3];
             toolbarTabs[0] = new GUIContent("Content");
@@ -78,7 +78,7 @@ namespace Michsky.MUIP
 
                 case 1:
                     MUIPEditorHandler.DrawHeader(customSkin, "Core Header", 6);
-                    MUIPEditorHandler.DrawProperty(sliderImage, customSkin, "Slider Image");
+                    MUIPEditorHandler.DrawProperty(sliderImage, customSkin, "SeedSlider Image");
                     MUIPEditorHandler.DrawProperty(indicatorPivot, customSkin, "Indicator Pivot");
                     MUIPEditorHandler.DrawProperty(valueText, customSkin, "Indicator Text");
                     break;
@@ -109,7 +109,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

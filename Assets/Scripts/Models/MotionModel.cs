@@ -59,12 +59,11 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     public abstract Vector3 CalculatePosition(float Time);
     public abstract List<TopicField> GetRequiredParams();
 
-    public void ResetParams()
+    public virtual void ResetParams()
     {
         foreach (var pair in topicFields)
         {
             ResetParam(pair.Key);
-
         }
     }
     public FieldType GetFieldType(ParamName value)
@@ -72,7 +71,6 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         return topicFields[value].Type;
     }
 
-    
     public object GetDefaultValue(FieldType fieldType)
     {
         return DefaultValues[fieldType];
@@ -89,7 +87,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     {
         return topicFields[paramName].Value;
     }
-    public void SetParam(ParamName paramName, object value)
+    public virtual void SetParam(ParamName paramName, object value)
     {
         if(!Params.TryGetValue(paramName, out ReactiveProperty<object> property))
         {

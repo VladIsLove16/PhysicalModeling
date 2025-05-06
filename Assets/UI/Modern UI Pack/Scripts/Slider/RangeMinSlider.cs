@@ -14,7 +14,7 @@ namespace Michsky.MUIP
         protected override void Set(float input, bool sendCallback)
         {
             if (maxSlider == null)
-                maxSlider = transform.parent.Find("Max Slider").GetComponent<RangeMaxSlider>();
+                maxSlider = transform.parent.Find("Max SeedSlider").GetComponent<RangeMaxSlider>();
 
             float newValue = input;
             

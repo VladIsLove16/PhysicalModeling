@@ -73,7 +73,7 @@ namespace Michsky.MUIP
         public Color scrollbarColor = new Color(255, 255, 255, 255);
         public Color scrollbarBackgroundColor = new Color(255, 255, 255, 255);
 
-        // Slider
+        // SeedSlider
         public TMP_FontAsset sliderLabelFont;
         public SliderThemeType sliderThemeType;
         public Color sliderColor = new Color(255, 255, 255, 255);

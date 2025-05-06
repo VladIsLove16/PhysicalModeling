@@ -120,7 +120,7 @@ namespace Michsky.MUIP
                         GUILayout.BeginVertical(EditorStyles.helpBox);
                         GUILayout.Space(-3);
 
-                        enableIcon.boolValue = MUIPEditorHandler.DrawTogglePlain(enableIcon.boolValue, customSkin, "Enable Icon");
+                        enableIcon.boolValue = MUIPEditorHandler.DrawTogglePlain(enableIcon.boolValue, customSkin, "OnEnabled Icon");
 
                         GUILayout.Space(4);
 
@@ -135,7 +135,7 @@ namespace Michsky.MUIP
                         GUILayout.BeginVertical(EditorStyles.helpBox);
                         GUILayout.Space(-3);
 
-                        enableText.boolValue = MUIPEditorHandler.DrawTogglePlain(enableText.boolValue, customSkin, "Enable Text");
+                        enableText.boolValue = MUIPEditorHandler.DrawTogglePlain(enableText.boolValue, customSkin, "OnEnabled Text");
 
                         GUILayout.Space(4);
 
@@ -270,7 +270,7 @@ namespace Michsky.MUIP
                     GUILayout.BeginVertical(EditorStyles.helpBox);
                     GUILayout.Space(-3);
 
-                    enableButtonSounds.boolValue = MUIPEditorHandler.DrawTogglePlain(enableButtonSounds.boolValue, customSkin, "Enable Button Sounds");
+                    enableButtonSounds.boolValue = MUIPEditorHandler.DrawTogglePlain(enableButtonSounds.boolValue, customSkin, "OnEnabled Button Sounds");
 
                     GUILayout.Space(4);
 
@@ -280,8 +280,8 @@ namespace Michsky.MUIP
                         if (useHoverSound.boolValue == true) { MUIPEditorHandler.DrawProperty(hoverSound, customSkin, "Hover Sound"); }
                         if (useClickSound.boolValue == true) { MUIPEditorHandler.DrawProperty(clickSound, customSkin, "Click Sound"); }
 
-                        useHoverSound.boolValue = MUIPEditorHandler.DrawToggle(useHoverSound.boolValue, customSkin, "Enable Hover Sound");
-                        useClickSound.boolValue = MUIPEditorHandler.DrawToggle(useClickSound.boolValue, customSkin, "Enable Click Sound");
+                        useHoverSound.boolValue = MUIPEditorHandler.DrawToggle(useHoverSound.boolValue, customSkin, "OnEnabled Hover Sound");
+                        useClickSound.boolValue = MUIPEditorHandler.DrawToggle(useClickSound.boolValue, customSkin, "OnEnabled Click Sound");
 
                         if (buttonTarget.soundSource == null) { EditorGUILayout.HelpBox("'Sound Source' is missing.", MessageType.Warning); }
                     }
@@ -320,7 +320,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

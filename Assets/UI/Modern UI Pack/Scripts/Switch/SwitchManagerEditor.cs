@@ -77,15 +77,15 @@ namespace Michsky.MUIP
 
                     GUILayout.BeginVertical(EditorStyles.helpBox);
                     GUILayout.Space(-3);
-                    enableSwitchSounds.boolValue = MUIPEditorHandler.DrawTogglePlain(enableSwitchSounds.boolValue, customSkin, "Enable Switch Sounds");
+                    enableSwitchSounds.boolValue = MUIPEditorHandler.DrawTogglePlain(enableSwitchSounds.boolValue, customSkin, "OnEnabled Switch Sounds");
                     GUILayout.Space(3);
 
                     if (enableSwitchSounds.boolValue == true)
                     {
                         MUIPEditorHandler.DrawProperty(soundSource, customSkin, "Sound Source");
 
-                        useHoverSound.boolValue = MUIPEditorHandler.DrawToggle(useHoverSound.boolValue, customSkin, "Enable Hover Sound");
-                        useClickSound.boolValue = MUIPEditorHandler.DrawToggle(useClickSound.boolValue, customSkin, "Enable Click Sound");
+                        useHoverSound.boolValue = MUIPEditorHandler.DrawToggle(useHoverSound.boolValue, customSkin, "OnEnabled Hover Sound");
+                        useClickSound.boolValue = MUIPEditorHandler.DrawToggle(useClickSound.boolValue, customSkin, "OnEnabled Click Sound");
 
                         if (useHoverSound.boolValue == true) { MUIPEditorHandler.DrawProperty(hoverSound, customSkin, "Hover Sound"); }
                         if (useClickSound.boolValue == true) { MUIPEditorHandler.DrawProperty(clickSound, customSkin, "Click Sound"); }
@@ -117,7 +117,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

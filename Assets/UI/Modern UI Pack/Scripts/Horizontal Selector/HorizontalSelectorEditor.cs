@@ -139,24 +139,24 @@ namespace Michsky.MUIP
                     MUIPEditorHandler.DrawHeader(customSkin, "Customization Header", 6);
                     GUILayout.BeginVertical(EditorStyles.helpBox);
                     GUILayout.Space(-3);       
-                    enableIcon.boolValue = MUIPEditorHandler.DrawTogglePlain(enableIcon.boolValue, customSkin, "Enable Icon");            
+                    enableIcon.boolValue = MUIPEditorHandler.DrawTogglePlain(enableIcon.boolValue, customSkin, "OnEnabled Icon");            
                     GUILayout.Space(3);
 
-                    if (enableIcon.boolValue == true && hsTarget.labelIcon == null) { EditorGUILayout.HelpBox("'Enable Icon' is enabled but 'Label Icon' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error); }
+                    if (enableIcon.boolValue == true && hsTarget.labelIcon == null) { EditorGUILayout.HelpBox("'OnEnabled Icon' is enabled but 'Label Icon' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error); }
                     else if (enableIcon.boolValue == true && hsTarget.labelIcon != null) { hsTarget.labelIcon.gameObject.SetActive(true); }
                     else if (enableIcon.boolValue == false && hsTarget.labelIcon != null) { hsTarget.labelIcon.gameObject.SetActive(false); }
 
                     GUILayout.EndVertical();
                     GUILayout.BeginVertical(EditorStyles.helpBox);
                     GUILayout.Space(-3);
-                    enableIndicators.boolValue = MUIPEditorHandler.DrawTogglePlain(enableIndicators.boolValue, customSkin, "Enable Indicators");
+                    enableIndicators.boolValue = MUIPEditorHandler.DrawTogglePlain(enableIndicators.boolValue, customSkin, "OnEnabled Indicators");
                     GUILayout.Space(3);
                     GUILayout.BeginHorizontal();
 
                     if (enableIndicators.boolValue == true)
                     {
-                        if (hsTarget.indicatorObject == null) { EditorGUILayout.HelpBox("'Enable Indicators' is enabled but 'Indicator Object' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error); }
-                        if (hsTarget.indicatorParent == null) { EditorGUILayout.HelpBox("'Enable Indicators' is enabled but 'Indicator Parent' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error); }
+                        if (hsTarget.indicatorObject == null) { EditorGUILayout.HelpBox("'OnEnabled Indicators' is enabled but 'Indicator Object' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error); }
+                        if (hsTarget.indicatorParent == null) { EditorGUILayout.HelpBox("'OnEnabled Indicators' is enabled but 'Indicator Parent' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error); }
                         else { hsTarget.indicatorParent.gameObject.SetActive(true); }
                     }
                     else if (enableIndicators.boolValue == false && hsTarget.indicatorParent != null) { hsTarget.indicatorParent.gameObject.SetActive(false); }
@@ -194,7 +194,7 @@ namespace Michsky.MUIP
                         tempUIM.overrideFonts = MUIPEditorHandler.DrawToggle(tempUIM.overrideFonts, customSkin, "Override Fonts");
 
                         if (GUILayout.Button("Open UI Manager", customSkin.button)) { EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager"); }
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

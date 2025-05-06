@@ -100,8 +100,8 @@ namespace Michsky.MUIP
 
                 case 2:
                     MUIPEditorHandler.DrawHeader(customSkin, "Customization Header", 6);
-                    enableIcon.boolValue = MUIPEditorHandler.DrawToggle(enableIcon.boolValue, customSkin, "Enable Header Icon");
-                    enableScrollbar.boolValue = MUIPEditorHandler.DrawToggle(enableScrollbar.boolValue, customSkin, "Enable Scrollbar");
+                    enableIcon.boolValue = MUIPEditorHandler.DrawToggle(enableIcon.boolValue, customSkin, "OnEnabled Header Icon");
+                    enableScrollbar.boolValue = MUIPEditorHandler.DrawToggle(enableScrollbar.boolValue, customSkin, "OnEnabled Scrollbar");
                     MUIPEditorHandler.DrawPropertyCW(itemSpacing, customSkin, "Item Spacing", 90);
 
                     GUILayout.BeginVertical(EditorStyles.helpBox);
@@ -131,7 +131,7 @@ namespace Michsky.MUIP
                     MUIPEditorHandler.DrawHeader(customSkin, "Options Header", 10);
                     initAtStart.boolValue = MUIPEditorHandler.DrawToggle(initAtStart.boolValue, customSkin, "Initialize At Start");
                     invokeAtStart.boolValue = MUIPEditorHandler.DrawToggle(invokeAtStart.boolValue, customSkin, "Invoke At Start");
-                    enableTrigger.boolValue = MUIPEditorHandler.DrawToggle(enableTrigger.boolValue, customSkin, "Enable Trigger");
+                    enableTrigger.boolValue = MUIPEditorHandler.DrawToggle(enableTrigger.boolValue, customSkin, "OnEnabled Trigger");
 
                     if (enableTrigger.boolValue == true && dTarget.triggerObject == null)
                     {
@@ -175,7 +175,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

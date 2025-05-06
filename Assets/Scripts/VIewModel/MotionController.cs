@@ -10,7 +10,9 @@ public class MotionController : MonoBehaviour
 {
     [SerializeField] private List<MotionModel> MotionModels; // Список всех моделей
     [SerializeField] private TMP_Dropdown MotionModelsDropdown;
-    [SerializeField] private MotionView View;
+    [SerializeField] private RigidbodyView Viewrb;
+    [SerializeField] private TransformView Viewtr;
+    [SerializeField] private MotionView CurrentView;
     private MotionViewModel ViewModel;
     public MotionModel CurrentMotionModel { get; private set; }
 
@@ -22,13 +24,12 @@ public class MotionController : MonoBehaviour
         CurrentMotionModel = MotionModels[0];
         CurrentMotionModel.InitializeParameters();
 
-        ViewModel = new MotionViewModel(CurrentMotionModel);    
-
-        View.Init(ViewModel);
+        ViewModel = new MotionViewModel(CurrentMotionModel);
+        InitView();
 
         MotionModelsDropdown.onValueChanged.AddListener(OnMotionModelChanged);
     }
-
+    
     private void OnMotionModelChanged(int selectedIndex)
     {
         if (selectedIndex < 0 || selectedIndex >= MotionModels.Count)
@@ -38,5 +39,23 @@ public class MotionController : MonoBehaviour
         CurrentMotionModel.InitializeParameters();
 
         ViewModel.Init(CurrentMotionModel);
+        InitView();
+    }
+    private void InitView()
+    {
+        if (CurrentView != null)
+            CurrentView.OnDisabled();
+        if (CurrentMotionModel is HitMotionModel hitMotionModel)
+        {
+            CurrentView = Viewrb;
+            hitMotionModel.Init(Viewrb.MovingObjectrb, Viewrb.HittedObjectrb);
+        }
+        else
+        {
+            CurrentView = Viewtr;
+        }
+        Debug.Log("Current view setted to " + CurrentView.name);
+        CurrentView.OnEnabled();
+        CurrentView.Init(ViewModel);
     }
 }

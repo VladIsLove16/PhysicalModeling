@@ -82,7 +82,7 @@ namespace Michsky.MUIP
                         MUIPEditorHandler.DrawPropertyCW(valueSuffix, customSkin, "Value Suffix:", 75);
                     }
 
-                    enableBorderColor.boolValue = MUIPEditorHandler.DrawToggle(enableBorderColor.boolValue, customSkin, "Enable Border Color (Experimental)");
+                    enableBorderColor.boolValue = MUIPEditorHandler.DrawToggle(enableBorderColor.boolValue, customSkin, "OnEnabled Border Color (Experimental)");
 
                     if (enableBorderColor.boolValue == true)
                         MUIPEditorHandler.DrawProperty(borderColor, customSkin, "Border Color");
@@ -96,7 +96,7 @@ namespace Michsky.MUIP
                         if (GUILayout.Button("Open UI Manager", customSkin.button))
                             EditorApplication.ExecuteMenuItem("Tools/Modern UI Pack/Show UI Manager");
 
-                        if (GUILayout.Button("Disable UI Manager Connection", customSkin.button))
+                        if (GUILayout.Button("OnDisabled UI Manager Connection", customSkin.button))
                         {
                             if (EditorUtility.DisplayDialog("Modern UI Pack", "Are you sure you want to disable UI Manager connection with the object? " +
                                 "This operation cannot be undone.", "Yes", "Cancel"))

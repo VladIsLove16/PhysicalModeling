@@ -18,7 +18,7 @@ public class ProjectileMotionModel : MotionModel
             currentAcceleration = Vector3.zero;
 
 
-            SetParam(ParamName.time, currentTime + deltaTime);
+        SetParam(ParamName.time, currentTime + deltaTime);
 
         Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
         Vector3 position = (Vector3)GetParam(ParamName.position);
