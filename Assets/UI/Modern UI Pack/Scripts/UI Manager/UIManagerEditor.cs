@@ -342,7 +342,7 @@ namespace Michsky.MUIP
 
             GUILayout.Space(foldoutTopSpace);
             GUILayout.BeginHorizontal();
-            showSlider = EditorGUILayout.Foldout(showSlider, "Slider", true, foldoutStyle);
+            showSlider = EditorGUILayout.Foldout(showSlider, "SeedSlider", true, foldoutStyle);
             showSlider = GUILayout.Toggle(showSlider, new GUIContent(""), customSkin.FindStyle("Toggle Helper"));
             GUILayout.EndHorizontal();
             GUILayout.Space(foldoutBottomSpace);

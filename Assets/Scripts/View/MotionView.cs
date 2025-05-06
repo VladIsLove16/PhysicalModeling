@@ -15,6 +15,8 @@ public abstract class MotionView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI toggleSimulationButtonText;
     [SerializeField] private Transform inputFieldsContainer;
     [SerializeField] private InputFieldController inputPrefab;
+    [SerializeField] private Slider sliderPrefab;
+    [SerializeField] private Toggle toggleprefab;
     [SerializeField] protected Camera _Camera;
     [SerializeField] protected Vector3 CameraNewPosition;
     [SerializeField] protected Vector3 CameraRotation;
@@ -98,25 +100,34 @@ public abstract class MotionView : MonoBehaviour
         return valueText;
     }
     
-    private void RebuildUI()
+    protected virtual void RebuildUI()
     {
         ClearUI();
+        CreateInputFields();
+    }
 
+    private void CreateInputFields()
+    {
         foreach (var pair in viewModel.GetProperties())
         {
-            var paramName = pair.Key;
-            var fieldType = viewModel.GetFieldType(paramName);
-            var property = pair.Value;
-
-            Debug.Log("Instantiate");
-            var inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
-            inputFieldController.Setup(paramName, fieldType, viewModel.IsReadonly(paramName)); 
-            var subscription = property.Subscribe(value => ViewModel_OnPropertyChanged(inputFieldController, value));
-            uiDisposables.Add(subscription);
-            inputFields[paramName] = inputFieldController;
-            inputFieldController.OnInputFieldTextChanged += value => InputFieldController_OnInputFieldTextChanged(inputFieldController, value);
-            inputFieldController.OnInputFieldEndEdited += value => InputFieldController_OnInputFieldEndEdited(inputFieldController, value);
+             CreateInputField(pair);
         }
+    }
+
+    private void  CreateInputField(KeyValuePair<ParamName, ReactiveProperty<object>> pair)
+    {
+        var paramName = pair.Key;
+        var fieldType = viewModel.GetFieldType(paramName);
+        var property = pair.Value;
+
+        Debug.Log("Instantiate");
+        var inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
+        inputFieldController.Setup(paramName, fieldType, viewModel.IsReadonly(paramName));
+        var subscription = property.Subscribe(value => ViewModel_OnPropertyChanged(inputFieldController, value));
+        uiDisposables.Add(subscription);
+        inputFields[paramName] = inputFieldController;
+        inputFieldController.OnInputFieldTextChanged += value => InputFieldController_OnInputFieldTextChanged(inputFieldController, value);
+        inputFieldController.OnInputFieldEndEdited += value => InputFieldController_OnInputFieldEndEdited(inputFieldController, value);
     }
 
     protected virtual void ViewModel_OnPropertyChanged(InputFieldController inputFieldController, object newValue)

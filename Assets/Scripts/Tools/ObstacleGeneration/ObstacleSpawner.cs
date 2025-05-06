@@ -35,8 +35,8 @@ public class ObstacleSpawner : MonoBehaviour
         seed = new System.Random(seed).Next();
     }
 
-    [ContextMenu("GenerateObstacles")]
-    private void GenerateObstacles()
+    [ContextMenu("SpawnObstacles")]
+    public void SpawnObstacles()
     {
         ObstacleGenerator.GenerationParams generationParams = new ObstacleGenerator.GenerationParams()
         {
@@ -51,7 +51,7 @@ public class ObstacleSpawner : MonoBehaviour
         InstantiateObstacles(generated);
     }
     [ContextMenu("ClearObstacles")]
-    private void ClearObstacles()
+    public void ClearObstacles()
     {
         for (int i = transform.childCount - 1; i >= 0; i--)
         {

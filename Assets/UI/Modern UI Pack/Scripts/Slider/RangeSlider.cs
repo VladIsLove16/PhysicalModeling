@@ -12,11 +12,11 @@ namespace Michsky.MUIP
         public bool showLabels = true;
         public bool useWholeNumbers = true;
 
-        [Header("Min Slider")]
+        [Header("Min SeedSlider")]
         public RangeMinSlider minSlider;
         public TextMeshProUGUI minSliderLabel;
 
-        [Header("Max Slider")]
+        [Header("Max SeedSlider")]
         public RangeMaxSlider maxSlider;
         public TextMeshProUGUI maxSliderLabel;
 

@@ -25,7 +25,7 @@ namespace Michsky.MUIP
 
         public override void OnInspectorGUI()
         {
-            MUIPEditorHandler.DrawComponentHeader(customSkin, "Slider Top Header");
+            MUIPEditorHandler.DrawComponentHeader(customSkin, "SeedSlider Top Header");
 
             GUIContent[] toolbarTabs = new GUIContent[3];
             toolbarTabs[0] = new GUIContent("Content");
@@ -99,7 +99,7 @@ namespace Michsky.MUIP
                     }
 
                     else
-                        EditorGUILayout.HelpBox("'Main Slider' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error);
+                        EditorGUILayout.HelpBox("'Main SeedSlider' is not assigned. Go to Resources tab and assign the correct variable.", MessageType.Error);
 
                     MUIPEditorHandler.DrawHeader(customSkin, "Events Header", 10);
                     EditorGUILayout.PropertyField(sliderEvent, new GUIContent("On Value Changed"), true);
@@ -107,7 +107,7 @@ namespace Michsky.MUIP
 
                 case 1:
                     MUIPEditorHandler.DrawHeader(customSkin, "Core Header", 6);
-                    MUIPEditorHandler.DrawProperty(sliderObject, customSkin, "Slider Source");
+                    MUIPEditorHandler.DrawProperty(sliderObject, customSkin, "SeedSlider Source");
                     if (showValue.boolValue == true) { MUIPEditorHandler.DrawProperty(valueText, customSkin, "Label Text"); }
                     if (showPopupValue.boolValue == true) { MUIPEditorHandler.DrawProperty(popupValueText, customSkin, "Popup Label Text"); }
                     GUILayout.Space(4);

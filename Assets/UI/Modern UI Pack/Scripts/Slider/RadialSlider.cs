@@ -52,7 +52,7 @@ namespace Michsky.MUIP
             set { currentAngle = Mathf.Clamp(value, 0.0f, 360.0f); }
         }
 
-        // Slider value with applied display precision, i.e. the number of decimals to show.
+        // SeedSlider value with applied display precision, i.e. the number of decimals to show.
         public float SliderValue
         {
             get { return (long)(SliderValueRaw * valueDisplayPrecision) / valueDisplayPrecision; }
@@ -71,7 +71,7 @@ namespace Michsky.MUIP
             graphicRaycaster = GetComponentInParent<GraphicRaycaster>();
 
             if (graphicRaycaster == null)
-                Debug.LogWarning("<b>[Radial Slider]</b> Could not find GraphicRaycaster component in parent.", this);
+                Debug.LogWarning("<b>[Radial SeedSlider]</b> Could not find GraphicRaycaster component in parent.", this);
         }
 
         private void Start()

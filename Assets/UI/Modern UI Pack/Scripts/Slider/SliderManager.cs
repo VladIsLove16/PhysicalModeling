@@ -17,7 +17,7 @@ namespace Michsky.MUIP
         // Saving
         public bool enableSaving = false;
         public bool invokeOnAwake = true;
-        public string sliderTag = "My Slider";
+        public string sliderTag = "My SeedSlider";
 
         // Settings
         public bool usePercent = false;
