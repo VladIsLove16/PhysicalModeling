@@ -43,16 +43,16 @@ public class HelicalMotionModel : MotionModel
         float helicalDeltaPath, helicalPath;
         CalculateDeltaPath(out helicalDeltaPath, out helicalPath);
 
-        SetParam(ParamName.time, time);
-        SetParam(ParamName.position, helicalPosition);
-        SetParam(ParamName.pathTraveled, helicalPath);
-        SetParam(ParamName.angularVelocity, RotationalMotionModel.GetParam(ParamName.angularVelocity));
-        SetParam(ParamName.period, RotationalMotionModel.GetParam(ParamName.period));
-        SetParam(ParamName.velocity, velocity);
-        SetParam(ParamName.angleRadTraveled, RotationalMotionModel.GetParam(ParamName.angleRadTraveled));
-        SetParam(ParamName.angleRad, RotationalMotionModel.GetParam(ParamName.angleRad));
-        SetParam(ParamName.numberOfRevolutions, RotationalMotionModel.GetParam(ParamName.numberOfRevolutions));
-        SetParam(ParamName.rotationFrequency, rotationFrequency);
+        TrySetParam(ParamName.time, time);
+        TrySetParam(ParamName.position, helicalPosition);
+        TrySetParam(ParamName.pathTraveled, helicalPath);
+        TrySetParam(ParamName.angularVelocity, RotationalMotionModel.GetParam(ParamName.angularVelocity));
+        TrySetParam(ParamName.period, RotationalMotionModel.GetParam(ParamName.period));
+        TrySetParam(ParamName.velocity, velocity);
+        TrySetParam(ParamName.angleRadTraveled, RotationalMotionModel.GetParam(ParamName.angleRadTraveled));
+        TrySetParam(ParamName.angleRad, RotationalMotionModel.GetParam(ParamName.angleRad));
+        TrySetParam(ParamName.numberOfRevolutions, RotationalMotionModel.GetParam(ParamName.numberOfRevolutions));
+        TrySetParam(ParamName.rotationFrequency, rotationFrequency);
         return helicalPosition;
     }
 
@@ -94,15 +94,15 @@ public class HelicalMotionModel : MotionModel
     }
     protected virtual void InitLinearMotionModelParams()
     {
-        LinearMotionModel.SetParam(ParamName.velocity, GetParam(ParamName.velocity));
+        LinearMotionModel.TrySetParam(ParamName.velocity, GetParam(ParamName.velocity));
     }
 
 
     protected virtual void InitRotationalMotionModelParams()
     {
-        RotationalMotionModel.SetParam(ParamName.radius, GetParam(ParamName.radius));
-        RotationalMotionModel.SetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
-        RotationalMotionModel.SetParam(ParamName.velocity,GetParam(ParamName.velocity));
+        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
+        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
+        RotationalMotionModel.TrySetParam(ParamName.velocity,GetParam(ParamName.velocity));
     }
 
     public override List<TopicField> GetRequiredParams()

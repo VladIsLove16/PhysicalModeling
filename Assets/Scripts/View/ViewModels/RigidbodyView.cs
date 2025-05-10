@@ -13,6 +13,7 @@ public class RigidbodyView : MotionView
             if (_movingObjectrb == null)
             {
                 _movingObjectrb = MovingObject.AddComponent<Rigidbody>();
+                _movingObjectrb.collisionDetectionMode = CollisionDetectionMode.Continuous;
             }
             return _movingObjectrb;
         }
@@ -44,7 +45,7 @@ public class RigidbodyView : MotionView
         MovingObjectStartedPosition = MovingObject.transform.position;
         HittedObjectStartedPosition = HittedObject.transform.position;
     }
-    protected override void ViewModel_OnPropertyChanged(InputFieldController inputFieldController, object newValue)
+    protected override void ViewModel_OnPropertyChanged(TopicFieldController inputFieldController, object newValue)
     {
         base.ViewModel_OnPropertyChanged(inputFieldController, newValue);
         if (inputFieldController.ParamName == ParamName.mass)
@@ -114,18 +115,17 @@ public class RigidbodyView : MotionView
     public override void OnDisabled()
     {
         base.OnDisabled();
-        Floor.gameObject.SetActive(false);
-        HittedObject.gameObject.SetActive(false);
         Destroy(MovingObjectrb);
         Destroy(HittedObjectrb);
     }
+
+
     public override void OnEnabled()
     {
         base.OnEnabled();
-        Floor.gameObject.SetActive(true);
-        HittedObject.gameObject.SetActive(true);
         ResetPositions();
-        Debug.Log("MovingObject.GetOrAddComponent<Rigidbody>();");
         Debug.Log(MovingObjectrb.name);
     }
+
+    
 }

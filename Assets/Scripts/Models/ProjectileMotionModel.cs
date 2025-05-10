@@ -18,7 +18,7 @@ public class ProjectileMotionModel : MotionModel
             currentAcceleration = Vector3.zero;
 
 
-        SetParam(ParamName.time, currentTime + deltaTime);
+        TrySetParam(ParamName.time, currentTime + deltaTime);
 
         Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
         Vector3 position = (Vector3)GetParam(ParamName.position);
@@ -30,12 +30,12 @@ public class ProjectileMotionModel : MotionModel
 
         float pathTraveled = (float)GetParam(ParamName.pathTraveled) + deltaPosition.magnitude;
 
-        SetParam(ParamName.velocity, newVelocity);
-        SetParam(ParamName.position, newPosition);
-        SetParam(ParamName.deltaPosition, deltaPosition);
-        SetParam(ParamName.velocityMagnitude, newVelocity.magnitude);
-        SetParam(ParamName.pathTraveled, pathTraveled);
-        SetParam(ParamName.distance, newPosition.magnitude);
+        TrySetParam(ParamName.velocity, newVelocity);
+        TrySetParam(ParamName.position, newPosition);
+        TrySetParam(ParamName.deltaPosition, deltaPosition);
+        TrySetParam(ParamName.velocityMagnitude, newVelocity.magnitude);
+        TrySetParam(ParamName.pathTraveled, pathTraveled);
+        TrySetParam(ParamName.distance, newPosition.magnitude);
 
         return newPosition;
     }
@@ -55,13 +55,13 @@ public class ProjectileMotionModel : MotionModel
 
         float path = deltaPosition.magnitude;
 
-        SetParam(ParamName.time, time);
-        SetParam(ParamName.position, newPosition);
-        SetParam(ParamName.velocity, finalVelocity);
-        SetParam(ParamName.velocityMagnitude, finalVelocity.magnitude);
-        SetParam(ParamName.deltaPosition, deltaPosition);
-        SetParam(ParamName.pathTraveled, path);
-        SetParam(ParamName.distance, newPosition.magnitude);
+        TrySetParam(ParamName.time, time);
+        TrySetParam(ParamName.position, newPosition);
+        TrySetParam(ParamName.velocity, finalVelocity);
+        TrySetParam(ParamName.velocityMagnitude, finalVelocity.magnitude);
+        TrySetParam(ParamName.deltaPosition, deltaPosition);
+        TrySetParam(ParamName.pathTraveled, path);
+        TrySetParam(ParamName.distance, newPosition.magnitude);
 
         // Расчеты через вспомогательный класс:
         float flightTime = ProjectilePhysics.CalculateFlightTime(initialPosition, initialVelocity, acceleration);
@@ -69,10 +69,10 @@ public class ProjectileMotionModel : MotionModel
         Vector3 landingVelocity = ProjectilePhysics.CalculateFinalVelocity(initialVelocity, acceleration, flightTime);
         float averageSpeed = ProjectilePhysics.CalculateAverageSpeed(path, flightTime);
 
-        SetParam(ParamName.flightTime, flightTime);
-        SetParam(ParamName.range, range);
-        SetParam(ParamName.landingVelocity, landingVelocity);
-        SetParam(ParamName.averageSpeed, averageSpeed);
+        TrySetParam(ParamName.flightTime, flightTime);
+        TrySetParam(ParamName.range, range);
+        TrySetParam(ParamName.landingVelocity, landingVelocity);
+        TrySetParam(ParamName.averageSpeed, averageSpeed);
 
         return newPosition;
     }

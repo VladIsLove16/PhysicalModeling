@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class Accelerator : MonoBehaviour
+public class Bouncer : MonoBehaviour
 {
-    [SerializeField] float acceleration = 1.1f;
+    [SerializeField] float bounceAcceleration = 1.1f;
     
    public void OnCollisionEnter(Collision collision)
     {
@@ -11,7 +11,7 @@ public class Accelerator : MonoBehaviour
         {
             Vector3 normal = collision.contacts[0].normal;
             Vector3 reflectDir = Vector3.Reflect(rb.linearVelocity, normal);
-            rb.linearVelocity = reflectDir * acceleration; // Ускорение (на 20%)
+            rb.linearVelocity = -reflectDir * (1 + bounceAcceleration); // Ускорение (на 20%)
         }
     }
 }

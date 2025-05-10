@@ -14,14 +14,15 @@ public abstract class MotionView : MonoBehaviour
     [SerializeField] private Button stopSimulationButton;
     [SerializeField] private TextMeshProUGUI toggleSimulationButtonText;
     [SerializeField] private Transform inputFieldsContainer;
-    [SerializeField] private InputFieldController inputPrefab;
-    [SerializeField] private Slider sliderPrefab;
-    [SerializeField] private Toggle toggleprefab;
+    [SerializeField] private InputFieldTopicFieldController inputFieldPrefab;
+    [SerializeField] private SliderTopicFieldController sliderPrefab;
+    [SerializeField] private ToggleTopicFieldController toggleprefab;
     [SerializeField] protected Camera _Camera;
     [SerializeField] protected Vector3 CameraNewPosition;
     [SerializeField] protected Vector3 CameraRotation;
+    [SerializeField] private GameObject[] actionObjects;
     protected MotionViewModel viewModel;
-    private Dictionary<ParamName, InputFieldController> inputFields = new();
+    private Dictionary<ParamName, TopicFieldController> inputFields = new();
 
     private CompositeDisposable disposables = new();
     private List<IDisposable> uiDisposables = new();
@@ -32,6 +33,14 @@ public abstract class MotionView : MonoBehaviour
         { MotionViewModel.SimulationState.paused, "Продолжить" },
         { MotionViewModel.SimulationState.stoped, "Старт" },
     };
+    private readonly Dictionary<ParamName, ViewType> topicFieldsViewTypes = new()
+    {
+        { ParamName.seed, ViewType.Slider },
+        { ParamName.pointAReached, ViewType.Toggle },
+        { ParamName.angle, ViewType.Slider },
+        { ParamName.respawnObstacles, ViewType.Toggle },
+    };
+
     protected virtual void Start()
     {
 
@@ -86,69 +95,59 @@ public abstract class MotionView : MonoBehaviour
         toggleSimulationButtonText.text = simulationButtonTexts[state];
         Debug.Log("MotionView +  Simulation state Setted " + state);
     }
-    private string GetStringValue(ParamName paramName)
-    {
-        var obj = viewModel.GetParam(paramName);
-        string valueText = obj switch
-        {
-            float floatValue => floatValue.ToString("0.00"),
-            int intValue => intValue.ToString(),
-            Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.000")}",
-            string stringValue => stringValue,
-            _ => "not avaialable type"
-        };
-        return valueText;
-    }
     
     protected virtual void RebuildUI()
     {
         ClearUI();
-        CreateInputFields();
+        CreateTopicFields();
     }
 
-    private void CreateInputFields()
+    private void CreateTopicFields()
     {
         foreach (var pair in viewModel.GetProperties())
         {
-             CreateInputField(pair);
+            CreateTopicField( pair.Value);
         }
     }
-
-    private void  CreateInputField(KeyValuePair<ParamName, ReactiveProperty<object>> pair)
+    private void CreateTopicField(TopicField topicField)
     {
-        var paramName = pair.Key;
+        var paramName = topicField.ParamName;
         var fieldType = viewModel.GetFieldType(paramName);
-        var property = pair.Value;
-
+        var property = topicField.Property;
         Debug.Log("Instantiate");
-        var inputFieldController = Instantiate(inputPrefab, inputFieldsContainer);
-        inputFieldController.Setup(paramName, fieldType, viewModel.IsReadonly(paramName));
-        var subscription = property.Subscribe(value => ViewModel_OnPropertyChanged(inputFieldController, value));
+
+        TopicFieldController prefab;
+        if (topicFieldsViewTypes.TryGetValue(topicField.ParamName, out ViewType viewType))
+            switch (viewType)
+            {
+                case ViewType.inputField:
+                default:
+                    prefab = inputFieldPrefab;
+                    break;
+                case ViewType.Slider:
+                    prefab = sliderPrefab;
+                    break;
+                case ViewType.Toggle:
+                    prefab = toggleprefab;
+                    break;
+            }
+        else
+            prefab = inputFieldPrefab;
+
+        var instance = Instantiate(prefab, inputFieldsContainer);
+        instance.Setup(topicField);
+        var subscription = property.Subscribe(value => ViewModel_OnPropertyChanged(instance, value));
         uiDisposables.Add(subscription);
-        inputFields[paramName] = inputFieldController;
-        inputFieldController.OnInputFieldTextChanged += value => InputFieldController_OnInputFieldTextChanged(inputFieldController, value);
-        inputFieldController.OnInputFieldEndEdited += value => InputFieldController_OnInputFieldEndEdited(inputFieldController, value);
+        inputFields[paramName] = instance;
     }
 
-    protected virtual void ViewModel_OnPropertyChanged(InputFieldController inputFieldController, object newValue)
+    protected virtual void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)
     {
-        inputFieldController.SetText(GetStringValue(inputFieldController.ParamName));
-        
+        if (!topicFieldController.SetValue(newValue))
+            Debug.Log("ViewModel_OnPropertyChanged went wrong");
+        //(GetStringFromValue(topicFieldControllerPrefab.ParamName));
     }
 
-    private void InputFieldController_OnInputFieldTextChanged(InputFieldController controller, string obj)
-    {
-        bool res = viewModel.SetParam(controller.ParamName, obj);
-    }
-
-    private void InputFieldController_OnInputFieldEndEdited(InputFieldController controller, string obj)
-    {
-        bool res = viewModel.SetParam(controller.ParamName, obj);
-        if (!res)
-        {
-            controller.SetText(GetStringValue(controller.ParamName));
-        }
-    }
     private void ClearUI()
     {
         foreach (var d in uiDisposables)
@@ -163,14 +162,30 @@ public abstract class MotionView : MonoBehaviour
 
     public virtual void OnDisabled()
     {
-         disposables.Clear();
+        DisableActionObjects();
+        disposables.Clear();
     }
 
     public virtual void OnEnabled()
     {
+        ActivateActionObjects();
         MoveCamera(CameraNewPosition, CameraRotation);
     }
 
+    private void ActivateActionObjects()
+    {
+        foreach (GameObject obj in actionObjects)
+        {
+            obj.SetActive(true);
+        }
+    }
+    private void DisableActionObjects()
+    {
+        foreach (GameObject obj in actionObjects)
+        {
+            obj.SetActive(false);
+        }
+    }
     public void MoveCamera(Vector3 mewPos, Vector3 newRot)
     {
         StartCoroutine(MoveToPositionAndRotate(mewPos, newRot, 1f));
@@ -187,6 +202,10 @@ public abstract class MotionView : MonoBehaviour
             _Camera.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
             _Camera.transform.eulerAngles = Vector3.Lerp(startRot, targetRot, elapsed / duration);
             elapsed += Time.deltaTime;
+            if(Time.deltaTime == 0)
+            {
+                elapsed = duration;
+            }
             yield return null;
         }
 

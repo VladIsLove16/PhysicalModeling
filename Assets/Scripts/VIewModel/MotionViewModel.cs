@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using UniRx;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 public class MotionViewModel
 {
     private MotionModel CurrentModel;
     public Action CurrentModelChanged;
-    private Dictionary<ParamName, ReactiveProperty<object>> properties { get; } = new();
+    private Dictionary<ParamName,TopicField> properties = new();
     public ReactiveProperty<SimulationState> simulationStateChanged = new ReactiveProperty<SimulationState>();
     public enum SimulationState
     {
         paused,
+        stoped,
         running,
-        stoped
     }
     public MotionViewModel(MotionModel motionModel)
     {
@@ -33,22 +34,23 @@ public class MotionViewModel
         InitProperies(newModel);
         CurrentModel = newModel;
         CurrentModelChanged?.Invoke();
-        Debug.Log("newModel.Params " + newModel.Params.Count);
+        Debug.Log("newModel.Params " + newModel.TopicFields.Count);
         Debug.Log("MotionViewModel.Properties " + properties.Count);
     }
 
     private void InitProperies(MotionModel newModel)
     {
         properties.Clear();
-        foreach (var modelParam in newModel.Params)
-        {
-            ReactiveProperty<object> property = new ReactiveProperty<object>(modelParam.Value.Value);
-            if (!properties.ContainsKey(modelParam.Key))
-            {
-                properties[modelParam.Key] = property;
-                modelParam.Value.Subscribe(value => OnModelChanged(modelParam.Key, property, value));
-            }
-        }
+        properties = newModel.TopicFields;
+        //foreach (var modelParam in newModel.TopicFields)
+        //{
+        //    ReactiveProperty<object> property = new ReactiveProperty<object>(modelParam.Value.Value);
+        //    if (!properties.ContainsKey(modelParam.Key))
+        //    {
+        //        properties[modelParam.Key] = property;
+        //        modelParam.Value.Subscribe(value => OnModelChanged(modelParam.Key, property, value));
+        //    }
+        //}
     }
 
     private void OnModelChanged(ParamName paramName, ReactiveProperty<object> property, object value)
@@ -67,101 +69,58 @@ public class MotionViewModel
 
     public void StartSimulation()
     {
+        if(simulationStateChanged.Value == SimulationState.paused)
+        {
+            CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.continued);
+        }
+        else
+            CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.started);
         simulationStateChanged.Value = SimulationState.running;
     }
     public void StopSimulation()
     {
         CurrentModel.ResetParams();
         simulationStateChanged.Value = SimulationState.stoped;
+        CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.stoped);
     }
 
     public void PauseSimulation()
     {
         simulationStateChanged.Value = SimulationState.paused;
+        CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.paused);
     }
 
     public Vector3 Update(float deltaTime)
     {
         return CurrentModel.UpdatePosition(deltaTime);
     }
+    //private void CommitChanges(ParamName paramName, object newValue)
+    //{
+    //    Debug.Log("Success");
+    //    if (paramName == ParamName.time)
+    //    {
+    //        PauseSimulation();
+    //        CurrentModel.CalculatePosition((float)newValue);
+    //    }
+    //    CurrentModel.SetParam(paramName, newValue);
+    //}
 
-    internal bool SetParam(ParamName paramName, string value)
+    
+    public object TryGetParam(ParamName paramName, out bool result)
     {
-        Debug.Log("Setting Param" + paramName + " " + value);
-        TryParse(paramName, value, out bool result);
-        Debug.LogAssertion("parse error" +  paramName + " " + value);
-        return result;
-    }
-    private void TryParse(ParamName paramName, string obj, out bool result)
-    {
-        var newValue = GetValueFromString(paramName, obj, out result);
-        if (result)
+        result = GetProperties().TryGetValue(paramName, out TopicField topicField);
+        if(!result)
         {
-            CommitChanges(paramName, newValue);
+            Debug.LogAssertion("cant get param " + paramName + " from model");
         }
-        else
-            Debug.Log("wrong");
-    }
-
-    private void CommitChanges(ParamName paramName, object newValue)
-    {
-        Debug.Log("Success");
-        if (paramName == ParamName.time)
-        {
-            PauseSimulation();
-            CurrentModel.CalculatePosition((float)newValue);
-        }
-        CurrentModel.SetParam(paramName, newValue);
-    }
-
-    private object GetValueFromString(ParamName paramName, string value, out bool result)
-    {
-
-        FieldType fieldType = CurrentModel.GetFieldType(paramName); 
-        Debug.Log("param: " + paramName + " " + fieldType);
-        switch (fieldType)
-        {
-            case FieldType.Float:
-                result = float.TryParse(value, out float floatValue);
-                if (result)
-                    return floatValue;
-                break;
-            case FieldType.Int:
-                result = int.TryParse(value, out int intValue);
-                if (result)
-                    return intValue;
-                break;
-            case FieldType.Vector3:
-                string[] values = value.Split(';');
-               
-                if (values.Length == 3 &&
-                    float.TryParse(values[0], out float x) &&
-                    float.TryParse(values[1], out float y) &&
-                    float.TryParse(values[2], out float z))
-                {
-                    result = true;
-                    return new Vector3(x, y, z);
-                }
-                result = false;
-                if (result)
-                    return Vector3.zero;
-                break;
-            default:
-                result = false;
-                return null;
-        }
-        return false;
-    }
-    public object GetParam(ParamName paramName)
-    {
-        return GetProperties()[paramName].Value;
+        return topicField.Value;
     }
     public bool IsReadonly(ParamName paramName)
     {
         return CurrentModel.IsReadonly(paramName);
     }
 
-    internal Dictionary<ParamName,ReactiveProperty<object>> GetProperties()
+    internal Dictionary<ParamName,TopicField> GetProperties()
     {
         if (properties == null
                  || properties.Count == 0)

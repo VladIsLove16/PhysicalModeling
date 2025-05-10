@@ -39,18 +39,18 @@ public class RotationalMotionModel : MotionModel
 
         float velocityMagnitude = deltaMotion.Path / deltaTime;
 
-        SetParam(ParamName.position, newPosition);
-        SetParam(ParamName.deltaPosition, deltaPosition);
-        SetParam(ParamName.pathTraveled, pathTraveled);
-        SetParam(ParamName.deltaPathTraveled, deltaMotion.Path);
-        SetParam(ParamName.angularVelocity, deltaMotion.AngularVelocity);
-        SetParam(ParamName.rotationFrequency, deltaMotion.RotationFrequency);
-        SetParam(ParamName.rotationFrequencyAcceleration, deltaMotion.RotationFrequencyAcceleration);
-        SetParam(ParamName.velocityMagnitude, velocityMagnitude);
-        SetParam(ParamName.angleRadTraveled, angleRadTraveled);
-        SetParam(ParamName.angleRad, angleRadTraveled % (2 * Mathf.PI));
-        SetParam(ParamName.numberOfRevolutions, numberOfRevolutions);
-        SetParam(ParamName.time, time);
+        TrySetParam(ParamName.position, newPosition);
+        TrySetParam(ParamName.deltaPosition, deltaPosition);
+        TrySetParam(ParamName.pathTraveled, pathTraveled);
+        TrySetParam(ParamName.deltaPathTraveled, deltaMotion.Path);
+        TrySetParam(ParamName.angularVelocity, deltaMotion.AngularVelocity);
+        TrySetParam(ParamName.rotationFrequency, deltaMotion.RotationFrequency);
+        TrySetParam(ParamName.rotationFrequencyAcceleration, deltaMotion.RotationFrequencyAcceleration);
+        TrySetParam(ParamName.velocityMagnitude, velocityMagnitude);
+        TrySetParam(ParamName.angleRadTraveled, angleRadTraveled);
+        TrySetParam(ParamName.angleRad, angleRadTraveled % (2 * Mathf.PI));
+        TrySetParam(ParamName.numberOfRevolutions, numberOfRevolutions);
+        TrySetParam(ParamName.time, time);
 
         return newPosition;
     }

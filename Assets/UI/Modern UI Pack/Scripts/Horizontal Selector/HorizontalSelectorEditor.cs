@@ -47,7 +47,7 @@ namespace Michsky.MUIP
 
             var items = serializedObject.FindProperty("items");
             var onValueChanged = serializedObject.FindProperty("onValueChanged");
-            var label = serializedObject.FindProperty("label");
+            var label = serializedObject.FindProperty("paramName");
             var selectorAnimator = serializedObject.FindProperty("selectorAnimator");
             var labelHelper = serializedObject.FindProperty("labelHelper");
             var labelIcon = serializedObject.FindProperty("labelIcon");

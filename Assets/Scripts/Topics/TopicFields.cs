@@ -34,7 +34,7 @@ public class TopicFields
 
     public FieldType GetFieldType(ParamName paramName)
     {
-        return FieldLookup.TryGetValue(paramName, out var field) ? field.Type : FieldType.Float;
+        return FieldLookup.TryGetValue(paramName, out var field) ? field.FieldType : FieldType.Float;
     }
 
 

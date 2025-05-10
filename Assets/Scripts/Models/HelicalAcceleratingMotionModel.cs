@@ -30,15 +30,15 @@ public class HelicalAcceleratingMotionModel : HelicalMotionModel
     }
     protected override void InitLinearMotionModelParams()
     {
-        LinearMotionModel.SetParam(ParamName.velocity,GetParam(ParamName.velocity));
-        LinearMotionModel.SetParam(ParamName.acceleration,GetParam(ParamName.acceleration));
+        LinearMotionModel.TrySetParam(ParamName.velocity,GetParam(ParamName.velocity));
+        LinearMotionModel.TrySetParam(ParamName.acceleration,GetParam(ParamName.acceleration));
     }
     protected override void InitRotationalMotionModelParams()
     {
-        RotationalMotionModel.SetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
-        RotationalMotionModel.SetParam(ParamName.rotationFrequencyAcceleration, GetParam(ParamName.rotationFrequencyAcceleration));
-        RotationalMotionModel.SetParam(ParamName.radius, GetParam(ParamName.radius));
-        RotationalMotionModel.SetParam(ParamName.velocity, GetParam(ParamName.velocity));
+        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
+        RotationalMotionModel.TrySetParam(ParamName.rotationFrequencyAcceleration, GetParam(ParamName.rotationFrequencyAcceleration));
+        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
+        RotationalMotionModel.TrySetParam(ParamName.velocity, GetParam(ParamName.velocity));
     }
     public override List<TopicField> GetRequiredParams()
     {
@@ -52,8 +52,8 @@ public class HelicalAcceleratingMotionModel : HelicalMotionModel
     public override Vector3 UpdatePosition(float deltaTime)
     {
         Vector3 pos = base.UpdatePosition(deltaTime);
-        SetParam(ParamName.velocity,LinearMotionModel.GetParam(ParamName.velocity));
-        SetParam(ParamName.rotationFrequency,RotationalMotionModel.GetParam(ParamName.rotationFrequency));
+        TrySetParam(ParamName.velocity,LinearMotionModel.GetParam(ParamName.velocity));
+        TrySetParam(ParamName.rotationFrequency,RotationalMotionModel.GetParam(ParamName.rotationFrequency));
         return pos;
     }
 }

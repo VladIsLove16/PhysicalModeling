@@ -12,14 +12,14 @@ public class LinearAcceleratingMotionModel : MotionModel
         Vector3 newPosition = (Vector3)GetParam(ParamName.position) + deltaPos;
         Vector3 newVelocity = GetVelocity(deltaTime);
 
-        SetParam(ParamName.time,(float)GetParam(ParamName.time) + deltaTime);
-        SetParam(ParamName.position,newPosition);
-        SetParam(ParamName.pathTraveled,(float)GetParam(ParamName.pathTraveled) + deltaPos.magnitude);
-        SetParam(ParamName.distance,(newPosition.magnitude));
-        SetParam(ParamName.velocity, newVelocity);
-        SetParam(ParamName.velocityMagnitude, newVelocity.magnitude);
-        SetParam(ParamName.acceleration,acceleration);
-        SetParam(ParamName.deltaPosition, deltaPos);
+        TrySetParam(ParamName.time,(float)GetParam(ParamName.time) + deltaTime);
+        TrySetParam(ParamName.position,newPosition);
+        TrySetParam(ParamName.pathTraveled,(float)GetParam(ParamName.pathTraveled) + deltaPos.magnitude);
+        TrySetParam(ParamName.distance,(newPosition.magnitude));
+        TrySetParam(ParamName.velocity, newVelocity);
+        TrySetParam(ParamName.velocityMagnitude, newVelocity.magnitude);
+        TrySetParam(ParamName.acceleration,acceleration);
+        TrySetParam(ParamName.deltaPosition, deltaPos);
         return newPosition;
     }
 
@@ -31,13 +31,13 @@ public class LinearAcceleratingMotionModel : MotionModel
         Vector3 newPosition = deltaPos;
         Vector3 newVelocity = GetVelocity(time);
 
-        SetParam(ParamName.time, (float)GetParam(ParamName.time));
-        SetParam(ParamName.position, newPosition) ;
-        SetParam(ParamName.pathTraveled, (float)GetParam(ParamName.pathTraveled));
-        SetParam(ParamName.distance, (newPosition.magnitude));
-        SetParam(ParamName.velocity, newVelocity);
-        SetParam(ParamName.acceleration, acceleration);
-        SetParam(ParamName.deltaPosition, deltaPos);
+        TrySetParam(ParamName.time, (float)GetParam(ParamName.time));
+        TrySetParam(ParamName.position, newPosition) ;
+        TrySetParam(ParamName.pathTraveled, (float)GetParam(ParamName.pathTraveled));
+        TrySetParam(ParamName.distance, (newPosition.magnitude));
+        TrySetParam(ParamName.velocity, newVelocity);
+        TrySetParam(ParamName.acceleration, acceleration);
+        TrySetParam(ParamName.deltaPosition, deltaPos);
         return newPosition;
     }
 

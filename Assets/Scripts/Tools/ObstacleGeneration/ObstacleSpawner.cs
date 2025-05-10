@@ -18,6 +18,7 @@ public class ObstacleSpawner : MonoBehaviour
     public Vector3 areaMax = new Vector3(5f, 5f, 5f);
 
     public bool clearObstaclesOnGeneration = true;
+    private List<GameObject> generatedObstacles = new List<GameObject>();
 
     //[Header("Компоненты поведения")]
     //public PhysicsMaterial bouncyMaterial;
@@ -34,9 +35,20 @@ public class ObstacleSpawner : MonoBehaviour
     {
         seed = new System.Random(seed).Next();
     }
-
+    [ContextMenu("SpawnObstaclesWithNewSeed")]
+    public void SpawnObstaclesWithNewSeed()
+    {
+        GenerateSeed();
+        SpawnObstacles();
+    }
     [ContextMenu("SpawnObstacles")]
     public void SpawnObstacles()
+    {
+        List<ObstacleData> generated = GenerateObstaclesData();
+        InstantiateObstacles(generated);
+    }
+
+    private List<ObstacleData> GenerateObstaclesData()
     {
         ObstacleGenerator.GenerationParams generationParams = new ObstacleGenerator.GenerationParams()
         {
@@ -48,21 +60,22 @@ public class ObstacleSpawner : MonoBehaviour
             fullRandomGen = false,
         };
         List<ObstacleData> generated = ObstacleGenerator.GenerateObstacles(generationParams);
-        InstantiateObstacles(generated);
+        return generated;
     }
+
     [ContextMenu("ClearObstacles")]
     public void ClearObstacles()
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
+        foreach (GameObject obstacle in generatedObstacles)
         {
-            GameObject child = transform.GetChild(i).gameObject;
 #if UNITY_EDITOR
             if (!Application.isPlaying)
-                DestroyImmediate(child);
+                DestroyImmediate(obstacle);
             else
-                Destroy(child);
+                Destroy(obstacle);
 #endif
         }
+        generatedObstacles.Clear();
     }
 
     void InstantiateObstacles(List<ObstacleData> obstacleDataList)
@@ -81,6 +94,15 @@ public class ObstacleSpawner : MonoBehaviour
             else
                 prefab = KinemationObstacle;
             GameObject instance = Instantiate(prefab, data.position, Quaternion.identity, transform);
+            generatedObstacles.Add(instance);
+        }
+    }
+
+    public void SetObstaclesMass(float value)
+    {
+        foreach(GameObject obstacle in generatedObstacles)
+        {
+            obstacle.GetComponent<Rigidbody>().mass = value;
         }
     }
     //legacy
@@ -106,7 +128,7 @@ public class ObstacleSpawner : MonoBehaviour
 
     //            if (data.isAccelerator)
     //            {
-    //                instance.tag = "Accelerator"; // Для логики столкновений
+    //                instance.tag = "Bouncer"; // Для логики столкновений
     //            }
     //        }
     //    }

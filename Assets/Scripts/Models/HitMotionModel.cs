@@ -13,9 +13,9 @@ public class HitMotionModel : MotionModel
     }
     public override Vector3 UpdatePosition(float deltaTime)
     {
-        SetParam(ParamName.velocity, movingObject.linearVelocity);
-        SetParam(ParamName.velocity2, hittedObject.linearVelocity);
-        SetParam(ParamName.position, movingObject.position);
+        TrySetParam(ParamName.velocity, movingObject.linearVelocity);
+        TrySetParam(ParamName.velocity2, hittedObject.linearVelocity);
+        TrySetParam(ParamName.position, movingObject.position);
         return Vector3.zero;
     }
 

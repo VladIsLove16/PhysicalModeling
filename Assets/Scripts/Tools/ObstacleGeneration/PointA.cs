@@ -5,10 +5,11 @@ using static UnityEditor.Experimental.GraphView.GraphView;
 public class PointA : MonoBehaviour
 {
     public Action pointReached;
-    public void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-        Rigidbody rb = collision.gameObject.GetComponent<Rigidbody>();
+        Rigidbody rb = other.gameObject.GetComponent<Rigidbody>();
         pointReached?.Invoke();
+        Debug.Log("point a reached");
     }
 }
 

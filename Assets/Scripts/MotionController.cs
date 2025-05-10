@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using static UnityEditor.Profiling.HierarchyFrameDataView;
+using Unity.VisualScripting;
 
 public class MotionController : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class MotionController : MonoBehaviour
     [SerializeField] private TMP_Dropdown MotionModelsDropdown;
     [SerializeField] private RigidbodyView Viewrb;
     [SerializeField] private TransformView Viewtr;
+    [SerializeField] private ObstaclesView Viewobs;
+    [SerializeField] private PointA pointA;
     [SerializeField] private MotionView CurrentView;
     private MotionViewModel ViewModel;
     public MotionModel CurrentMotionModel { get; private set; }
@@ -35,9 +38,13 @@ public class MotionController : MonoBehaviour
         if (selectedIndex < 0 || selectedIndex >= MotionModels.Count)
             return;
 
+        CurrentMotionModel.OnDisabled();
         CurrentMotionModel = MotionModels[selectedIndex];
         CurrentMotionModel.InitializeParameters();
-
+        if (CurrentMotionModel is HitMotionModel hitMotionModel)
+            hitMotionModel.Init(Viewrb.MovingObjectrb, Viewrb.HittedObjectrb);
+        else if (CurrentMotionModel is ObstaclesMotionModel obstaclesMotionModel)
+            obstaclesMotionModel.Init(Viewobs.MovingObject, pointA);
         ViewModel.Init(CurrentMotionModel);
         InitView();
     }
@@ -46,14 +53,11 @@ public class MotionController : MonoBehaviour
         if (CurrentView != null)
             CurrentView.OnDisabled();
         if (CurrentMotionModel is HitMotionModel hitMotionModel)
-        {
             CurrentView = Viewrb;
-            hitMotionModel.Init(Viewrb.MovingObjectrb, Viewrb.HittedObjectrb);
-        }
-        else
-        {
-            CurrentView = Viewtr;
-        }
+        else if (CurrentMotionModel is ObstaclesMotionModel obstaclesMotionModel)
+            CurrentView = Viewobs;
+        else 
+            CurrentView  = Viewtr;
         Debug.Log("Current view setted to " + CurrentView.name);
         CurrentView.OnEnabled();
         CurrentView.Init(ViewModel);
