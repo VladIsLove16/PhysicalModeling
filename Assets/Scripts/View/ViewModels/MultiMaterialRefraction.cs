@@ -6,7 +6,6 @@ using NUnit.Framework.Internal;
 using static Michsky.MUIP.RadialSlider;
 using System.Net;
 using System.Linq;
-using System.Drawing;
 
 [ExecuteAlways]
 [RequireComponent(typeof(LineRenderer))]
@@ -24,11 +23,23 @@ public class MultiMaterialRefraction : MonoBehaviour
         public bool generate = false;
 
         public GameObject generatedObject = null;
-        [HideInInspector] public BoxCollider collider;
+        [HideInInspector] public MeshCollider collider;
         [HideInInspector] public MeshRenderer meshRenderer;
         [HideInInspector] public MeshFilter meshFilter;
     }
-    [SerializeField] private bool clearDebug = false;
+    private struct DebugPoint
+    {
+        public DebugPoint(Vector3 pos, Color color, float radius)
+        {
+            this.pos = pos;
+            this.color = color;
+            this.radius = radius;
+        }
+        public Vector3 pos;
+        public Color color;
+        public float radius;
+    }
+        [SerializeField] private bool clearDebug = false;
     [Header("Настройки луча")]
     public Vector3 rayStart = Vector3.zero;
     [Range(-89f, 89)]
@@ -43,7 +54,8 @@ public class MultiMaterialRefraction : MonoBehaviour
     private Vector3 currentPoint2;
     private Vector3 currentPoint;
     private List<Ray> DebugRays= new List<Ray>();
-    private List<Vector3> DebugPoints= new List<Vector3>();
+
+    private List<DebugPoint> DebugPoints= new List<DebugPoint>();
     public Vector3 rayDirection { 
         get
         {
@@ -123,7 +135,9 @@ public class MultiMaterialRefraction : MonoBehaviour
         {
             mat.generatedObject = new GameObject($"Material{mat.name}");
             mat.generatedObject.transform.parent = transform;
-            mat.collider = mat.generatedObject.AddComponent<BoxCollider>();
+            mat.collider = mat.generatedObject.AddComponent<MeshCollider>();
+            mat.collider.convex = true;
+            mat.collider.sharedMesh = mat.mesh;
             mat.meshRenderer = mat.generatedObject.AddComponent<MeshRenderer>();
             mat.meshFilter = mat.generatedObject.AddComponent<MeshFilter>();
         }
@@ -190,7 +204,10 @@ public class MultiMaterialRefraction : MonoBehaviour
                 break;
             }
         }
-
+        foreach (var point in points)
+        {
+            DebugPoints.Add(new DebugPoint(point,Color.yellow,0.3f));
+        }
         points.Add(currentOrigin + currentDirection * maxRayLength);
 
         lineRenderer.positionCount = points.Count;
@@ -243,7 +260,7 @@ public class MultiMaterialRefraction : MonoBehaviour
         DebugRays.Add(ray);
         if (Physics.Raycast(ray, out hit, maxRayLength))
         {
-            DebugPoints.Add(hit.point);
+            DebugPoints.Add(new DebugPoint(hit.point, Color.green, 0.5f));
             Debug.Log("Пересечение с коллайдером: " + hit.point + "  " + hit.collider.name);
             foreach (var mat in materials)
                 if (mat.collider == hit.collider)
@@ -257,62 +274,64 @@ public class MultiMaterialRefraction : MonoBehaviour
     bool TryFindExitFromMaterial(Vector3 originPoint, Vector3 direction, RefractiveMaterial fromMaterial, out RaycastHit hitExit)
     {
         hitExit = new RaycastHit();
-        Ray ray = new Ray(originPoint,direction);
+        Vector3 rayPoint = originPoint + direction * maxRayLength;
+        Ray ray = new Ray(rayPoint, -direction);
         RaycastHit[] hits = Physics.RaycastAll(ray, maxRayLength);
         DebugRays.Add(ray);
         foreach (RaycastHit hit in hits)
         {
-            foreach (var mat in materials)
+            if (fromMaterial.collider == hit.collider)
             {
-                if (mat.collider == hit.collider)
-                {
-                    Debug.Log("Выход найден : " + hit.point);
-                    hitExit = hit;
-                    return true;
-                }
+                DebugPoints.Add(new DebugPoint(hit.point, Color.red, 0.4f));
+                Debug.Log("Выход найден : " + hit.point);
+                hitExit = hit;
+                return true;
             }
         }
         return false;
     }
+    private void AddDebugPoint()
+    {
 
-    private void RaycastAll(Vector3 point, Vector3 direction, out List<RefractiveMaterial>  hitMaterials, out List<Vector3> hitPoints )
-    {
-        hitMaterials = new List<RefractiveMaterial>();
-        hitPoints = new List<Vector3>();
-        //point += 0.01f * direction;
-        Ray ray = new Ray(point, direction);
-        Physics.queriesHitBackfaces = true;
-        RaycastHit[] hits = Physics.RaycastAll(ray, maxRayLength);
-        foreach (RaycastHit hit in hits)
-        {
-            hitPoints.Add(hit.point);
-            Debug.Log("Пересечение с коллайдером: " + hit.point + "  " + hit.collider.name);
-            foreach(var mat in materials)
-            {
-                if (mat.collider == hit.collider)
-                {
-                    DebugPoints.Add(hit.point);
-                    hitMaterials.Add(mat);
-                    Debug.Log("Пересечение с нужным коллайдером: " + hit.point);
-                }
-            }
-        }
     }
-    private void Raycast(Vector3 direction, RefractiveMaterial lookingMaterial, Vector3 point)
-    {
-        //point += 0.01f * direction;
-        Ray ray = new Ray(point, direction);
-        if(Physics.Raycast(ray, out RaycastHit hit, maxRayLength))
-        {
-            DebugPoints.Add(hit.point);
-            Debug.Log("Пересечение с коллайдером: " + hit.point + "  " + hit.collider.name);
-            if(lookingMaterial!=null)
-                if (hit.collider == lookingMaterial.collider)
-                {
-                    Debug.Log("Пересечение с нужным коллайдером: " + hit.point);
-                }
-        }
-    }
+    //private void RaycastAll(Vector3 point, Vector3 direction, out List<RefractiveMaterial>  hitMaterials, out List<Vector3> hitPoints )
+    //{
+    //    hitMaterials = new List<RefractiveMaterial>();
+    //    hitPoints = new List<Vector3>();
+    //    //point += 0.01f * direction;
+    //    Ray ray = new Ray(point, direction);
+    //    Physics.queriesHitBackfaces = true;
+    //    RaycastHit[] hits = Physics.RaycastAll(ray, maxRayLength);
+    //    foreach (RaycastHit hit in hits)
+    //    {
+    //        hitPoints.Add(hit.point);
+    //        Debug.Log("Пересечение с коллайдером: " + hit.point + "  " + hit.collider.name);
+    //        foreach(var mat in materials)
+    //        {
+    //            if (mat.collider == hit.collider)
+    //            {
+    //                DebugPoints.Add(hit.point);
+    //                hitMaterials.Add(mat);
+    //                Debug.Log("Пересечение с нужным коллайдером: " + hit.point);
+    //            }
+    //        }
+    //    }
+    //}
+    //private void Raycast(Vector3 direction, RefractiveMaterial lookingMaterial, Vector3 point)
+    //{
+    //    //point += 0.01f * direction;
+    //    Ray ray = new Ray(point, direction);
+    //    if(Physics.Raycast(ray, out RaycastHit hit, maxRayLength))
+    //    {
+    //        DebugPoints.Add(hit.point);
+    //        Debug.Log("Пересечение с коллайдером: " + hit.point + "  " + hit.collider.name);
+    //        if(lookingMaterial!=null)
+    //            if (hit.collider == lookingMaterial.collider)
+    //            {
+    //                Debug.Log("Пересечение с нужным коллайдером: " + hit.point);
+    //            }
+    //    }
+    //}
 
     bool ComputeRefractedDirection(Vector3 incident, Vector3 normal, float n1, float n2, out Vector3 refractedDir)
     {
@@ -341,13 +360,15 @@ public class MultiMaterialRefraction : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        foreach(var ray in DebugRays)
+        Gizmos.color = Color.white;
+        foreach (var ray in DebugRays)
         {
             Gizmos.DrawLine(ray.origin, ray.origin+ray.direction*(maxRayLength-1));
         }
         foreach(var point in DebugPoints)
         {
-            Gizmos.DrawSphere(point,0.3f);
+            Gizmos.color = point.color;
+            Gizmos.DrawSphere(point.pos, point.radius);
         }
     }
 }

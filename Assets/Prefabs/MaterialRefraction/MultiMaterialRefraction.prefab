@@ -152,6 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cecf04a1a5bd844496a67f5bf3b27f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  clearDebug: 0
   rayStart: {x: 0, y: -2, z: 0}
   angle: 45
   maxRayLength: 5
