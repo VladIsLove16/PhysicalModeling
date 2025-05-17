@@ -8,6 +8,7 @@ public class InputFieldTopicFieldController : TopicFieldController
     public Action OnTopicFieldEndEdited;
     [SerializeField] private TMP_InputField inputField;
     private string previousValue;
+    private bool isLocalUpdate;
     protected override void Start()
     {
         base.Start();
@@ -50,6 +51,7 @@ public class InputFieldTopicFieldController : TopicFieldController
     public void SetText(string v)
     {
         inputField.text = v;
+        isLocalUpdate = true;
     }
     protected override void SetReadOnly(bool value)
     {
@@ -57,7 +59,6 @@ public class InputFieldTopicFieldController : TopicFieldController
     }
     protected void OnSelect(string arg0)
     {
-        Debug.Log("inputfieldSelected");
         previousValue = arg0;
     }
 
@@ -74,7 +75,11 @@ public class InputFieldTopicFieldController : TopicFieldController
 
     protected void OnValueChanged()
     {
-        Debug.Log("new value " + inputField.text);
+        if(isLocalUpdate)
+        {
+            isLocalUpdate = false;
+            return;
+        }
         topicField.TrySetValue(GetText());
     }
 }

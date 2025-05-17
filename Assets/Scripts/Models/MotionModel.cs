@@ -114,6 +114,10 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     {
         
     }
+    public  virtual void OnEnabled()
+    {
+        
+    }
 
     public void GetParamStringValue(ParamName paramName)
     {

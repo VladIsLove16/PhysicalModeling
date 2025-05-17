@@ -15,11 +15,16 @@ public class TopicField
     private ReactiveProperty<object> property = new ReactiveProperty<object>();
     private Dictionary<ParamName, FieldType> paramNameFieldTypes = new Dictionary<ParamName, FieldType>()
     {
+        { ParamName.position,FieldType.Vector3 } ,
         { ParamName.velocity,FieldType.Vector3 } ,
         { ParamName.velocity2,FieldType.Vector3 } ,
-        { ParamName.angle,FieldType.Float } ,
+        { ParamName.angle,FieldType.Float } ,   
         { ParamName.angleRad,FieldType.Float } ,
         { ParamName.seed,FieldType.Int } ,
+        { ParamName.mass,FieldType.Float } ,
+        { ParamName.friction,FieldType.Float } ,
+        { ParamName.force,FieldType.Float } ,
+        { ParamName.forceAcceleration,FieldType.Float } ,
     };
 
     public static Dictionary<ParamName, float> MaxValues = new Dictionary<ParamName, float>()
@@ -37,7 +42,7 @@ public class TopicField
     public TopicField() { }
 
     //[Obsolete("Используйте метод TopicField(ParamName paramName) вместо этого.")]
-    public TopicField(ParamName paramName, FieldType type, bool isReadonly = false)
+    public TopicField(ParamName paramName, FieldType type = FieldType.Float, bool isReadonly = false)
     {
         this.paramName = paramName;
         if (TryGetType(paramName, out FieldType resultType))
@@ -47,7 +52,20 @@ public class TopicField
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
-
+    public void SetMaxValueForce( float value)
+    {
+        MaxValues[paramName] = value;
+    }
+    public TopicField(ParamName paramName, bool isReadonly = false, FieldType type = FieldType.Float)
+    {
+        this.paramName = paramName;
+        if (TryGetType(paramName, out FieldType resultType))
+            this.type = resultType;
+        else
+            this.type = type;
+        this.isReadOnly = isReadonly;
+        //property.Subscribe(_ => OnPropertyChanged());
+    }
     public string GetStringValue()
     {
        return GetStringFromValue(Property.Value);
@@ -151,7 +169,7 @@ public class TopicField
         object value = GetValueFromString(str, out bool result);
         if (result) 
         {
-            property.SetValueAndForceNotify(value);
+            TrySetValue(value);
             return true;
         }
         Debug.LogAssertion("Cant set (string) " + str + " to " +  ParamName  + " of type  " + FieldType);
@@ -160,12 +178,13 @@ public class TopicField
 
     public bool TrySetValue(object value)
     {
-        string str = GetStringFromValue(value);
-        if (TrySetValue(str))
-        {
+        Type valueType = value.GetType();
+        if (GetFieldValueType(FieldType) == valueType)
+        { 
+            property.SetValueAndForceNotify(value);
             return true;
         }
-        Debug.LogAssertion("Cant set (value) " + value + " to " + ParamName + " of type  " + FieldType);
+        Debug.LogAssertion("Cant set (value) " + value +  " of type " + valueType +  " to " + ParamName + " of type  " + FieldType);
         return true;
     }
 }
@@ -203,6 +222,9 @@ public enum ParamName
     velocity2,
     pointAReached,
     seed,
-    respawnObstacles
+    respawnObstacles,
+    friction,
+    force,
+    forceAcceleration
 }
 public enum FieldType { Float, Vector3, Int,Bool }

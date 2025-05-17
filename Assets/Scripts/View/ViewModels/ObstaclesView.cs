@@ -4,7 +4,6 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.GPUSort;
 public class ObstaclesView : MotionView
 {
     [SerializeField] ObstacleSpawner obstacleSpawner;
