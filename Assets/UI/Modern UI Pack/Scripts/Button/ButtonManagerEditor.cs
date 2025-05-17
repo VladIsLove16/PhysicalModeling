@@ -236,7 +236,7 @@ namespace Michsky.MUIP
                     if (useUINavigation.boolValue == true)
                     {
                         GUILayout.BeginVertical(EditorStyles.helpBox);
-                        MUIPEditorHandler.DrawPropertyPlain(navigationMode, customSkin, "Navigation Mode");
+                        MUIPEditorHandler.DrawPropertyPlain(navigationMode, customSkin, "Navigation CalculationMode");
 
                         if (buttonTarget.navigationMode == UnityEngine.UI.Navigation.Mode.Horizontal) 
                         {
@@ -300,7 +300,7 @@ namespace Michsky.MUIP
                     {
                         renderOnTop.boolValue = MUIPEditorHandler.DrawToggle(renderOnTop.boolValue, customSkin, "Render On Top");
                         centered.boolValue = MUIPEditorHandler.DrawToggle(centered.boolValue, customSkin, "Centered");
-                        MUIPEditorHandler.DrawProperty(rippleUpdateMode, customSkin, "Update Mode");
+                        MUIPEditorHandler.DrawProperty(rippleUpdateMode, customSkin, "Update CalculationMode");
                         MUIPEditorHandler.DrawProperty(rippleShape, customSkin, "Shape");
                         MUIPEditorHandler.DrawProperty(speed, customSkin, "Speed");
                         MUIPEditorHandler.DrawProperty(maxSize, customSkin, "Max Size");
