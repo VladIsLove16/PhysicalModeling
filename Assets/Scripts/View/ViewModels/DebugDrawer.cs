@@ -16,11 +16,21 @@ public static class DebugDrawer
             this.radius = radius;
         }
     }
-    public static readonly List<Ray> debugRays = new List<Ray>();
-    public static readonly List<DebugPoint> debugPoints = new List<DebugPoint>();
-    public static void AddRay(Ray ray)
+    public struct DebugRay
     {
-        debugRays.Add(ray);
+        public Color color;
+        public Ray Ray;
+        public DebugRay(Ray Ray, Color color)
+        {
+            this.color = color;
+            this.Ray = Ray;
+        }
+    }
+    public static readonly List<DebugRay> debugRays = new List<DebugRay>();
+    public static readonly List<DebugPoint> debugPoints = new List<DebugPoint>();
+    public static void AddRay(Ray ray, Color color)
+    {
+        debugRays.Add(new DebugRay(ray, color));
     }
 
     public static void AddPoint(Vector3 position, Color color, float radius = 0.3f)
@@ -39,7 +49,8 @@ public static class DebugDrawer
         Gizmos.color = Color.white;
         foreach (var ray in debugRays)
         {
-            Gizmos.DrawLine(ray.origin, ray.origin + ray.direction * (rayLength - 1));
+            Gizmos.color = ray.color;
+            Gizmos.DrawLine(ray.Ray.origin, ray.Ray.origin + ray.Ray. direction * (rayLength - 1));
         }
         foreach (var point in debugPoints)
         {

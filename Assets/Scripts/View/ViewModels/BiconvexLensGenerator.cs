@@ -8,7 +8,8 @@ public class BiconvexLensGenerator : MonoBehaviour
     [Header("Геометрия линзы")]
     public float radius = 2f;         // Радиус каждой сферы
     public float distance = 2f;       // Расстояние между центрами сфер (по X)
-    public float width = 0.5f;        // Ширина линзы (экструзия по Z)
+    public float width = 0.5f;      // Расстояние между центрами сфер (по X)
+    public Vector3 position;        // Ширина линзы (экструзия по Z)
     public int arcSegments = 64;      // Кол-во сегментов дуги
     MeshFilter mf;    // Кол-во сегментов дуги
     MeshFilter MeshFilter
@@ -32,11 +33,12 @@ public class BiconvexLensGenerator : MonoBehaviour
     {
         GenerateLensMesh();
     }
-    public void GenerateLensMesh(float radius,float distance,float witdh)
+    public void GenerateLensMesh(float radius,float distance,float witdh, Vector3 position)
     {
         this.distance = distance;
         this.width = witdh;
         this.radius = radius;
+        this.position = position;
         GenerateLensMesh();
     }
 
@@ -125,6 +127,7 @@ public class BiconvexLensGenerator : MonoBehaviour
         mesh.name = "BiconvexLens";
         MeshFilter.mesh = mesh;
         Collider.sharedMesh = mesh;
+        gameObject.transform.position = position;
         return mesh;
     }
 }

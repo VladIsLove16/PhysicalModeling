@@ -4,16 +4,20 @@ using static MultiMaterialRefraction.RefractiveMaterial;
 
 public partial class MultiMaterialRefraction 
 {
-    public interface IRefractiveMaterial
+    public interface IRefractivePhysicMaterial
     {
         public float RefractiveIndex();
         public Collider GetCollider();
     }
     [System.Serializable]
-    public class RefractiveLens : IRefractiveMaterial
+    public class RefractiveLens : IRefractivePhysicMaterial
     {
         [SerializeField] public MeshCollider collider;
         public float refractiveIndex = 1.5f;
+        public Vector3 position;
+        public float radius;
+        public float distance;
+        public float width;
         public Collider GetCollider()
         {
             return collider;
@@ -24,7 +28,7 @@ public partial class MultiMaterialRefraction
         }
     }
     [System.Serializable]
-    public class RefractiveMaterial : IRefractiveMaterial
+    public class RefractiveMaterial : IRefractivePhysicMaterial
     {
         public string name = "Material";
         public Vector3 size = new Vector3(1, 1, 1);

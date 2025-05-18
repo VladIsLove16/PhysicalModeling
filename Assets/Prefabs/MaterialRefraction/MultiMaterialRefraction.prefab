@@ -186,8 +186,3 @@ MonoBehaviour:
     meshFilter: {fileID: 0}
   lensMaterials: []
   biconvexLensMesh: {fileID: 0}
-  lensSettings:
-    radius: 0
-    distance: 0
-    width: 0
-    lensRefractiveIndex: 0

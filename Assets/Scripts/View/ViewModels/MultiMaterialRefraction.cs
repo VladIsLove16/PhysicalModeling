@@ -12,10 +12,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
    [System.Serializable]
     public struct LensSettings
     {
-        public float radius;
-        public float distance;
-        public float width;
-        public float lensRefractiveIndex;
+       
     }
     public enum CalculationMode
     {
@@ -45,7 +42,6 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     [Header("Настройки линзы")]
     public List<RefractiveLens> lensMaterials = new List<RefractiveLens>();
     public BiconvexLensGenerator biconvexLensMesh;
-    public LensSettings lensSettings;
     public Vector3 rayDirection
     {
         get
@@ -84,24 +80,24 @@ public partial class MultiMaterialRefraction : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
         if (calculationMode == CalculationMode.physics)
         {
-            List<IRefractiveMaterial> Imaterials = materials.Cast<IRefractiveMaterial>().ToList();
-            //List<IRefractiveMaterial> Ilensmaterials = lensMaterials.Cast<IRefractiveMaterial>().ToList();
-            List<IRefractiveMaterial> Ilensmaterials = lensMaterials.Cast<IRefractiveMaterial>().ToList();
-            List<IRefractiveMaterial> IRefractiveMaterials = new();
+            List<IRefractivePhysicMaterial> Imaterials = materials.Cast<IRefractivePhysicMaterial>().ToList();
+            //List<IRefractivePhysicMaterial> Ilensmaterials = lensMaterials.Cast<IRefractivePhysicMaterial>().ToList();
+            List<IRefractivePhysicMaterial> Ilensmaterials = lensMaterials.Cast<IRefractivePhysicMaterial>().ToList();
+            List<IRefractivePhysicMaterial> IRefractiveMaterials = new();
             IRefractiveMaterials.AddRange(Imaterials);
             IRefractiveMaterials.AddRange(Ilensmaterials);
             rayPathCalculator = new PhysicsRayPathCalculator(IRefractiveMaterials, maxRayLength); // ← Можно заменить на формульную реализацию
         }
         else
         {
-            rayPathCalculator = new LensRayTracer(lensSettings.radius,  lensSettings.distance, lensSettings.lensRefractiveIndex);
+            rayPathCalculator = new LensRayTracer(lensMaterials[0].radius, lensMaterials[0].distance, lensMaterials[0].refractiveIndex, lensMaterials[0].position);
 
         }
         if(rayTracerObject == RayTracerObject.lens)
         {
             ToggleMaterials(false);
             ToggleLens(true);
-            biconvexLensMesh.GenerateLensMesh(lensSettings.radius, lensSettings.distance,lensSettings.width);
+            biconvexLensMesh.GenerateLensMesh(lensMaterials[0].radius, lensMaterials[0].distance, lensMaterials[0].width, lensMaterials[0].position);
         }
         else
         {
