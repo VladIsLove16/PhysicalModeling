@@ -18,6 +18,20 @@ public class BiconvexLensGenerator : MonoBehaviour
             return mf;
         }
     }
+    new MeshCollider collider;
+    MeshCollider Collider
+    {
+        get
+        {
+            if (collider == null)
+                collider = GetComponent<MeshCollider>();
+            return collider;
+        }
+    }
+    public void OnValidate()
+    {
+        GenerateLensMesh();
+    }
     public void GenerateLensMesh(float radius,float distance,float witdh)
     {
         this.distance = distance;
@@ -108,8 +122,9 @@ public class BiconvexLensGenerator : MonoBehaviour
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangles, 0);
         mesh.RecalculateNormals();
-        mesh.name = "SharpLensMesh";
+        mesh.name = "BiconvexLens";
         MeshFilter.mesh = mesh;
+        Collider.sharedMesh = mesh;
         return mesh;
     }
 }

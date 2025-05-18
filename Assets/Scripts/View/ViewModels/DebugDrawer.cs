@@ -4,7 +4,7 @@ using System;
 
 public static class DebugDrawer
 {
-    private struct DebugPoint
+    public struct DebugPoint
     {
         public Vector3 pos;
         public Color color;
@@ -16,8 +16,8 @@ public static class DebugDrawer
             this.radius = radius;
         }
     }
-    private static readonly List<Ray> debugRays = new List<Ray>();
-    private static readonly List<DebugPoint> debugPoints = new List<DebugPoint>();
+    public static readonly List<Ray> debugRays = new List<Ray>();
+    public static readonly List<DebugPoint> debugPoints = new List<DebugPoint>();
     public static void AddRay(Ray ray)
     {
         debugRays.Add(ray);

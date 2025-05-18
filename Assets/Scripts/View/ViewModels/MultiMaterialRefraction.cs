@@ -2,27 +2,13 @@
 using System.Collections.Generic;
 using System;
 using static MultiMaterialRefraction;
+using static DebugDrawer;
+using System.Linq;
 
 [ExecuteAlways]
 [RequireComponent(typeof(LineRenderer))]
-public class MultiMaterialRefraction : MonoBehaviour
+public partial class MultiMaterialRefraction : MonoBehaviour
 {
-    [System.Serializable]
-    public class RefractiveMaterial
-    {
-        public string name = "Material";
-        public Vector3 size = new Vector3(1, 1, 1);
-        public Vector3 position = new Vector3(0, 0, 0);
-        public float refractiveIndex = 1.5f;
-        public Material material;
-        public Mesh mesh;
-        public bool generate = false;
-
-        public GameObject generatedObject = null;
-        [HideInInspector] public MeshCollider collider;
-        [HideInInspector] public MeshRenderer meshRenderer;
-        [HideInInspector] public MeshFilter meshFilter;
-    }
    [System.Serializable]
     public struct LensSettings
     {
@@ -41,6 +27,7 @@ public class MultiMaterialRefraction : MonoBehaviour
         lens,
         materials
     }
+    [SerializeField] private bool clearDebugOnDraw;
     [Header("Настройки луча")]
     public Vector3 rayStart = Vector3.zero;
     [Range(-89f, 89)]
@@ -56,6 +43,7 @@ public class MultiMaterialRefraction : MonoBehaviour
     [Header("Материалы (создаются автоматически)")]
     public List<RefractiveMaterial> materials = new List<RefractiveMaterial>();
     [Header("Настройки линзы")]
+    public List<RefractiveLens> lensMaterials = new List<RefractiveLens>();
     public BiconvexLensGenerator biconvexLensMesh;
     public LensSettings lensSettings;
     public Vector3 rayDirection
@@ -96,7 +84,13 @@ public class MultiMaterialRefraction : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
         if (calculationMode == CalculationMode.physics)
         {
-            rayPathCalculator = new PhysicsRayPathCalculator(materials, maxRayLength); // ← Можно заменить на формульную реализацию
+            List<IRefractiveMaterial> Imaterials = materials.Cast<IRefractiveMaterial>().ToList();
+            //List<IRefractiveMaterial> Ilensmaterials = lensMaterials.Cast<IRefractiveMaterial>().ToList();
+            List<IRefractiveMaterial> Ilensmaterials = lensMaterials.Cast<IRefractiveMaterial>().ToList();
+            List<IRefractiveMaterial> IRefractiveMaterials = new();
+            IRefractiveMaterials.AddRange(Imaterials);
+            IRefractiveMaterials.AddRange(Ilensmaterials);
+            rayPathCalculator = new PhysicsRayPathCalculator(IRefractiveMaterials, maxRayLength); // ← Можно заменить на формульную реализацию
         }
         else
         {
@@ -133,16 +127,18 @@ public class MultiMaterialRefraction : MonoBehaviour
 
     private void ToggleLens(bool state)
     {
-        biconvexLensMesh.gameObject.SetActive(state);
+        if (biconvexLensMesh != null)
+            biconvexLensMesh.gameObject.SetActive(state);   
     }
 
     void UpdateRayPath()
     {
         if (rayPathCalculator == null)
             return;
+        DebugDrawer.Clear();
 
         List<Vector3> points = rayPathCalculator.CalculateRayPath(rayStart, rayDirection, maxRayLength, maxBounces);
-        DebugDrawer.AddPoints(points,Color.yellow,0.3f);
+        DebugDrawer.AddPoints(points,Color.yellow,0.2f);
         lineRenderer.positionCount = points.Count;
         lineRenderer.SetPositions(points.ToArray());
     }
@@ -180,10 +176,10 @@ public class MultiMaterialRefraction : MonoBehaviour
 
         foreach (var mat in materials)
         {
-            if (genNewMats)
+            if (genNewMats &&  mat.formType == FormType.material)
                 GenerateVisualObject(mat);
-
-            SetupVisualObject(ref yOffset, mat);
+            if(mat.formType == FormType.material)
+                SetupVisualObject(ref yOffset, mat);
         }
     }
 
@@ -217,8 +213,6 @@ public class MultiMaterialRefraction : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        DebugDrawer.Clear();
         DebugDrawer.DrawGizmos(maxRayLength);
-        Gizmos.DrawCube(Vector3.zero, Vector3.one);
     }
 }

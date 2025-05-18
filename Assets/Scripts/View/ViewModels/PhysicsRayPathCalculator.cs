@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class PhysicsRayPathCalculator : IRayPathCalculator
 {
-    private readonly List<MultiMaterialRefraction.RefractiveMaterial> materials;
+    private readonly List<MultiMaterialRefraction.IRefractiveMaterial> materials;
     private readonly float maxRayLength;
 
-    public PhysicsRayPathCalculator(List<MultiMaterialRefraction.RefractiveMaterial> materials, float maxRayLength)
+    public PhysicsRayPathCalculator(List<MultiMaterialRefraction.IRefractiveMaterial> materials, float maxRayLength)
     {
         this.materials = materials;
         this.maxRayLength = maxRayLength;
@@ -23,19 +23,16 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
 
         for (int bounce = 0; bounce < maxBounces; bounce++)
         {
-            if (!RaycastToNextMaterial(currentOrigin, currentDirection, out RaycastHit hit, out var hitMaterial))
+            if (!RaycastToNextMaterial(currentOrigin, currentDirection, out RaycastHit hit, out MultiMaterialRefraction.IRefractiveMaterial hitMaterial))
             {
-
                 break;
             }                
-                
-
             points.Add(hit.point);
 
-            if (!ComputeRefractedDirection(currentDirection, hit.normal, currentRefractiveIndex, hitMaterial.refractiveIndex, out Vector3 directionInside))
+            if (!ComputeRefractedDirection(currentDirection, hit.normal, currentRefractiveIndex, hitMaterial.RefractiveIndex(), out Vector3 directionInside))
                 break;
 
-            if (!TryFindExitFromMaterial(hit.point, directionInside, hitMaterial, out RaycastHit exitHit))
+            if (!TryFindExitFromMaterial(hit.point, directionInside, hitMaterial.GetCollider(), out RaycastHit exitHit))
                 break;
 
             points.Add(exitHit.point);
@@ -49,15 +46,16 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
         return points;
     }
 
-    private bool RaycastToNextMaterial(Vector3 origin, Vector3 direction, out RaycastHit hit, out MultiMaterialRefraction.RefractiveMaterial material)
+    private bool RaycastToNextMaterial(Vector3 origin, Vector3 direction, out RaycastHit hit, out MultiMaterialRefraction.IRefractiveMaterial material)
     {
         material = null;
         if (Physics.Raycast(origin, direction, out hit, maxRayLength))
         {
             foreach (var mat in materials)
             {
-                if (mat.collider == hit.collider)
+                if (mat.GetCollider() == hit.collider)
                 {
+                    DebugDrawer.AddPoint(hit.point,Color.green,0.1f);
                     material = mat;
                     return true;
                 }
@@ -66,7 +64,7 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
         return false;
     }
 
-    private bool TryFindExitFromMaterial(Vector3 originPoint, Vector3 direction, MultiMaterialRefraction.RefractiveMaterial fromMaterial, out RaycastHit hitExit)
+    private bool TryFindExitFromMaterial(Vector3 originPoint, Vector3 direction, Collider lookingCollider, out RaycastHit hitExit)
     {
         hitExit = new RaycastHit();
         Vector3 rayPoint = originPoint + direction * maxRayLength;
@@ -75,8 +73,9 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
 
         foreach (var hit in hits)
         {
-            if (fromMaterial.collider == hit.collider)
+            if (lookingCollider == hit.collider)
             {
+                DebugDrawer.AddPoint(hit.point, Color.red, 0.2f);
                 hitExit = hit;
                 return true;
             }
