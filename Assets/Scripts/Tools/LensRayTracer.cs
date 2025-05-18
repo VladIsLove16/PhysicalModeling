@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.LowLevelPhysics;
 
-public partial class LensRayTracer : IRayPathCalculator
+public partial class RayTracer : IRayPathCalculator
 {
     private struct LensSurface : ISurface
     {
@@ -33,9 +33,13 @@ public partial class LensRayTracer : IRayPathCalculator
         {
             return (intersectionPoint-center).normalized;
         }
+    } 
+    private List<ISurface> _surfaces = new List<ISurface>();
+    public RayTracer()
+    {
     }
-    private List<ISurface> _surfaces;
-    public LensRayTracer(float radius, float distance, float lensRefractiveIndex,Vector3 lensPosition)
+
+    public RayTracer(float radius, float distance, float lensRefractiveIndex,Vector3 lensPosition)
     {
         float thickness = radius * 2 - distance;
         var  centerFront = new Vector3(0, radius - thickness / 2, 0) + lensPosition;
@@ -45,7 +49,6 @@ public partial class LensRayTracer : IRayPathCalculator
         _surfaces.Add(lensSurface1);
         _surfaces.Add(lensSurface2);
     }
-
     public List<Vector3> CalculateRayPath(Vector3 start, Vector3 direction, float maxLength, int maxBounces, float initialRefractiveIndex = 1.0f)
     {
         List<Vector3> points = new List<Vector3> { start };
@@ -54,15 +57,17 @@ public partial class LensRayTracer : IRayPathCalculator
         Vector3 currentDir = direction.normalized;
         float remainingLength = maxLength;
 
-        for (int i = 0; i < maxBounces && remainingLength > 0; i++)
+        for (int i = 0; i < _surfaces.Count; i++)
         {
             Vector3 nextHit, normal;
             float n1, n2;
             if (!_surfaces[i].GetIntersection(currentPos, currentDir, out nextHit))
-                break;
-
+            {
+                Debug.LogAssertion("GetIntersection not foubd on surface " + i);
+                continue;
+            }
             normal = _surfaces[i].GetNormal(nextHit);
-            n1 = initialRefractiveIndex;
+            n1 = i == 0 ? initialRefractiveIndex : _surfaces[i - 1].RefractiveIndex;
             n2 = _surfaces[i].RefractiveIndex;
             // Автоматическая ориентация нормали
             if (Vector3.Dot(currentDir, normal) > 0)
@@ -72,7 +77,11 @@ public partial class LensRayTracer : IRayPathCalculator
             DebugDrawer.AddRay(new Ray(currentPos+0.01f *Vector3.one, currentDir), Color.blue);
             Vector3 refracted;
             if (!RayPhysics.ComputeSneliusRefractedDirection(currentDir, normal, n1 , n2, out refracted))
+            {
+
+                Debug.LogAssertion("Full refraction on surface " + i);
                 break; // Полное внутреннее отражение
+            }
 
             DebugDrawer.AddRay(new Ray(nextHit, refracted), Color.yellow);
             float segmentLength = Vector3.Distance(currentPos, nextHit);

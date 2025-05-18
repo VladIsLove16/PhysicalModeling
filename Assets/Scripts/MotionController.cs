@@ -15,6 +15,7 @@ public class MotionController : MonoBehaviour
     [SerializeField] private TransformView Viewtr;
     [SerializeField] private ObstaclesView Viewobs;
     [SerializeField] private RampView Viewramp;
+    [SerializeField] private RefractionView RefractionView;
     [SerializeField] private PointA pointA;
     [SerializeField] private MotionView CurrentView;
     private MotionViewModel ViewModel;
@@ -46,6 +47,8 @@ public class MotionController : MonoBehaviour
             hitMotionModel.Init(Viewrb.MovingObjectrb, Viewrb.HittedObjectrb);
         else if (CurrentMotionModel is ObstaclesMotionModel obstaclesMotionModel)
             obstaclesMotionModel.Init(Viewobs.MovingObject, pointA);
+        //else if (CurrentMotionModel is RefractionLensMotionModel refractionLensMotionModel)
+        //    refractionLensMotionModel
         CurrentMotionModel.OnEnabled();
         ViewModel.Init(CurrentMotionModel);
         InitView();
@@ -60,8 +63,10 @@ public class MotionController : MonoBehaviour
             CurrentView = Viewobs;
         else if (CurrentMotionModel is RampMotionModel rampMotionModel)
             CurrentView = Viewramp;
+        else if (CurrentMotionModel is RefractionLensMotionModel refractionLensMotionModel)
+            CurrentView = RefractionView;
         else 
-            CurrentView  = Viewtr;
+            CurrentView = Viewtr;
         Debug.Log("Current view setted to " + CurrentView.name);
         CurrentView.OnEnabled();
         CurrentView.Init(ViewModel);

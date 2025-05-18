@@ -39,6 +39,7 @@ public abstract class MotionView : MonoBehaviour
         { ParamName.pointAReached, ViewType.Toggle },
         { ParamName.angle, ViewType.Slider },
         { ParamName.respawnObstacles, ViewType.Toggle },
+        { ParamName.unityPhycicsCalculation, ViewType.Toggle },
     };
 
     protected virtual void Start()

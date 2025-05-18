@@ -9,7 +9,7 @@ using System.Linq;
 [RequireComponent(typeof(LineRenderer))]
 public partial class MultiMaterialRefraction : MonoBehaviour
 {
-   [System.Serializable]
+    [System.Serializable]
     public struct LensSettings
     {
        
@@ -32,6 +32,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     public float maxRayLength = 100f;
     public int maxBounces = 10;
 
+    [SerializeField] private bool isEnabled= false;
     private LineRenderer lineRenderer;
     private IRayPathCalculator rayPathCalculator;
     public CalculationMode calculationMode =  CalculationMode.physics;
@@ -54,30 +55,65 @@ public partial class MultiMaterialRefraction : MonoBehaviour
 
     void Awake()
     {
+        isEnabled = false;
         SetupMaterialObjects();
     }
 
 #if UNITY_EDITOR
     void OnValidate()
     {
-        UnityEditor.EditorApplication.delayCall += () =>
+        if (isEnabled)
         {
-            if (this != null)
+            UnityEditor.EditorApplication.delayCall += () =>
             {
-                OnEnabled();
-            }
-        };
+                if (this != null)
+                {
+                    OnEnabled();
+                }
+            };
+        }
     }
 #endif
 
-    void OnEnable()
+    public void OnDisabled()
     {
-        OnEnabled();
+        isEnabled = false;
+        gameObject.SetActive(false);
     }
 
-    private void OnEnabled()
+    public void OnEnabled()
     {
+        isEnabled = true;
+        gameObject.SetActive(true);
         lineRenderer = GetComponent<LineRenderer>();
+        RefractiveLens lens = lensMaterials[0];
+        SetupRayTracer();
+        SetupMaterials(lens);
+        UpdateRayPath();
+    }
+
+    private void SetupMaterials(RefractiveLens lens)
+    {
+        if (rayTracerObject == RayTracerObject.lens)
+        {
+            ToggleMaterials(false);
+            ToggleLens(true);
+            biconvexLensMesh.GenerateLensMesh(lens.radius, lens.distance, lens.width, lens.position);
+        }
+        else
+        {
+            ToggleMaterials(true);
+            ToggleLens(false);
+            SetupMaterialObjects(); 
+        }
+    }
+
+    private void SetupRayTracer()
+    {
+        if (calculationMode == CalculationMode.mathematic && rayTracerObject == RayTracerObject.materials)
+        {
+            calculationMode = CalculationMode.physics;
+        }
         if (calculationMode == CalculationMode.physics)
         {
             List<IRefractivePhysicMaterial> Imaterials = materials.Cast<IRefractivePhysicMaterial>().ToList();
@@ -86,45 +122,34 @@ public partial class MultiMaterialRefraction : MonoBehaviour
             List<IRefractivePhysicMaterial> IRefractiveMaterials = new();
             IRefractiveMaterials.AddRange(Imaterials);
             IRefractiveMaterials.AddRange(Ilensmaterials);
-            rayPathCalculator = new PhysicsRayPathCalculator(IRefractiveMaterials, maxRayLength); // ← Можно заменить на формульную реализацию
+            rayPathCalculator = new PhysicsRayPathCalculator(IRefractiveMaterials, maxRayLength);
         }
         else
         {
-            rayPathCalculator = new LensRayTracer(lensMaterials[0].radius, lensMaterials[0].distance, lensMaterials[0].refractiveIndex, lensMaterials[0].position);
+            RefractiveLens lens = lensMaterials[0];
+            rayPathCalculator = new RayTracer(lens.radius, lens.distance, lens.refractiveIndex, lens.position);
+        }
 
-        }
-        if(rayTracerObject == RayTracerObject.lens)
-        {
-            ToggleMaterials(false);
-            ToggleLens(true);
-            biconvexLensMesh.GenerateLensMesh(lensMaterials[0].radius, lensMaterials[0].distance, lensMaterials[0].width, lensMaterials[0].position);
-        }
-        else
-        {
-            ToggleMaterials(true);
-            ToggleLens(false);
-            SetupMaterialObjects();
-        }
-        if(calculationMode == CalculationMode.mathematic && rayTracerObject == RayTracerObject.materials)
-        {
-            calculationMode = CalculationMode.physics;
-        }
-        UpdateRayPath();
+       
     }
 
     public void SetAngle(float angle)
     {
         this.angle = angle;
+        UpdateRayPath();
     }
 
-    public void SetRadius(float value)
+    public void SetLensRadius(float value)
     {
         biconvexLensMesh.SetRadius(value);
+        UpdateRayPath();
     }
 
     public void SetLensDistance(float value)
     {
         biconvexLensMesh.SetDistance(value);
+        SetupRayTracer();
+        UpdateRayPath();
     }
 
     public void SetLensPosition(Vector3 value)
@@ -134,6 +159,19 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     public void SetLensRefractiveIndex(float value)
     {
         lensMaterials[0].refractiveIndex = value;
+    }
+
+    public void SetCalculationMode(CalculationMode calculationMode)
+    {
+        this.calculationMode = calculationMode;
+        SetupRayTracer();
+        UpdateRayPath();
+    }
+    public void SetTracerObject (RayTracerObject rayTracerObject)
+    {
+        this.rayTracerObject = rayTracerObject;
+        SetupMaterials(lensMaterials[0]);
+        UpdateRayPath();
     }
 
     private void ToggleMaterials(bool state)

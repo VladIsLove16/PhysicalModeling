@@ -13,8 +13,8 @@ public static class RayPhysics
 
         if (sinT2 > 1.0f)
         {
-            refractedDir = Vector3.zero;
-            return false;
+            refractedDir = incident - 2.0f * Vector3.Dot(incident, normal) * normal;
+            return true;
         }
 
         float cosT = Mathf.Sqrt(1.0f - sinT2);
@@ -51,15 +51,15 @@ public static class RayPhysics
         hitPoint = Vector3.zero;
         return false;
     }
-    public static bool RayBoxIntersect(Ray ray, Bounds box, out Vector3 intersectionPoint)
+    public static bool RayBoxIntersect(Ray ray, Bounds bounds, out Vector3 intersectionPoint)
     {
         intersectionPoint = Vector3.zero;
 
         Vector3 origin = ray.origin;
         Vector3 direction = ray.direction;
 
-        Vector3 min = box.min;
-        Vector3 max = box.max;
+        Vector3 min = bounds.min;
+        Vector3 max = bounds.max;
 
         float tmin = (min.x - origin.x) / direction.x;
         float tmax = (max.x - origin.x) / direction.x;

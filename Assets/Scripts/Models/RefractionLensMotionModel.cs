@@ -4,6 +4,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "RefractionLensMotionModel", menuName = "MotionModelsDropdown/RefractionLensMotionModel")]
 public class RefractionLensMotionModel : MotionModel
 {
+    public override void OnEnabled()
+    {
+        base.OnEnabled();
+    }
     public override Vector3 UpdatePosition(float deltaTime)
     {
        return Vector3.zero;

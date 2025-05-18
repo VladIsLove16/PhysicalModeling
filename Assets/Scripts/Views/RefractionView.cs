@@ -10,13 +10,15 @@ public class RefractionView : MotionView
     public override void OnEnabled()
     {
         base.OnEnabled();
+        multiMaterialRefraction.OnEnabled();
+        multiMaterialRefraction.SetTracerObject(MultiMaterialRefraction.RayTracerObject.lens);
         actions[ParamName.angle] = value =>
         {
             multiMaterialRefraction.SetAngle((float)value);
         };
         actions[ParamName.radius] = value =>
         {
-            multiMaterialRefraction.SetRadius((float)value);
+            multiMaterialRefraction.SetLensRadius((float)value);
         };
         actions[ParamName.distance] = value =>
         {
@@ -32,16 +34,17 @@ public class RefractionView : MotionView
         };
         actions[ParamName.unityPhycicsCalculation] = value =>
         {
-            multiMaterialRefraction.calculationMode =(bool) value == true ? MultiMaterialRefraction.CalculationMode.physics : MultiMaterialRefraction.CalculationMode.mathematic;
+            multiMaterialRefraction.SetCalculationMode((bool) value == true ? MultiMaterialRefraction.CalculationMode.physics : MultiMaterialRefraction.CalculationMode.mathematic);
         };
     }
     public override void OnDisabled()
     {
         base.OnDisabled();
-        foreach(var action in actions)
+        foreach(var pair in actions)
         {
-            actions[action.Key] = null;
+            actions[pair.Key] = (value) => { };
         }
+        multiMaterialRefraction.OnDisabled();
     }
 
     protected override void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)

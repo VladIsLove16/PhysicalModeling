@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public partial class LensRayTracer
+public partial class RayTracer
 {
     public interface ISurface
     {
