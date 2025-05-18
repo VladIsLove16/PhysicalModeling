@@ -16,7 +16,7 @@ namespace TMPro.Examples
 
         private Transform m_Transform;
         //private TextMeshProFloatingText floatingText_Script;
-        //public Material material;
+        //public Sphere material;
 
 
         void Start()

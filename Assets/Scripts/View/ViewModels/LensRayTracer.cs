@@ -1,23 +1,49 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.LowLevelPhysics;
 
-public class LensRayTracer : IRayPathCalculator
+public partial class LensRayTracer : IRayPathCalculator
 {
-    public float radius = 5f;
-    public float lensRefractiveIndex;
-
-    private Vector3 centerFront;
-    private Vector3 centerBack;
-
+    private struct LensSurface : ISurface
+    {
+        public float radius;
+        public Vector3 center;
+        public float refractiveIndex;
+        public float RefractiveIndex { 
+            get
+            {
+                return refractiveIndex;
+            }
+            set
+            {
+                refractiveIndex = value;
+            }
+        }
+        public LensSurface(Vector3 center, float radius, float refractiveIndex)
+        {
+            this.center = center;
+            this.radius = radius;
+            this.refractiveIndex = refractiveIndex;
+        }
+        public bool GetIntersection(Vector3 start, Vector3 direction, out Vector3 intersectionPoint)
+        {
+          return RayPhysics.RaySphereIntersect(start, direction, center, radius, out intersectionPoint);
+        }
+        public Vector3 GetNormal(Vector3 intersectionPoint)
+        {
+            return (intersectionPoint-center).normalized;
+        }
+    }
+    private List<ISurface> _surfaces;
     public LensRayTracer(float radius, float distance, float lensRefractiveIndex,Vector3 lensPosition)
     {
-        this.radius = radius;
-        this.lensRefractiveIndex = lensRefractiveIndex;
-
-        // Используем расстояние между центрами сфер
         float thickness = radius * 2 - distance;
-        centerFront = new Vector3(0, radius - thickness / 2, 0) + lensPosition;
-        centerBack = new Vector3(0, -radius + thickness / 2f, 0) + lensPosition;
+        var  centerFront = new Vector3(0, radius - thickness / 2, 0) + lensPosition;
+        var  centerBack = new Vector3(0, -radius + thickness / 2f, 0) + lensPosition;
+        LensSurface lensSurface1 = new LensSurface(centerFront,radius, lensRefractiveIndex);
+        LensSurface lensSurface2 = new LensSurface(centerBack, radius, 1f);
+        _surfaces.Add(lensSurface1);
+        _surfaces.Add(lensSurface2);
     }
 
     public List<Vector3> CalculateRayPath(Vector3 start, Vector3 direction, float maxLength, int maxBounces, float initialRefractiveIndex = 1.0f)
@@ -28,30 +54,16 @@ public class LensRayTracer : IRayPathCalculator
         Vector3 currentDir = direction.normalized;
         float remainingLength = maxLength;
 
-        for (int bounce = 0; bounce < maxBounces && remainingLength > 0; bounce++)
+        for (int i = 0; i < maxBounces && remainingLength > 0; i++)
         {
             Vector3 nextHit, normal;
             float n1, n2;
+            if (!_surfaces[i].GetIntersection(currentPos, currentDir, out nextHit))
+                break;
 
-            if (bounce == 0)
-            {
-                if (!RayPhysics.RaySphereIntersect(currentPos, currentDir, centerFront, radius, out nextHit))
-                    break;
-
-                normal = (nextHit - centerFront).normalized;
-                n1 = initialRefractiveIndex;
-                n2 = lensRefractiveIndex;
-            }
-            else if (bounce == 1)
-            {
-                if (!RayPhysics.RaySphereIntersect(currentPos, currentDir, centerBack, radius, out nextHit))
-                    break;
-
-                normal = (nextHit - centerBack).normalized;
-                n1 = lensRefractiveIndex;
-                n2 = initialRefractiveIndex;
-            }
-            else break;
+            normal = _surfaces[i].GetNormal(nextHit);
+            n1 = initialRefractiveIndex;
+            n2 = _surfaces[i].RefractiveIndex;
             // Автоматическая ориентация нормали
             if (Vector3.Dot(currentDir, normal) > 0)
                 normal = -normal;

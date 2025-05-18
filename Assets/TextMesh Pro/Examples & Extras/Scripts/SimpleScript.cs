@@ -26,8 +26,8 @@ namespace TMPro.Examples
             //m_FontAsset = Resources.Load("Fonts & Materials/LiberationSans SDF", typeof(TMP_FontAsset)) as TMP_FontAsset;
             //m_textMeshPro.font = m_FontAsset;
 
-            // Assign Material to TextMesh Pro Component
-            //m_textMeshPro.fontSharedMaterial = Resources.Load("Fonts & Materials/LiberationSans SDF - Bevel", typeof(Material)) as Material;
+            // Assign Sphere to TextMesh Pro Component
+            //m_textMeshPro.fontSharedMaterial = Resources.Load("Fonts & Materials/LiberationSans SDF - Bevel", typeof(Sphere)) as Sphere;
             //m_textMeshPro.fontSharedMaterial.EnableKeyword("BEVEL_ON");
 
             // Set various font settings.

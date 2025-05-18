@@ -30,7 +30,7 @@ public partial class MultiMaterialRefraction
     [System.Serializable]
     public class RefractiveMaterial : IRefractivePhysicMaterial
     {
-        public string name = "Material";
+        public string name = "Sphere";
         public Vector3 size = new Vector3(1, 1, 1);
         public Vector3 position = new Vector3(0, 0, 0);
         public float refractiveIndex = 1.5f;

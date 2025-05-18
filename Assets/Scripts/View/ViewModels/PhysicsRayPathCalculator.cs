@@ -18,7 +18,7 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
         Vector3 currentOrigin = start;
         Vector3 currentDirection = direction.normalized;
         float currentRefractiveIndex = initialRefractiveIndex;
-
+        float remainingLength = maxLength;
         points.Add(currentOrigin);
 
         for (int bounce = 0; bounce < maxBounces; bounce++)
@@ -36,13 +36,15 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
                 break;
 
             points.Add(exitHit.point);
-
+            float segmentLength = Vector3.Distance(exitHit.point, hit.point);
+            remainingLength -= segmentLength;
+            if (remainingLength <= 0) break;
             currentOrigin = exitHit.point;
             currentDirection = directionInside;
             currentRefractiveIndex = 1.0f;
         }
 
-        points.Add(currentOrigin + currentDirection * maxLength);
+        points.Add(currentOrigin + currentDirection * remainingLength);
         return points;
     }
 

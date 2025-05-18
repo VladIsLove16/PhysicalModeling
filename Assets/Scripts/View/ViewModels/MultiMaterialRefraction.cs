@@ -143,7 +143,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     {
         foreach (Transform child in transform)
         {
-            if (child.name.StartsWith("Material"))
+            if (child.name.StartsWith("Sphere"))
             {
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
@@ -183,7 +183,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     {
         if (mat.generate)
         {
-            mat.generatedObject = new GameObject($"Material{mat.name}");
+            mat.generatedObject = new GameObject($"Sphere{mat.name}");
             mat.generatedObject.transform.parent = transform;
             mat.collider = mat.generatedObject.AddComponent<MeshCollider>();
             mat.collider.convex = true;

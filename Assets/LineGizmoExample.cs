@@ -16,7 +16,7 @@ public class LineGizmoExample : MonoBehaviour
         // Draw the line
         Gizmos.DrawLine(transform.position, endPoint.position);
 
-        // Draw spheres at start and end points
+        // Draw surfaces at start and end points
         Gizmos.DrawSphere(transform.position, 0.1f);
         Gizmos.DrawSphere(endPoint.position, 0.1f);
 
