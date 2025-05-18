@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using static MultiMaterialRefraction;
 using static MultiMaterialRefraction.RefractiveMaterial;
 
@@ -59,4 +60,6 @@ public partial class MultiMaterialRefraction
         lens,
         material
     }
+
+    
 }

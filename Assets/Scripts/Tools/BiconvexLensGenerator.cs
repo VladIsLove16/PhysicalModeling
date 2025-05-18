@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -130,4 +131,23 @@ public class BiconvexLensGenerator : MonoBehaviour
         gameObject.transform.position = position;
         return mesh;
     }
+
+    internal void SetRadius(object value)
+    {
+        radius = (float)value;
+        GenerateLensMesh();
+    }
+
+    internal void SetDistance(object value)
+    {
+        distance = (float)value;
+        GenerateLensMesh();
+    }
+
+    internal void SetPosition(object value)
+    {
+       position = (Vector3)   value; 
+        GenerateLensMesh();
+    }
+
 }

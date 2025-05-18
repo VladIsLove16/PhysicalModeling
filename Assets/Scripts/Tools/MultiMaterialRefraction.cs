@@ -112,6 +112,30 @@ public partial class MultiMaterialRefraction : MonoBehaviour
         UpdateRayPath();
     }
 
+    public void SetAngle(float angle)
+    {
+        this.angle = angle;
+    }
+
+    public void SetRadius(float value)
+    {
+        biconvexLensMesh.SetRadius(value);
+    }
+
+    public void SetLensDistance(float value)
+    {
+        biconvexLensMesh.SetDistance(value);
+    }
+
+    public void SetLensPosition(Vector3 value)
+    {
+        biconvexLensMesh.SetPosition(value); 
+    }
+    public void SetLensRefractiveIndex(float value)
+    {
+        lensMaterials[0].refractiveIndex = value;
+    }
+
     private void ToggleMaterials(bool state)
     {
         foreach(var material in materials)

@@ -15,17 +15,22 @@ public class TopicField
     private ReactiveProperty<object> property = new ReactiveProperty<object>();
     private Dictionary<ParamName, FieldType> paramNameFieldTypes = new Dictionary<ParamName, FieldType>()
     {
-        { ParamName.position,FieldType.Vector3 } ,
-        { ParamName.velocity,FieldType.Vector3 } ,
-        { ParamName.velocity2,FieldType.Vector3 } ,
-        { ParamName.angle,FieldType.Float } ,   
+        { ParamName.angle,FieldType.Float } ,
         { ParamName.angleRad,FieldType.Float } ,
-        { ParamName.seed,FieldType.Int } ,
-        { ParamName.mass,FieldType.Float } ,
+        { ParamName.distance,FieldType.Float },
         { ParamName.friction,FieldType.Float } ,
         { ParamName.force,FieldType.Float } ,
         { ParamName.forceAcceleration,FieldType.Float } ,
-    };
+        { ParamName.radius,FieldType.Float } ,
+        { ParamName.refractiveIndex,FieldType.Float } ,
+        { ParamName.unityPhycicsCalculation,FieldType.Bool } ,
+        { ParamName.position,FieldType.Vector3 } ,
+        { ParamName.velocity,FieldType.Vector3 } ,
+        { ParamName.velocity2,FieldType.Vector3 } ,
+        { ParamName.seed,FieldType.Int } ,
+        { ParamName.mass,FieldType.Float } ,
+    }; 
+           
 
     public static Dictionary<ParamName, float> MaxValues = new Dictionary<ParamName, float>()
     {
@@ -225,6 +230,8 @@ public enum ParamName
     respawnObstacles,
     friction,
     force,
-    forceAcceleration
+    forceAcceleration,
+    refractiveIndex,
+    unityPhycicsCalculation
 }
 public enum FieldType { Float, Vector3, Int,Bool }
