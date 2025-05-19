@@ -6,6 +6,42 @@ public class HelicalMotionModel : MotionModel
 {
     protected MotionModel rotationalMotionModel;
     protected MotionModel linearMotionModel;
+    protected override Dictionary<ParamName, object> DefaultValues
+    {
+        get
+        {
+            return defaultValues;
+        }
+    }
+    protected override Dictionary<ParamName, object> MaxValues
+    {
+        get
+        {
+            return maxValues;
+        }
+    }
+    protected override Dictionary<ParamName, object> MinValues
+    {
+        get
+        {
+            return minValues;
+        }
+    }
+
+    private static Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.radius, 1f },
+        { ParamName.angularVelocity, 1f },
+        { ParamName.rotationFrequency, 1f },
+    };
+    private static Dictionary<ParamName, object> maxValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.radius, 5f },
+    };
+    private static Dictionary<ParamName, object> minValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.radius, 0f },
+    };
     protected virtual MotionModel RotationalMotionModel
     {
         get {

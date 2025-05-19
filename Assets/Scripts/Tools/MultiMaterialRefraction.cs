@@ -190,6 +190,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
         {
             materials[materialIndex].size = vector;
         }
+        OnEnabled();
         SetupMaterials(lens);
         UpdateRayPath();
     }

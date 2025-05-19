@@ -12,5 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c62ea3a44cc36d544ab0b6ff1a59cb1d, type: 3}
   m_Name: RefractionMaterialsMotionModel
   m_EditorClassIdentifier: 
-  Title: 
-  TopicFieldsList: []
+  Title: "\u041F\u0440\u0435\u043B\u043E\u043C\u043B\u0435\u043D\u0438\u0435 \u043B\u0443\u0447\u0430
+    \u043C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u0430\u043C\u0438"
+  TopicFieldsList:
+  - paramName: 39
+  - paramName: 40
+  - paramName: 41
+  - paramName: 42
+  - paramName: 43
+  - paramName: 44
+  - paramName: 45
+  - paramName: 46
+  - paramName: 47
+  - paramName: 48

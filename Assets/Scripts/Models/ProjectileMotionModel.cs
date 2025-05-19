@@ -4,6 +4,35 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ProjectileMotionModel", menuName = "MotionModelsDropdown/Projectile")]
 public class ProjectileMotionModel : MotionModel
 {
+    protected override Dictionary<ParamName, object> DefaultValues
+    {
+        get
+        {
+            return new Dictionary<ParamName, object>
+            {
+            };
+        }
+    }
+
+    protected override Dictionary<ParamName, object> MaxValues
+    {
+        get
+        {
+            return new Dictionary<ParamName, object>
+            {
+            };
+        }
+    }
+
+    protected override Dictionary<ParamName, object> MinValues
+    {
+        get
+        {
+            return new Dictionary<ParamName, object>
+            {
+            };
+        }
+    }
     private readonly Vector3 gravity = new(0, -9.81f, 0);
 
     public override Vector3 UpdatePosition(float deltaTime)

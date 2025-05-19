@@ -2,6 +2,7 @@
 using System;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
+using System.Linq;
 
 public class RefractionLensView : MotionView
 {
@@ -46,7 +47,8 @@ public class RefractionLensView : MotionView
     public override void OnDisabled()
     {
         base.OnDisabled();
-        foreach(var key in actions.Keys)
+        ParamName[] keys = actions.Keys.ToArray();
+        foreach (var key in keys)
         {
             actions[key] = null;
         }

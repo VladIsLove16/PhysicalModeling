@@ -30,6 +30,7 @@ public class RefractionMaterialsMotionModel : MotionModel
         {
             return new Dictionary<ParamName, object>
             {
+                 { ParamName.rayAngle, 89f },
                  { ParamName.material1_RefractiveIndex, 5f },
                 { ParamName.material2_RefractiveIndex, 5f },
                 { ParamName.material3_RefractiveIndex, 5f },
@@ -43,6 +44,7 @@ public class RefractionMaterialsMotionModel : MotionModel
         {
             return new Dictionary<ParamName, object>
             {
+                { ParamName.rayAngle, -89f },
                 { ParamName.material1_RefractiveIndex, 1f },
                 { ParamName.material2_RefractiveIndex, 1f },
                 { ParamName.material3_RefractiveIndex, 1f },

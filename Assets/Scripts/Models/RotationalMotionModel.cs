@@ -31,6 +31,7 @@ public class RotationalMotionModel : MotionModel
     {
         { ParamName.radius, 1f },
         { ParamName.angularVelocity, 1f },
+        { ParamName.rotationFrequency, 1f },
     };
     private static Dictionary<ParamName, object> maxValues = new Dictionary<ParamName, object>()
     {
