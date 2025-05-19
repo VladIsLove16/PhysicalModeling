@@ -15,14 +15,10 @@ public class ToggleTopicFieldController : TopicFieldController
         base.Setup(topicField, defaultValue);
         Toggle.onValueChanged.AddListener((boolean) => OnValueChanged());
     }
+
     protected override string GetText()
     {
         return Toggle.isOn ? true.ToString() : false.ToString();
-    }
-
-    protected override void SetDefaultValue()
-    {
-        Toggle.isOn = false;
     }
 
     protected override void SetReadOnly(bool value)

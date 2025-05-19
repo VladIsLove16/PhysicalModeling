@@ -7,10 +7,48 @@ using static UnityEditor.PlayerSettings;
 [CreateAssetMenu(fileName = "RampMotionModel", menuName = "MotionModelsDropdown/RampMotionModel")]
 public class RampMotionModel : MotionModel
 {
+    protected override Dictionary<ParamName, object> DefaultValues
+    {
+        get
+        {
+            return defaultValues;
+        }
+    }
+    protected override Dictionary<ParamName, object> MaxValues
+    {
+        get
+        {
+            return maxValues;
+        }
+    }
+    protected override Dictionary<ParamName, object> MinValues
+    {
+        get
+        {
+            return minValues;
+        }
+    }
+
+    private static Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.seed, 0 },
+        { ParamName.angleDeg, 30f },
+    };
+    private static Dictionary<ParamName, object> maxValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.seed, 1000000 },
+        { ParamName.angleDeg, 60f },
+    };
+    private static Dictionary<ParamName, object> minValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.seed, 0 },
+        { ParamName.angleDeg, 0f },
+    };
     public override void OnEnabled()
     {
         base.OnEnabled();
-        TrySetParam(ParamName.angle, 30f);
+        MaxValues[ParamName.angleDeg] = 60f;
+        TrySetParam(ParamName.angleDeg, 30f);
     }
     public override Vector3 UpdatePosition(float deltaTime)
     {
@@ -18,11 +56,10 @@ public class RampMotionModel : MotionModel
         (Vector3 moveVector, Vector3 newVelocity)   = RampPhysics.CheckInclined(
             (float)GetParam(ParamName.mass),
             (float)GetParam(ParamName.friction),
-            (float)GetParam(ParamName.angle),
+            (float)GetParam(ParamName.angleDeg),
             (Vector3)GetParam(ParamName.velocity),
             (float)GetParam(ParamName.force),
-            deltaTime
-            );
+            deltaTime); 
         float force = (float)GetParam(ParamName.force);
         float newForce = force + (float)GetParam(ParamName.forceAcceleration) * deltaTime;
         Debug.Log("new force " + newForce);
@@ -48,16 +85,14 @@ public class RampMotionModel : MotionModel
            new TopicField(ParamName.friction, false),
            new TopicField(ParamName.force, false),
            new TopicField(ParamName.forceAcceleration, false),
-           new TopicField(ParamName.angle, false),
+           new TopicField(ParamName.angleDeg, false),
            new TopicField(ParamName.time, true)
        };
-        list.First(x => x.ParamName == ParamName.angle).SetMaxValueForce(60);
-
         return list;
     }
     public override void ResetParam(ParamName paramName)
     {
-        if (paramName == ParamName.angle)
+        if (paramName == ParamName.angleDeg)
             return;
         if (paramName == ParamName.mass)
             return;

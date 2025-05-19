@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
-public class RefractionLensView : MotionView
+public class RefractionMaterialsView : MotionView
 {
     [SerializeField] MultiMaterialRefraction multiMaterialRefraction;
     // Инициализация словаря
@@ -13,40 +12,57 @@ public class RefractionLensView : MotionView
     {
         base.OnEnabled();
         multiMaterialRefraction.OnEnabled();
-        multiMaterialRefraction.SetTracerObject(MultiMaterialRefraction.RayTracerObject.lens);
+        multiMaterialRefraction.SetTracerObject(MultiMaterialRefraction.RayTracerObject.materials);
         actions[ParamName.rayAngle] = value =>
         {
             multiMaterialRefraction.SetAngle((float)value);
         };
-        actions[ParamName.radius] = value =>
+        actions[ParamName.material1_Size] = value =>
         {
-            multiMaterialRefraction.SetLensRadius((float)value,true);
+            multiMaterialRefraction.SetMaterialSize(0,value);
         };
-        actions[ParamName.distance] = value =>
+        actions[ParamName.material1_Position] = value =>
         {
-            multiMaterialRefraction.SetLensDistance((float) value, true);
+            multiMaterialRefraction.SetMaterialPosition(0, value);
         };
-        actions[ParamName.position] = value =>
+        actions[ParamName.material1_RefractiveIndex] = value =>
         {
-            multiMaterialRefraction.SetLensPosition((Vector3)value, true);
+            multiMaterialRefraction.SetMaterialRefractiveIndex(0, value);
         };
-        actions[ParamName.xPosition] = value =>
+        actions[ParamName.material2_Size] = value =>
         {
-            multiMaterialRefraction.SetLensXPosition((float)value, true);
+            multiMaterialRefraction.SetMaterialSize(1,value);
         };
-        actions[ParamName.refractiveIndex] = value =>
+        actions[ParamName.material2_Position] = value =>
         {
-            multiMaterialRefraction.SetLensRefractiveIndex((float) value);
+            multiMaterialRefraction.SetMaterialPosition(1,value);
         };
-        actions[ParamName.unityPhycicsCalculation] = value =>
+        actions[ParamName.material2_RefractiveIndex] = value =>
         {
-            multiMaterialRefraction.SetCalculationMode((bool) value == true ? MultiMaterialRefraction.CalculationMode.physics : MultiMaterialRefraction.CalculationMode.mathematic);
+            multiMaterialRefraction.SetMaterialRefractiveIndex(1, value);
         };
+        actions[ParamName.material3_Size] = value =>
+        {
+            multiMaterialRefraction.SetMaterialSize(2,value);
+        };
+        actions[ParamName.material3_Position] = value =>
+        {
+            multiMaterialRefraction.SetMaterialPosition(2, value);
+        };
+        actions[ParamName.material3_RefractiveIndex] = value =>
+        {
+            multiMaterialRefraction.SetMaterialRefractiveIndex(2, value);
+        };
+        
+        //actions[ParamName.unityPhycicsCalculation] = value =>
+        //{
+        //    multiMaterialRefraction.SetCalculationMode((bool)value == true ? MultiMaterialRefraction.CalculationMode.physics : MultiMaterialRefraction.CalculationMode.mathematic);
+        //};
     }
     public override void OnDisabled()
     {
         base.OnDisabled();
-        foreach(var key in actions.Keys)
+        foreach (var key in actions.Keys)
         {
             actions[key] = null;
         }

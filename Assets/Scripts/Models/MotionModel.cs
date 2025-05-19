@@ -41,13 +41,41 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     //    }
     //}
     private bool isInitialized;
-    protected ReactiveDictionary<FieldType, object> DefaultValues = new ReactiveDictionary<FieldType, object>()
+    protected ReactiveDictionary<FieldType, object> DefaultFieldTypeValues = new ReactiveDictionary<FieldType, object>()
     {
         { FieldType.Float, 0f },
         { FieldType.Vector3, Vector3.zero },
         { FieldType.Int, 0 },
         { FieldType.Bool, false },
     };
+
+    protected virtual Dictionary< ParamName, object> DefaultValues
+    {
+        get
+        {
+            return defaultValues;
+        }
+    }
+    protected virtual Dictionary<ParamName, object> MaxValues
+    {
+        get
+        {
+            return new();
+        }
+    }
+    protected virtual Dictionary<ParamName, object> MinValues
+    {
+        get
+        {
+            return new();
+        }
+    }
+    private static Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
+    {
+
+    };
+
+
     [SerializeField] protected List<TopicField> TopicFieldsList;
     public virtual void InitializeParameters(bool isForce = false)
     {
@@ -57,9 +85,14 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         foreach (var field in TopicFieldsList)
         {
             topicFields[field.ParamName] = field;
-            field.TrySetValue(DefaultValues[field.FieldType]);
+            if(MaxValues.TryGetValue(field.ParamName, out object maxValue))
+                field.SetMaxValue(maxValue);
+            if(MinValues.TryGetValue(field.ParamName, out object minValue))
+                field.SetMinValue(minValue);
+            object defaultValue = GetDefaultValue(field.ParamName);
+            field.TrySetValue(defaultValue);
         }
-        isInitialized= true;
+        isInitialized = true;
     }
     public abstract Vector3 UpdatePosition(float deltaTime);
     public abstract Vector3 CalculatePosition(float Time);
@@ -77,13 +110,11 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         return topicFields[value].FieldType;
     }
 
-    public object GetDefaultValue(FieldType fieldType)
-    {
-        return DefaultValues[fieldType];
-    }
     public object GetDefaultValue(ParamName paramName)
     {
-        return DefaultValues[topicFields[paramName].FieldType];
+        if(DefaultValues.ContainsKey(paramName))
+            return DefaultValues[paramName];
+        return DefaultFieldTypeValues[topicFields[paramName].FieldType];
     }
     public virtual void ResetParam(ParamName parametrName)
     {

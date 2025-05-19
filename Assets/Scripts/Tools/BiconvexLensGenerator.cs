@@ -48,6 +48,13 @@ public class BiconvexLensGenerator : MonoBehaviour
     {
         try
         {
+            Debug.Log("GenerateLensMesh");
+
+            if (radius == 0 || distance == 0 || width == 0)
+            {
+                Debug.Log(" lens params cant be 0");
+                return;
+            }
             List<Vector2> profile = new List<Vector2>();
             float halfWidth = width / 2f;
             float halfDist = distance / 2f;
@@ -138,22 +145,26 @@ public class BiconvexLensGenerator : MonoBehaviour
         }
     }
 
-    internal void SetRadius(object value)
+    internal void SetRadius(object value,bool updateGeometry = true)
     {
         radius = (float)value;
-        GenerateLensMesh();
+        if(updateGeometry ) 
+            GenerateLensMesh();
+        Debug.Log("radius " + radius);
     }
 
-    internal void SetDistance(object value)
+    internal void SetDistance(object value,bool updateGeometry = true)
     {
         distance = (float)value;
-        GenerateLensMesh();
+        if(updateGeometry)
+            GenerateLensMesh();
     }
 
-    internal void SetPosition(object value)
+    internal void SetPosition(object value, bool updateGeometry = true)
     {
-       position = (Vector3)   value; 
-        GenerateLensMesh();
+       position = (Vector3)   value;
+        if (updateGeometry) 
+            GenerateLensMesh();
     }
 
 }

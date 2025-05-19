@@ -24,7 +24,7 @@ public class ObstaclesView : MotionView
             obstacleSpawner.SetSeed((int)value);
             obstacleSpawner.SpawnObstacles();
         };
-        actions[ParamName.angle] = value =>
+        actions[ParamName.angleDeg] = value =>
         {
             if (MovingDirectionArrow != null)
             {
@@ -42,7 +42,7 @@ public class ObstaclesView : MotionView
     {
         base.OnDisabled();
         actions[ParamName.seed] = null;
-        actions[ParamName.angle] = null;
+        actions[ParamName.angleDeg] = null;
         actions[ParamName.obstaclesMass] = null;
         obstacleSpawner.ClearObstacles();
     }

@@ -36,6 +36,7 @@ public class InputFieldTopicFieldController : TopicFieldController
         inputField.onSelect.AddListener(OnSelect);
         Debug.Log("Setup  :  InputFieldTopicFieldController");
     }
+
     protected virtual void OnTopicFieldEndEdit()
     {
         bool res = topicField.TrySetValue(GetText());
@@ -44,27 +45,26 @@ public class InputFieldTopicFieldController : TopicFieldController
             SetText(previousValue);
         }
     }
+
     protected override  string GetText()
     {
         return inputField.text;
     }
+
     public void SetText(string v)
     {
         inputField.text = v;
         isLocalUpdate = true;
     }
+
     protected override void SetReadOnly(bool value)
     {
         inputField.interactable = !value;
     }
+
     protected void OnSelect(string arg0)
     {
         previousValue = arg0;
-    }
-
-    protected override void SetDefaultValue()
-    {
-        SetValue(DefaultValues[FieldType]);
     }
 
     public override bool SetValue(object newValue)

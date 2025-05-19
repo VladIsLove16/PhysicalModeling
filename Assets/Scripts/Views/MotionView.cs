@@ -37,9 +37,24 @@ public abstract class MotionView : MonoBehaviour
     {
         { ParamName.seed, ViewType.Slider },
         { ParamName.pointAReached, ViewType.Toggle },
-        { ParamName.angle, ViewType.Slider },
+        { ParamName.angleDeg, ViewType.Slider },
         { ParamName.respawnObstacles, ViewType.Toggle },
         { ParamName.unityPhycicsCalculation, ViewType.Toggle },
+        { ParamName.xPosition, ViewType.Slider },
+        { ParamName.rayAngle, ViewType.Slider },
+        { ParamName.refractiveIndex, ViewType.Slider },
+        { ParamName.radius, ViewType.Slider },
+        { ParamName.distance, ViewType.Slider },
+
+        {ParamName.material1_Size,ViewType.inputField },
+        {ParamName.material1_Position,ViewType.inputField },
+        {ParamName.material1_RefractiveIndex,ViewType.Slider },
+        {ParamName.material2_Size,ViewType.inputField },
+        {ParamName.material2_Position,ViewType.inputField },
+        {ParamName.material2_RefractiveIndex,ViewType.Slider },
+        {ParamName.material3_Size,ViewType.inputField },
+        {ParamName.material3_Position,ViewType.inputField },
+        {ParamName.material3_RefractiveIndex,ViewType.Slider },
     };
 
     protected virtual void Start()

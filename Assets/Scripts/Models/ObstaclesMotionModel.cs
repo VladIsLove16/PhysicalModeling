@@ -6,6 +6,43 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ObstaclesMotionModel", menuName = "MotionModelsDropdown/ObstaclesMotionModel")]
 public class ObstaclesMotionModel : MotionModel
 {
+    protected override Dictionary<ParamName, object> DefaultValues
+    {
+        get
+        {
+            return defaultValues;
+        }
+    }
+    protected override Dictionary<ParamName, object> MaxValues
+    {
+        get
+        {
+            return maxValues;
+        }
+    }
+    protected override Dictionary<ParamName, object> MinValues
+    {
+        get
+        {
+            return minValues;
+        }
+    }
+
+    private static Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.seed, 0 },
+        { ParamName.angleDeg, 0 },
+    };
+    private static Dictionary<ParamName, object> maxValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.seed, 1000000 },
+        { ParamName.angleDeg, 359f },
+    };
+    private static Dictionary<ParamName, object> minValues = new Dictionary<ParamName, object>()
+    {
+        { ParamName.seed, 0 },
+        { ParamName.angleDeg, 0f },
+    };
     private GameObject movingObject;
     private Rigidbody movingObjectrb;
     public void Init(GameObject movingObject, PointA pointA)
@@ -68,7 +105,7 @@ public class ObstaclesMotionModel : MotionModel
     private void SetupVelocity()
     {
         float VelocityMagnitude = (float)GetParam(ParamName.velocityMagnitude);
-        float angle = (float)GetParam(ParamName.angle);
+        float angle = (float)GetParam(ParamName.angleDeg);
         float radAngle = angle * 2f * (float)Math.PI / 360;
         float x = (float)Math.Cos(radAngle);
         float y = (float)Math.Sin(radAngle);
@@ -101,7 +138,7 @@ public class ObstaclesMotionModel : MotionModel
         {
            new TopicField(ParamName.position, FieldType.Vector3,false),
            new TopicField(ParamName.velocityMagnitude, FieldType.Float,false),
-           new TopicField(ParamName.angle, FieldType.Float,false),
+           new TopicField(ParamName.angleDeg, FieldType.Float,false),
            new TopicField(ParamName.mass, FieldType.Float,false),
            new TopicField(ParamName.obstaclesMass, FieldType.Float,false),
            new TopicField(ParamName.pointAReached, FieldType.Bool,true),

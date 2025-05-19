@@ -20,7 +20,7 @@ public class RampView: MotionView
         RampMeshGenerator.Move(Vector3.zero + objOffset);
         RampMeshGenerator.Move(Vector3.zero - objOffset);
         RampMeshGenerator.regenerated += () => OnRampMeshGenerator_regenerated(objOffset);
-        actions[ParamName.angle] = (value) => RampMeshGenerator.SetAngle((float)value, true);
+        actions[ParamName.angleDeg] = (value) => RampMeshGenerator.SetAngle((float)value, true);
         actions[ParamName.position] = (value) => MovingObject.transform.position = (Vector3)value;
     }
 
@@ -39,7 +39,7 @@ public class RampView: MotionView
     public override void OnDisabled()
     {
         base.OnDisabled();
-        actions[ParamName.angle] = null;
+        actions[ParamName.angleDeg] = null;
         actions[ParamName.position] = null;
     }
 

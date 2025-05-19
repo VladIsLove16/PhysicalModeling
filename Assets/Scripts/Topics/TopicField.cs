@@ -15,7 +15,7 @@ public class TopicField
     private ReactiveProperty<object> property = new ReactiveProperty<object>();
     private Dictionary<ParamName, FieldType> paramNameFieldTypes = new Dictionary<ParamName, FieldType>()
     {
-        { ParamName.angle,FieldType.Float } ,
+        { ParamName.angleDeg,FieldType.Float } ,
         { ParamName.angleRad,FieldType.Float } ,
         { ParamName.distance,FieldType.Float },
         { ParamName.friction,FieldType.Float } ,
@@ -25,19 +25,26 @@ public class TopicField
         { ParamName.refractiveIndex,FieldType.Float } ,
         { ParamName.unityPhycicsCalculation,FieldType.Bool } ,
         { ParamName.position,FieldType.Vector3 } ,
+        { ParamName.xPosition,FieldType.Float } ,
         { ParamName.velocity,FieldType.Vector3 } ,
         { ParamName.velocity2,FieldType.Vector3 } ,
         { ParamName.seed,FieldType.Int } ,
         { ParamName.mass,FieldType.Float } ,
-    }; 
-           
-
-    public static Dictionary<ParamName, float> MaxValues = new Dictionary<ParamName, float>()
-    {
-        { ParamName.seed, 1000000f },
-        { ParamName.angle, 360f },
+        {  ParamName.material1_Size,FieldType.Vector3},
+        {  ParamName.material1_Position,FieldType.Vector3 },
+        {  ParamName.material1_RefractiveIndex ,FieldType.Float },
+        {  ParamName.material2_Size,FieldType.Vector3},
+        {  ParamName.material2_Position,FieldType.Vector3 },
+        {  ParamName.material2_RefractiveIndex ,FieldType.Float },
+        {  ParamName.material3_Size,FieldType.Vector3},
+        {  ParamName.material3_Position,FieldType.Vector3 },
+        {  ParamName.material3_RefractiveIndex ,FieldType.Float },
     };
-    internal float maxValue => MaxValues[paramName];
+
+    public object MaxValue;
+    public object MinValue;
+    private object maxValue;
+    private object minValue;
 
     public ParamName ParamName => paramName;
     public FieldType FieldType => type;
@@ -57,10 +64,7 @@ public class TopicField
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
-    public void SetMaxValueForce( float value)
-    {
-        MaxValues[paramName] = value;
-    }
+
     public TopicField(ParamName paramName, bool isReadonly = false, FieldType type = FieldType.Float)
     {
         this.paramName = paramName;
@@ -71,10 +75,12 @@ public class TopicField
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
+
     public string GetStringValue()
     {
        return GetStringFromValue(Property.Value);
     }
+
     public void SetTypeForce(FieldType type)
     {
         this.type = type;
@@ -185,12 +191,43 @@ public class TopicField
     {
         Type valueType = value.GetType();
         if (GetFieldValueType(FieldType) == valueType)
-        { 
+        {
+            object clampedValue = ClampValue(value);
             property.SetValueAndForceNotify(value);
             return true;
         }
         Debug.LogAssertion("Cant set (value) " + value +  " of type " + valueType +  " to " + ParamName + " of type  " + FieldType);
         return true;
+    }
+
+    private object ClampValue(object value)
+    {
+        if (MaxValue == null || MinValue == null)
+        {
+            return value;
+        }
+        if (value is float fValue)
+        {
+            fValue = Mathf.Clamp(fValue, (float)MinValue, (float)MaxValue);
+            return fValue;
+        }
+        else if (value is int intValue)
+        {
+            intValue = Math.Clamp(intValue, (int)MinValue, (int)MaxValue);
+            return intValue;
+        }
+        else
+            return value;
+    }
+
+    internal void SetMaxValue(object v)
+    {
+        MaxValue = v;
+    }
+
+    internal void SetMinValue(object v)
+    {
+         MinValue = v;
     }
 }
 public enum ParamName
@@ -204,7 +241,7 @@ public enum ParamName
     acceleration,
     jerk,
     angularVelocity,
-    angle,
+    angleDeg,
     angleRad,
     angleRadTraveled,
     period,
@@ -232,6 +269,17 @@ public enum ParamName
     force,
     forceAcceleration,
     refractiveIndex,
-    unityPhycicsCalculation
+    unityPhycicsCalculation,
+    xPosition,
+    rayAngle,
+    material1_Size,
+    material1_Position,
+    material1_RefractiveIndex,
+    material2_Size,
+    material2_Position,
+    material2_RefractiveIndex,
+    material3_Size,
+    material3_Position,
+    material3_RefractiveIndex
 }
 public enum FieldType { Float, Vector3, Int,Bool }

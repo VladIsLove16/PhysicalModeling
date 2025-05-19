@@ -20,7 +20,7 @@ public class RampMeshGenerator : MonoBehaviour
             angle = value;
         }
         else
-            Debug.Log("angle clamp " + MINANGLE + " -> " + MAXANGLE);
+            Debug.Log("angleDeg clamp " + MINANGLE + " -> " + MAXANGLE);
         if (v)
         {
             GenerateRamp();

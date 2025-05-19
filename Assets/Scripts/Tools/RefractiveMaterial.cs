@@ -60,6 +60,4 @@ public partial class MultiMaterialRefraction
         lens,
         material
     }
-
-    
 }

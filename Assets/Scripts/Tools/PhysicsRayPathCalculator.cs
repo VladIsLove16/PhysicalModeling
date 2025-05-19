@@ -40,7 +40,6 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
             remainingLength -= segmentLength;
             if (remainingLength <= 0) break;
             currentOrigin = exitHit.point;
-            currentDirection = directionInside;
             currentRefractiveIndex = 1.0f;
         }
 
@@ -51,6 +50,7 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
     private bool RaycastToNextMaterial(Vector3 origin, Vector3 direction, out RaycastHit hit, out MultiMaterialRefraction.IRefractivePhysicMaterial material)
     {
         material = null;
+        origin = origin-0.01f*direction;
         if (Physics.Raycast(origin, direction, out hit, maxRayLength))
         {
             foreach (var mat in materials)

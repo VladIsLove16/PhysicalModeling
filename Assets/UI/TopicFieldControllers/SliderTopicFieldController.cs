@@ -15,8 +15,28 @@ public class SliderTopicFieldController : InputFieldTopicFieldController
     {
         base.Setup(topicField, defaultValue);
         Slider.onValueChanged.AddListener((str) => OnSliderValueChanged());
-        Slider.maxValue = topicField.maxValue;
+        ClampSlider(topicField);
         Slider.wholeNumbers = topicField.FieldType == FieldType.Int;
+    }
+
+    private void ClampSlider(TopicField topicField)
+    {
+        if (topicField.MaxValue == null || topicField.MinValue == null)
+        {
+            Slider.maxValue = 0.99f;
+            Slider.minValue = -0.99f;
+            return;
+        }
+        if (FieldType == FieldType.Float)
+        {
+            Slider.maxValue = (float)topicField.MaxValue;
+            Slider.minValue = (float)topicField.MinValue;
+        }
+        else if (FieldType == FieldType.Int)
+        {
+            Slider.maxValue = (int)topicField.MaxValue;
+            Slider.minValue = (int)topicField.MinValue;
+        }
     }
 
     private void OnSliderValueChanged()
@@ -29,12 +49,6 @@ public class SliderTopicFieldController : InputFieldTopicFieldController
         {
             SetText("error");
         }
-    }
-
-    protected override void SetDefaultValue()
-    {
-        base.SetDefaultValue();
-        Slider.value = 0.3f;
     }
 
     protected override void SetReadOnly(bool value)

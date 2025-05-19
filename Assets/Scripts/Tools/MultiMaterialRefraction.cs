@@ -4,6 +4,7 @@ using System;
 using static MultiMaterialRefraction;
 using static DebugDrawer;
 using System.Linq;
+using Unity.VisualScripting;
 
 [ExecuteAlways]
 [RequireComponent(typeof(LineRenderer))]
@@ -43,6 +44,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     [Header("Настройки линзы")]
     public List<RefractiveLens> lensMaterials = new List<RefractiveLens>();
     public BiconvexLensGenerator biconvexLensMesh;
+    private RefractiveLens lens => lensMaterials[0];
     public Vector3 rayDirection
     {
         get
@@ -51,12 +53,6 @@ public partial class MultiMaterialRefraction : MonoBehaviour
             float x = Mathf.Tan(rad);
             return new Vector3(x, 1f, 0).normalized;
         }
-    }
-
-    void Awake()
-    {
-        isEnabled = false;
-        SetupMaterialObjects();
     }
 
 #if UNITY_EDITOR
@@ -87,7 +83,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
         gameObject.SetActive(true);
         lineRenderer = GetComponent<LineRenderer>();
         RefractiveLens lens = lensMaterials[0];
-        SetupRayTracer();
+        SetupRayPathCalculator(calculationMode);
         SetupMaterials(lens);
         UpdateRayPath();
     }
@@ -98,7 +94,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
         {
             ToggleMaterials(false);
             ToggleLens(true);
-            biconvexLensMesh.GenerateLensMesh(lens.radius, lens.distance, lens.width, lens.position);
+            GenerateLensMesh(lens);
         }
         else
         {
@@ -107,12 +103,21 @@ public partial class MultiMaterialRefraction : MonoBehaviour
             SetupMaterialObjects(); 
         }
     }
-
-    private void SetupRayTracer()
+    void GenerateLensMesh(RefractiveLens lens)
     {
+        biconvexLensMesh.GenerateLensMesh(lens.radius, lens.distance, lens.width, lens.position);
+    }
+
+    private void SetupRayPathCalculator(CalculationMode mode)
+    {
+        calculationMode = mode;
         if (calculationMode == CalculationMode.mathematic && rayTracerObject == RayTracerObject.materials)
         {
             calculationMode = CalculationMode.physics;
+        }
+        if (calculationMode == CalculationMode.physics && rayTracerObject == RayTracerObject.lens)
+        {
+            calculationMode = CalculationMode.mathematic;
         }
         if (calculationMode == CalculationMode.physics)
         {
@@ -136,44 +141,78 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     public void SetAngle(float angle)
     {
         this.angle = angle;
-        UpdateRayPath();
+        OnEnabled();
     }
 
-    public void SetLensRadius(float value)
+    public void SetLensRadius(float value, bool updateGeometry)
     {
-        biconvexLensMesh.SetRadius(value);
-        UpdateRayPath();
+        lens.radius = value;
+        OnEnabled();
     }
 
-    public void SetLensDistance(float value)
+    public void SetLensDistance(float value,bool updateGeometry)
     {
-        biconvexLensMesh.SetDistance(value);
-        SetupRayTracer();
-        UpdateRayPath();
+        lens.distance = value;
+        OnEnabled();
     }
 
-    public void SetLensPosition(Vector3 value)
+    public void SetLensPosition(Vector3 value, bool updateGeometry)
     {
-        biconvexLensMesh.SetPosition(value); 
+        lens.position = value;
+        OnEnabled();
+    }
+    public void SetLensXPosition(float value, bool updateGeometry)
+    {
+        lens.position = new Vector3(value,lens.position.y,lens.position.z);
+        OnEnabled();
     }
     public void SetLensRefractiveIndex(float value)
     {
-        lensMaterials[0].refractiveIndex = value;
+        lens.refractiveIndex = value;
+        OnEnabled();
     }
 
     public void SetCalculationMode(CalculationMode calculationMode)
     {
         this.calculationMode = calculationMode;
-        SetupRayTracer();
-        UpdateRayPath();
+        OnEnabled();
     }
+
     public void SetTracerObject (RayTracerObject rayTracerObject)
     {
         this.rayTracerObject = rayTracerObject;
-        SetupMaterials(lensMaterials[0]);
+        OnEnabled();
+    }
+
+    public void SetMaterialSize(int materialIndex, object value)
+    {
+        if (value is Vector3 vector)
+        {
+            materials[materialIndex].size = vector;
+        }
+        SetupMaterials(lens);
         UpdateRayPath();
     }
 
+    public void SetMaterialRefractiveIndex(int materialIndex, object value)
+    {
+        if (value is float fvalue)
+        {
+            materials[materialIndex].refractiveIndex = fvalue;
+        }
+        SetupMaterials(lens);
+        UpdateRayPath();
+    }
+
+    public void SetMaterialPosition(int materialIndex, object value)
+    {
+        if (value is Vector3 vector)
+        {
+            materials[materialIndex].position = vector;
+        }
+        SetupMaterials(lens);
+        UpdateRayPath();
+    }
     private void ToggleMaterials(bool state)
     {
         foreach(var material in materials)

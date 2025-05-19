@@ -13,13 +13,6 @@ public abstract class TopicFieldController : MonoBehaviour
     public ParamName ParamName => topicField.ParamName;
     [SerializeField] TextMeshProUGUI label;
     protected TopicField topicField;
-    protected static ReactiveDictionary<FieldType, object> DefaultValues = new ReactiveDictionary<FieldType, object>()
-    {
-        { FieldType.Float, 0f },
-        { FieldType.Vector3, Vector3.zero },
-        { FieldType.Int, 0 },
-        { FieldType.Bool, false },
-    };
     protected virtual void Start()
     {
         
@@ -30,7 +23,7 @@ public abstract class TopicFieldController : MonoBehaviour
         label.text = newText;
     }
 
-    //public virtual void Setup(TopicField topicField, object maxValue = null, string defaultValue = "enter property")
+    //public virtual void Setup(TopicField topicField, object MaxValue = null, string defaultValue = "enter property")
     //{
     //    this.topicField = topicField;
     //    Debug.Log(" Setup  " + GetType().ToString());
@@ -43,23 +36,21 @@ public abstract class TopicFieldController : MonoBehaviour
         this.topicField = topicField;
         Debug.Log(" Setup  " + GetType().ToString());
         SetReadOnly(topicField.IsReadOnly);
-        SetDefaultValue();
         SetLabel(topicField.ParamName.ToString());
     }
 
     public virtual bool SetValue(object newValue)
     {
-        //if (MaxValues.ContainsKey(ParamName))
+        //if (maxValues.ContainsKey(ParamName))
         //{
-        //    if ((float)MaxValues[ParamName] < (float)newValue)
+        //    if ((float)maxValues[ParamName] < (float)newValue)
         //    {
-        //        newValue = MaxValues[ParamName];
+        //        newValue = maxValues[ParamName];
         //    }
         //}
         //return topicField.TrySetValue(newValue);
         return true;
     }
-    protected abstract void SetDefaultValue();
 
     protected abstract void SetReadOnly(bool value);
 
