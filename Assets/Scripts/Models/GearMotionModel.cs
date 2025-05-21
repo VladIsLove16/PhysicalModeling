@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UniRx;
+using System;
 
-[CreateAssetMenu(fileName = "RampBlockMotionModel", menuName = "MotionModelsDropdown/RampBlockMotionModel")]
-public class RampBlockMotionModel : MotionModel
+[CreateAssetMenu(fileName = "GearMotionModel", menuName = "MotionModelsDropdown/GearMotionModel")]
+public class GearMotionModel : MotionModel
 {
     protected override Dictionary<ParamName, object> DefaultValues
     {
@@ -57,7 +57,7 @@ public class RampBlockMotionModel : MotionModel
         TrySetParam(ParamName.position, newPos);
         TrySetParam(ParamName.velocity, newVelocity);
         TrySetParam(ParamName.time, (float)GetParam(ParamName.time) + deltaTime);
-        TrySetParam(ParamName.isMoving, (bool)!Mathf.Approximately(moveVector.magnitude,0));
+        TrySetParam(ParamName.isMoving, (bool)!Mathf.Approximately(moveVector.magnitude, 0));
         return pos + moveVector;
     }
     public override bool TrySetParam(ParamName paramName, object value)
@@ -78,8 +78,8 @@ public class RampBlockMotionModel : MotionModel
     public override List<TopicField> GetRequiredParams()
     {
         List<TopicField> RequiredParams = new List<TopicField>();
-      
-            RequiredParams = new List<TopicField>()
+
+        RequiredParams = new List<TopicField>()
             {
                new TopicField(ParamName.position, true),
                new TopicField(ParamName.position2, true),
@@ -94,24 +94,83 @@ public class RampBlockMotionModel : MotionModel
             };
         return RequiredParams;
     }
-    private void OnadditionalMassParamChange()
-    {
-
-    }
     public override void ResetParam(ParamName paramName)
     {
-        if (paramName == ParamName.angleDeg)
-            return;
-        if (paramName == ParamName.mass)
-            return;
-        if (paramName == ParamName.mass2)
-            return;
-        if (paramName == ParamName.friction)
-            return;
-        if (paramName == ParamName.force)
-            return;
-        if (paramName == ParamName.forceAcceleration)
-            return;
         base.ResetParam(paramName);
+    }
+}
+public partial class Gearbox 
+{
+    private List<GearPair> stages = new List<GearPair>();
+
+    public void AddStage(Gear driver, Gear driven)
+    {
+        stages.Add(new GearPair(driver, driven));
+    }
+
+    public float GetTotalGearRatio()
+    {
+        float ratio = 1f;
+        foreach (var pair in stages)
+        {
+            ratio *= pair.GearRatio;
+        }
+        return ratio;
+    }
+
+    // Выходная угловая скорость
+    public float GetOutputAngularVelocity(float inputAngularVelocity)
+    {
+        return inputAngularVelocity / GetTotalGearRatio();
+    }
+
+    // Частота вращения выходного вала (об/с)
+    public float GetOutputFrequency(float inputFrequency)
+    {
+        return inputFrequency / GetTotalGearRatio();
+    }
+}
+public partial  class GearPair
+{
+    public Gear Driver { get; private set; } // Ведущее
+    public Gear Driven { get; private set; } // Ведомое
+
+    public float GearRatio => (float)Driven.TeethCount / Driver.TeethCount; // u = Z2 / Z1
+
+    public GearPair(Gear driver, Gear driven)
+    {
+        if (driver.Module != driven.Module)
+            throw new ArgumentException("Gears must have the same module.");
+
+        Driver = driver;
+        Driven = driven;
+    }
+
+    // Получение угловой скорости ведомого колеса (рад/с)
+    public float GetDrivenAngularVelocity(float driverAngularVelocity)
+    {
+        return driverAngularVelocity / GearRatio;
+    }
+
+    // Получение частоты вращения ведомого колеса (об/с)
+    public float GetDrivenFrequency(float driverFrequency)
+    {
+        return driverFrequency / GearRatio;
+    }
+}
+
+public partial class Gear
+{
+    public float Module { get; private set; } // m
+    public int TeethCount { get; private set; } // Z
+    public float PitchDiameter => Module * TeethCount; // d
+
+    public Gear(float module, int teethCount)
+    {
+        if (module <= 0 || teethCount <= 0)
+            throw new ArgumentException("Module and teeth count must be positive.");
+
+        Module = module;
+        TeethCount = teethCount;
     }
 }
