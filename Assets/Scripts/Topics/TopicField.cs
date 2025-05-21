@@ -13,23 +13,27 @@ public class TopicField
     [SerializeField, NonSerialized] private bool isReadOnly;
     //[SerializeField,ReadOnly] private string stringValue;
     private ReactiveProperty<object> property = new ReactiveProperty<object>();
-    private Dictionary<ParamName, FieldType> paramNameFieldTypes = new Dictionary<ParamName, FieldType>()
+    private static Dictionary<ParamName, FieldType> paramNameFieldTypes = new Dictionary<ParamName, FieldType>()
     {
         { ParamName.angleDeg,FieldType.Float } ,
         { ParamName.angleRad,FieldType.Float } ,
+        { ParamName.additionalMass,FieldType.Bool } ,
         { ParamName.distance,FieldType.Float },
         { ParamName.friction,FieldType.Float } ,
         { ParamName.force,FieldType.Float } ,
-        { ParamName.forceAcceleration,FieldType.Float } ,
+        { ParamName.forceAcceleration,FieldType.Float },
+        { ParamName.isMoving,FieldType.Bool } ,
         { ParamName.radius,FieldType.Float } ,
         { ParamName.refractiveIndex,FieldType.Float } ,
-        { ParamName.unityPhycicsCalculation,FieldType.Bool } ,
         { ParamName.position,FieldType.Vector3 } ,
+        { ParamName.position2,FieldType.Vector3 } ,
         { ParamName.xPosition,FieldType.Float } ,
         { ParamName.velocity,FieldType.Vector3 } ,
         { ParamName.velocity2,FieldType.Vector3 } ,
         { ParamName.seed,FieldType.Int } ,
+        { ParamName.unityPhycicsCalculation,FieldType.Bool } ,
         { ParamName.mass,FieldType.Float } ,
+        { ParamName.mass2,FieldType.Float } ,
         {  ParamName.material1_Size,FieldType.Vector3},
         {  ParamName.material1_Position,FieldType.Vector3 },
         {  ParamName.material1_RefractiveIndex ,FieldType.Float },
@@ -190,14 +194,28 @@ public class TopicField
     public bool TrySetValue(object value)
     {
         Type valueType = value.GetType();
-        if (GetFieldValueType(FieldType) == valueType)
+        if (GetFieldValueType(FieldType) != valueType)
         {
-            object clampedValue = ClampValue(value);
-            property.SetValueAndForceNotify(value);
-            return true;
+            object convertedValue = TryConvertValue(value, out bool result);
+            if (result)
+            {
+                value = convertedValue;
+            }
+            else
+            {
+                Debug.LogAssertion("Convertion (value) " + value + " of type " + valueType + " to " + ParamName + " of type  " + FieldType + " failed");
+                return false;
+                //Debug.LogAssertion("Cant set (value) " + value + " of type " + valueType + " to " + ParamName + " of type  " + FieldType);
+            }
         }
-        Debug.LogAssertion("Cant set (value) " + value +  " of type " + valueType +  " to " + ParamName + " of type  " + FieldType);
+        object clampedValue = ClampValue(value);
+        property.SetValueAndForceNotify(value);
         return true;
+    }
+
+    private object TryConvertValue(object value, out bool result)
+    {
+        return GetValueFromString(value.ToString(), out  result);
     }
 
     private object ClampValue(object value)
@@ -280,6 +298,10 @@ public enum ParamName
     material2_RefractiveIndex,
     material3_Size,
     material3_Position,
-    material3_RefractiveIndex
+    material3_RefractiveIndex,
+    additionalMass,
+    position2,
+    mass2Acceleration,
+    isMoving
 }
 public enum FieldType { Float, Vector3, Int,Bool }

@@ -15,21 +15,24 @@ public class RampMeshGenerator : MonoBehaviour
     private Mesh mesh;
     internal void SetAngle(float value, bool v = false)
     {
-        if ((float)value < MAXANGLE)
-        {
-            angle = value;
-        }
-        else
-            Debug.Log("angleDeg clamp " + MINANGLE + " -> " + MAXANGLE);
+        angle = value;
         if (v)
         {
             GenerateRamp();
         }
     }
-
+    public float Height => height;
     public Vector3 GetUpperMiddle()
     {
         return new Vector3(-width, height, length/2);      // середина верхушки
+    }
+    public Vector3 GetDownMiddle()
+    {
+        return new Vector3(-width, 0, length/2);      // середина верхушки
+    }
+    public Vector3 GetBackMiddle()
+    {
+        return new Vector3(-width, height/2, length/2);      // середина верхушки
     }
 
     public Vector3 GetDownRight()

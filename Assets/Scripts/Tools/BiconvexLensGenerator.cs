@@ -48,8 +48,7 @@ public class BiconvexLensGenerator : MonoBehaviour
     {
         try
         {
-            Debug.Log("GenerateLensMesh");
-
+            Debug.Log("GeneratedLensMesh");
             if (radius == 0 || distance == 0 || width == 0)
             {
                 Debug.Log(" lens params cant be 0");

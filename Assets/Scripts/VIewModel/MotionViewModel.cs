@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class MotionViewModel
 {
+    public Action paramsChanged;
     private MotionModel CurrentModel;
     public Action CurrentModelChanged;
     private Dictionary<ParamName,TopicField> properties = new();
@@ -33,6 +34,7 @@ public class MotionViewModel
         simulationStateChanged.Value = SimulationState.stoped;
         InitProperies(newModel);
         CurrentModel = newModel;
+        CurrentModel.paramsChanged += paramsChanged;
         CurrentModelChanged?.Invoke();
         Debug.Log("newModel.Params " + newModel.TopicFields.Count);
         Debug.Log("MotionViewModel.Properties " + properties.Count);

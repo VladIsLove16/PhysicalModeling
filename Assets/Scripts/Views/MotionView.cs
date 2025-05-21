@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using static UnityEngine.GraphicsBuffer;
 using System.Collections;
+using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 public abstract class MotionView : MonoBehaviour
 {
@@ -35,6 +36,10 @@ public abstract class MotionView : MonoBehaviour
     };
     private readonly Dictionary<ParamName, ViewType> topicFieldsViewTypes = new()
     {
+       
+        { ParamName.additionalMass, ViewType.Toggle },
+        { ParamName.isMoving, ViewType.Toggle },
+        { ParamName.friction, ViewType.Slider },
         { ParamName.seed, ViewType.Slider },
         { ParamName.pointAReached, ViewType.Toggle },
         { ParamName.angleDeg, ViewType.Slider },
@@ -77,6 +82,7 @@ public abstract class MotionView : MonoBehaviour
         disposables.Clear();
 
         viewModel = motionViewModel;
+        viewModel.paramsChanged += RebuildUI;
 
         viewModel.simulationStateChanged.Subscribe(_ => ViewModel_OnSimulationStateChanged()).AddTo(disposables);
 

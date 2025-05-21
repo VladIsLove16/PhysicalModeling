@@ -30,7 +30,7 @@ public class ObstaclesMotionModel : MotionModel
 
     private static Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
     {
-        { ParamName.seed,(int) 0 },
+        { ParamName.seed,(int) 3 },
         { ParamName.angleDeg, 0f },
     };
     private static Dictionary<ParamName, object> maxValues = new Dictionary<ParamName, object>()

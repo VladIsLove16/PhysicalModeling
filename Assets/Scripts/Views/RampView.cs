@@ -49,19 +49,4 @@ public class RampView: MotionView
         if (actions.TryGetValue(topicFieldController.ParamName, out var action))
             action(newValue);
     }
-    protected override void ViewModel_OnSimulationStateChanged()
-    {
-        base.ViewModel_OnSimulationStateChanged();
-        //switch (viewModel.simulationStateChanged.Value)
-        //{
-        //    case MotionViewModel.SimulationState.stoped:
-        //        object param = viewModel.TryGetParam(ParamName.respawnObstacles, out bool result);
-        //        if (result)
-        //        {
-        //            if ((bool)param)
-        //                obstacleSpawner.SpawnObstacles();
-        //        }
-        //        break;
-        //}
-    }
 }

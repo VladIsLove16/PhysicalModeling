@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 public abstract class MotionModel : ScriptableObject, IMovementStrategy
 {
+    public Action paramsChanged;
     public enum SimulationState
     {
         continued,
@@ -124,8 +125,17 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     {
         return topicFields[paramName].Value;
     }
+    public object GetParam(ParamName paramName,out bool res)
+    {
+        res = topicFields.TryGetValue(paramName,out TopicField topicField );
+        if(res)
+            return topicField.Value;
+        else
+            return null;
+    }
     public virtual bool TrySetParam(ParamName paramName, object value)
     {
+        Debug.Log("paramName " + paramName + " changed ");
         if (!TopicFields.TryGetValue(paramName, out TopicField topicField))
         {
             Debug.LogWarning(paramName + " not found");

@@ -15,6 +15,7 @@ public class MotionController : MonoBehaviour
     [SerializeField] private TransformView Viewtr;
     [SerializeField] private ObstaclesView Viewobs;
     [SerializeField] private RampView Viewramp;
+    [SerializeField] private RampBlockView ViewRampBlock;
     [SerializeField] private RefractionLensView RefractionView;
     [SerializeField] private RefractionMaterialsView RefractionMaterialsView;
     [SerializeField] private PointA pointA;
@@ -64,6 +65,8 @@ public class MotionController : MonoBehaviour
             CurrentView = Viewobs;
         else if (CurrentMotionModel is RampMotionModel rampMotionModel)
             CurrentView = Viewramp;
+        else if (CurrentMotionModel is RampBlockMotionModel ramblockMotionModel)
+            CurrentView = ViewRampBlock;
         else if (CurrentMotionModel is RefractionLensMotionModel refractionLensMotionModel)
             CurrentView = RefractionView;
         else if (CurrentMotionModel is RefractionMaterialsMotionModel refractionMaterialsMotionModel)

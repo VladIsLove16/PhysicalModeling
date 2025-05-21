@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using System.Linq;
 using static UnityEditor.PlayerSettings;
+using System;
+using UniRx;
 
 [CreateAssetMenu(fileName = "RampMotionModel", menuName = "MotionModelsDropdown/RampMotionModel")]
 public class RampMotionModel : MotionModel
@@ -11,64 +13,74 @@ public class RampMotionModel : MotionModel
     {
         get
         {
-            return defaultValues;
+            return new Dictionary<ParamName, object>()
+    {
+        { ParamName.angleDeg, 30f },
+        { ParamName.friction, 1f },
+    }; ;
         }
     }
     protected override Dictionary<ParamName, object> MaxValues
     {
         get
         {
-            return maxValues;
+            return new Dictionary<ParamName, object>()
+    {
+        { ParamName.angleDeg, 60f },
+        { ParamName.friction, 1f },
+    }; ;
         }
     }
     protected override Dictionary<ParamName, object> MinValues
     {
         get
         {
-            return minValues;
+            return new Dictionary<ParamName, object>()
+    {
+        { ParamName.angleDeg, 0f },
+        { ParamName.friction, 0f },
+    }; ;
         }
     }
-
-    private static Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
+    public override void OnDisabled()
     {
-        { ParamName.seed, 0 },
-        { ParamName.angleDeg, 30f },
-    };
-    private static Dictionary<ParamName, object> maxValues = new Dictionary<ParamName, object>()
-    {
-        { ParamName.seed, 1000000 },
-        { ParamName.angleDeg, 60f },
-    };
-    private static Dictionary<ParamName, object> minValues = new Dictionary<ParamName, object>()
-    {
-        { ParamName.seed, 0 },
-        { ParamName.angleDeg, 0f },
-    };
-    public override void OnEnabled()
-    {
-        base.OnEnabled();
-        MaxValues[ParamName.angleDeg] = 60f;
-        TrySetParam(ParamName.angleDeg, 30f);
+        base.OnDisabled();
+        //var property = topicFields[ParamName.additionalMass];
+        //property.Property.Subscribe(_ =>
+        //{
+        //});
     }
     public override Vector3 UpdatePosition(float deltaTime)
     {
         Vector3 pos =(Vector3) GetParam(ParamName.position);
+        float force =  (float)GetParam(ParamName.force) ;
         (Vector3 moveVector, Vector3 newVelocity)   = RampPhysics.CheckInclined(
             (float)GetParam(ParamName.mass),
             (float)GetParam(ParamName.friction),
             (float)GetParam(ParamName.angleDeg),
             (Vector3)GetParam(ParamName.velocity),
-            (float)GetParam(ParamName.force),
-            deltaTime); 
-        float force = (float)GetParam(ParamName.force);
+            force,
+            deltaTime);
         float newForce = force + (float)GetParam(ParamName.forceAcceleration) * deltaTime;
+        TrySetParam(ParamName.force, newForce);
         Debug.Log("new force " + newForce);
+        Debug.Log("moveVector.magnitude " + moveVector.magnitude);
         Vector3 newPos = pos + moveVector;
         TrySetParam(ParamName.position, newPos);
-        TrySetParam(ParamName.force, newForce);
         TrySetParam(ParamName.velocity, newVelocity);
         TrySetParam(ParamName.time, (float)GetParam(ParamName.time) + deltaTime);
+        TrySetParam(ParamName.isMoving, (bool)!Mathf.Approximately(moveVector.magnitude, 0));
         return pos + moveVector;
+    }
+    public override bool TrySetParam(ParamName paramName, object value)
+    {
+        Debug.Log("paramName " + paramName + " changed ");
+        if (paramName == ParamName.additionalMass)
+        {
+            Debug.Log("paramName");
+            
+        }
+        return base.TrySetParam(paramName, value);
     }
     public override Vector3 CalculatePosition(float Time)
     {
@@ -77,18 +89,24 @@ public class RampMotionModel : MotionModel
 
     public override List<TopicField> GetRequiredParams()
     {
-      var list = new List<TopicField>()
-       {
-           new TopicField(ParamName.position, true),
-           new TopicField(ParamName.velocity, true),
-           new TopicField(ParamName.mass, false),
-           new TopicField(ParamName.friction, false),
-           new TopicField(ParamName.force, false),
-           new TopicField(ParamName.forceAcceleration, false),
-           new TopicField(ParamName.angleDeg, false),
-           new TopicField(ParamName.time, true)
-       };
-        return list;
+        List<TopicField> RequiredParams = new List<TopicField>();
+            RequiredParams = new List<TopicField>()
+            {
+               new TopicField(ParamName.position, true),
+               new TopicField(ParamName.velocity, true),
+               new TopicField(ParamName.isMoving, true),
+               new TopicField(ParamName.angleDeg, false),
+               new TopicField(ParamName.mass, false),
+               new TopicField(ParamName.friction, false),
+               new TopicField(ParamName.force, false),
+               new TopicField(ParamName.forceAcceleration, false),
+               new TopicField(ParamName.time, true)
+            };
+        return RequiredParams;
+    }
+    private void OnadditionalMassParamChange()
+    {
+
     }
     public override void ResetParam(ParamName paramName)
     {
@@ -188,29 +206,10 @@ public static class RampPhysics
         return (moveVector, newSpeed);
 
     }
+    internal static float GetForceForMass2(object mass2)
+    {
+        float mass = (float)mass2;
+        return mass * g;
+    }
 
-
-
-
-    //void CheckTwoBody()
-    //{
-    //float angleDegries = angleDeg * Mathf.Deg2Rad;
-    //float pullingForce = (m2 + mx) * g;
-    //float normal = m1 * g * Mathf.Cos(angleDegries);
-    //float slopeResist = m1 * g * Mathf.Sin(angleDegries);
-    //float friction = mu1 * normal;
-
-    //float netForce = pullingForce - (friction + slopeResist);
-
-    //if (netForce > 0)
-    //{
-    //    float moveAcceleration = netForce / m1;
-    //    float moveVector = moveAcceleration * t;
-    //    Debug.Log($"[2] Движение начнётся. Скорость объекта 1: {moveVector:F2} м/с");
-    //}
-    //else
-    //{
-    //    Debug.Log("[2] Движения не будет");
-    //}
-    //}
 }
