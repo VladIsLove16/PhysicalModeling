@@ -24,7 +24,7 @@ public abstract class MotionView : MonoBehaviour
     [SerializeField] private GameObject[] actionObjects;
     protected MotionViewModel viewModel;
     private Dictionary<ParamName, TopicFieldController> inputFields = new();
-
+    public int TopicFieldsCount => viewModel.TopicFieldsCount;
     private CompositeDisposable disposables = new();
     private List<IDisposable> uiDisposables = new();
 
@@ -82,7 +82,7 @@ public abstract class MotionView : MonoBehaviour
         disposables.Clear();
 
         viewModel = motionViewModel;
-        viewModel.paramsChanged += RebuildUI;
+        //viewModel.paramsChanged += RebuildUI;
 
         viewModel.simulationStateChanged.Subscribe(_ => ViewModel_OnSimulationStateChanged()).AddTo(disposables);
 
@@ -118,25 +118,24 @@ public abstract class MotionView : MonoBehaviour
         Debug.Log("MotionView +  Simulation state Setted " + state);
     }
     
-    protected virtual void RebuildUI()
+    protected virtual void RebuildUI(bool recreation = false)
     {
         ClearUI();
-        CreateTopicFields();
+        CreateTopicFields(recreation);
     }
 
-    private void CreateTopicFields()
+    protected virtual void CreateTopicFields(bool recreation = false)
     {
-        foreach (var pair in viewModel.GetProperties())
+        var topicFields = viewModel.GetFields(recreation);
+        foreach (var field in topicFields)
         {
-            CreateTopicField( pair.Value);
+            CreateTopicField(field);
         }
     }
-    private void CreateTopicField(TopicField topicField)
+    protected void CreateTopicField(TopicField topicField)
     {
         var paramName = topicField.ParamName;
-        var fieldType = viewModel.GetFieldType(paramName);
-        var property = topicField.Property;
-        Debug.Log("Instantiate");
+        Debug.Log("TopicField Instantiated " + topicField.ParamName);
 
         TopicFieldController prefab;
         if (topicFieldsViewTypes.TryGetValue(topicField.ParamName, out ViewType viewType))
@@ -158,18 +157,27 @@ public abstract class MotionView : MonoBehaviour
 
         var instance = Instantiate(prefab, inputFieldsContainer);
         instance.Setup(topicField);
-        var subscription = property.Subscribe(value => ViewModel_OnPropertyChanged(instance, value));
+        var subscription = topicField.Property.Skip(1).Subscribe(value =>
+        {
+            if (value == null)
+            {
+                Debug.LogAssertion("try to set null value");
+                return;
+            }
+            ViewModel_OnPropertyChanged(instance, value);
+        });
+
         uiDisposables.Add(subscription);
         inputFields[paramName] = instance;
     }
 
     protected virtual void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)
     {
+        //Debug.Log("trying set " + newValue + " to " + topicFieldController.FieldType + " with  " + topicFieldController.Value);
         if (!topicFieldController.SetValue(newValue))
             Debug.Log("ViewModel_OnPropertyChanged went wrong");
         //(GetStringFromValue(topicFieldControllerPrefab.ParamName));
     }
-
     private void ClearUI()
     {
         foreach (var d in uiDisposables)

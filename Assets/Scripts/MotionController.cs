@@ -18,6 +18,7 @@ public class MotionController : MonoBehaviour
     [SerializeField] private RampBlockView ViewRampBlock;
     [SerializeField] private RefractionLensView RefractionView;
     [SerializeField] private RefractionMaterialsView RefractionMaterialsView;
+    [SerializeField] private GearView GearView;
     [SerializeField] private PointA pointA;
     [SerializeField] private MotionView CurrentView;
     private MotionViewModel ViewModel;
@@ -71,6 +72,8 @@ public class MotionController : MonoBehaviour
             CurrentView = RefractionView;
         else if (CurrentMotionModel is RefractionMaterialsMotionModel refractionMaterialsMotionModel)
             CurrentView = RefractionMaterialsView;
+        else if (CurrentMotionModel is GearMotionModel gearMotionModel)
+            CurrentView = GearView;
         else 
             CurrentView = Viewtr;
         Debug.Log("Current view setted to " + CurrentView.name);

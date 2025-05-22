@@ -71,7 +71,7 @@ namespace TMPro.Examples
                 old_curve = CopyAnimationCurve(VertexCurve);
                 old_ShearValue = ShearAmount;
 
-                m_TextComponent.ForceMeshUpdate(); // Generate the meshRenderer and populate the textInfo with data we can use and manipulate.
+                m_TextComponent.ForceMeshUpdate(); // Regenerate the meshRenderer and populate the textInfo with data we can use and manipulate.
 
                 TMP_TextInfo textInfo = m_TextComponent.textInfo;
                 int characterCount = textInfo.characterCount;

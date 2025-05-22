@@ -9,42 +9,11 @@ using static UnityEngine.Rendering.DebugUI;
 public class TopicField
 {
     [SerializeField] private ParamName paramName;
-    [SerializeField, NonSerialized] private FieldType type;
+    [SerializeField, NonSerialized] private FieldType type = FieldType.None;
     [SerializeField, NonSerialized] private bool isReadOnly;
     //[SerializeField,ReadOnly] private string stringValue;
     private ReactiveProperty<object> property = new ReactiveProperty<object>();
-    private static Dictionary<ParamName, FieldType> paramNameFieldTypes = new Dictionary<ParamName, FieldType>()
-    {
-        { ParamName.angleDeg,FieldType.Float } ,
-        { ParamName.angleRad,FieldType.Float } ,
-        { ParamName.additionalMass,FieldType.Bool } ,
-        { ParamName.distance,FieldType.Float },
-        { ParamName.friction,FieldType.Float } ,
-        { ParamName.force,FieldType.Float } ,
-        { ParamName.forceAcceleration,FieldType.Float },
-        { ParamName.isMoving,FieldType.Bool } ,
-        { ParamName.radius,FieldType.Float } ,
-        { ParamName.refractiveIndex,FieldType.Float } ,
-        { ParamName.position,FieldType.Vector3 } ,
-        { ParamName.position2,FieldType.Vector3 } ,
-        { ParamName.xPosition,FieldType.Float } ,
-        { ParamName.velocity,FieldType.Vector3 } ,
-        { ParamName.velocity2,FieldType.Vector3 } ,
-        { ParamName.seed,FieldType.Int } ,
-        { ParamName.unityPhycicsCalculation,FieldType.Bool } ,
-        { ParamName.mass,FieldType.Float } ,
-        { ParamName.mass2,FieldType.Float } ,
-        {  ParamName.material1_Size,FieldType.Vector3},
-        {  ParamName.material1_Position,FieldType.Vector3 },
-        {  ParamName.material1_RefractiveIndex ,FieldType.Float },
-        {  ParamName.material2_Size,FieldType.Vector3},
-        {  ParamName.material2_Position,FieldType.Vector3 },
-        {  ParamName.material2_RefractiveIndex ,FieldType.Float },
-        {  ParamName.material3_Size,FieldType.Vector3},
-        {  ParamName.material3_Position,FieldType.Vector3 },
-        {  ParamName.material3_RefractiveIndex ,FieldType.Float },
-    };
-
+  
     public object MaxValue;
     public object MinValue;
     private object maxValue;
@@ -58,24 +27,18 @@ public class TopicField
     public TopicField() { }
 
     //[Obsolete("Используйте метод TopicField(ParamName paramName) вместо этого.")]
-    public TopicField(ParamName paramName, FieldType type = FieldType.Float, bool isReadonly = false)
+    public TopicField(ParamName paramName, FieldType type = FieldType.None, bool isReadonly = false)
     {
         this.paramName = paramName;
-        if (TryGetType(paramName, out FieldType resultType))
-            this.type = resultType;
-        else
-            this.type = type;
+        this.type = type;
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
 
-    public TopicField(ParamName paramName, bool isReadonly = false, FieldType type = FieldType.Float)
+    public TopicField(ParamName paramName, bool isReadonly = false, FieldType type = FieldType.None)
     {
         this.paramName = paramName;
-        if (TryGetType(paramName, out FieldType resultType))
-            this.type = resultType;
-        else
-            this.type = type;
+        this.type = type;
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
@@ -85,17 +48,10 @@ public class TopicField
        return GetStringFromValue(Property.Value);
     }
 
-    public void SetTypeForce(FieldType type)
+    public void SetType(FieldType type, bool isForce = false)
     {
-        this.type = type;
-    }
-
-    private bool TryGetType(ParamName paramName, out FieldType fieldType)
-    {
-        if(paramNameFieldTypes.TryGetValue(paramName, out fieldType))
-            return true;
-        else
-            return false;
+        if(isForce || FieldType == FieldType.None)
+            this.type = type;
     }
 
     public static Type GetFieldValueType(FieldType fieldType)
@@ -112,7 +68,10 @@ public class TopicField
     public string GetStringFromValue(object obj)
     {
         if(obj == null)
+        {
+            Debug.Log("why is null " + obj);
             return "null value";
+        }
         string valueText = obj switch
         {
             float floatValue => floatValue.ToString("0.00"),
@@ -193,7 +152,17 @@ public class TopicField
 
     public bool TrySetValue(object value)
     {
+        if (value == null)
+        {
+            property.Value = null;
+            return true;
+        }
         Type valueType = value.GetType();
+        if (FieldType == FieldType.Custom)
+        {
+            property.SetValueAndForceNotify(value);
+            return true;
+        }
         if (GetFieldValueType(FieldType) != valueType)
         {
             object convertedValue = TryConvertValue(value, out bool result);
@@ -302,6 +271,17 @@ public enum ParamName
     additionalMass,
     position2,
     mass2Acceleration,
-    isMoving
+    isMoving,
+    gearCount,
+    module,
+    teethCount,
+    gearBox,
+    totalGearRatio,
+    outputAngularVelocity,
+    outputFrequency,
+    inputAngularVelocity,
+    inputFrequency
 }
-public enum FieldType { Float, Vector3, Int,Bool }
+public enum FieldType {None, Float, Vector3, Int,Bool,
+    Custom
+}

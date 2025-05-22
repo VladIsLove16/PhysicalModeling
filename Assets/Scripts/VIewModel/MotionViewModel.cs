@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 public class MotionViewModel
 {
-    public Action paramsChanged;
+    //public Action paramsChanged;
     private MotionModel CurrentModel;
     public Action CurrentModelChanged;
-    private Dictionary<ParamName,TopicField> properties = new();
     public ReactiveProperty<SimulationState> simulationStateChanged = new ReactiveProperty<SimulationState>();
+    public int TopicFieldsCount => CurrentModel.TopicFieldsCount;
+
     public enum SimulationState
     {
         paused,
@@ -32,27 +34,15 @@ public class MotionViewModel
         else
             Debug.Log("Initing viewmodel with" + newModel.ToString());
         simulationStateChanged.Value = SimulationState.stoped;
-        InitProperies(newModel);
+        GetFields(newModel);
         CurrentModel = newModel;
-        CurrentModel.paramsChanged += paramsChanged;
+        //CurrentModel.paramsChanged += paramsChanged;
         CurrentModelChanged?.Invoke();
-        Debug.Log("newModel.Params " + newModel.TopicFields.Count);
-        Debug.Log("MotionViewModel.Properties " + properties.Count);
     }
-
-    private void InitProperies(MotionModel newModel)
+    private List<TopicField> GetFields(MotionModel newModel, bool force = false)
     {
-        properties.Clear();
-        properties = newModel.TopicFields;
-        //foreach (var modelParam in newModel.TopicFields)
-        //{
-        //    ReactiveProperty<object> property = new ReactiveProperty<object>(modelParam.Value.Value);
-        //    if (!properties.ContainsKey(modelParam.Key))
-        //    {
-        //        properties[modelParam.Key] = property;
-        //        modelParam.Value.Subscribe(value => OnModelChanged(modelParam.Key, property, value));
-        //    }
-        //}
+        var fields = newModel.GetTopicFields(force);
+        return fields;
     }
 
     private void OnModelChanged(ParamName paramName, ReactiveProperty<object> property, object value)
@@ -62,11 +52,6 @@ public class MotionViewModel
             return;
         }
         property.SetValueAndForceNotify(value);
-    }
-
-    public FieldType GetFieldType(ParamName value)
-    {
-        return CurrentModel.GetFieldType(value);
     }
 
     public void StartSimulation()
@@ -110,25 +95,16 @@ public class MotionViewModel
     
     public object TryGetParam(ParamName paramName, out bool result)
     {
-        result = GetProperties().TryGetValue(paramName, out TopicField topicField);
+        var topicField = CurrentModel.GetTopicField(paramName);
+        result = topicField != null;
         if(!result)
         {
             Debug.LogAssertion("cant get param " + paramName + " from model");
         }
         return topicField.Value;
     }
-    public bool IsReadonly(ParamName paramName)
+    internal List<TopicField> GetFields(bool recreation = false)
     {
-        return CurrentModel.IsReadonly(paramName);
-    }
-
-    internal Dictionary<ParamName,TopicField> GetProperties()
-    {
-        if (properties == null
-                 || properties.Count == 0)
-        {
-            InitProperies(CurrentModel);
-        }
-        return properties;
+         return GetFields(CurrentModel, recreation);
     }
 }

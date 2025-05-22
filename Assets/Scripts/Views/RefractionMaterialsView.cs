@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
+using System.Linq;
 
 public class RefractionMaterialsView : MotionView
 {
@@ -62,7 +63,8 @@ public class RefractionMaterialsView : MotionView
     public override void OnDisabled()
     {
         base.OnDisabled();
-        foreach (var key in actions.Keys)
+        var keys = actions.Keys.ToArray();
+        foreach (var key in keys)
         {
             actions[key] = null;
         }

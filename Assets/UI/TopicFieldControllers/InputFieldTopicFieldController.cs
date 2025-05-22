@@ -34,7 +34,13 @@ public class InputFieldTopicFieldController : TopicFieldController
         inputField.onEndEdit.AddListener(_ => OnTopicFieldEndEdit());
         inputField.onValueChanged.AddListener((str) => OnValueChanged());
         inputField.onSelect.AddListener(OnSelect);
-        Debug.Log("Setup  :  InputFieldTopicFieldController");
+        Debug.Log("Setup  :  InputFieldTopicFieldController " +  topicField.ParamName +  "  with value " + topicField.Value);
+        if(topicField.Value==null)
+        {
+            Debug.Log("topicField.Value==null" + topicField.ParamName);
+            return;
+        }
+        SetText(topicField.GetStringFromValue(topicField.Value));
     }
 
     protected virtual void OnTopicFieldEndEdit()
@@ -53,8 +59,8 @@ public class InputFieldTopicFieldController : TopicFieldController
 
     public void SetText(string v)
     {
-        inputField.text = v;
         isLocalUpdate = true;
+        inputField.text = v;
     }
 
     protected override void SetReadOnly(bool value)

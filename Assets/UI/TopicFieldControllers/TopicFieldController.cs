@@ -10,6 +10,7 @@ public abstract class TopicFieldController : MonoBehaviour
     public Action OnTopicFieldValueChanged;
     public bool IsInvokeOnValueChanged;
     public FieldType FieldType => topicField.FieldType;
+    public object Value => topicField.Value;
     public ParamName ParamName => topicField.ParamName;
     [SerializeField] TextMeshProUGUI label;
     protected TopicField topicField;
@@ -39,18 +40,7 @@ public abstract class TopicFieldController : MonoBehaviour
         SetLabel(topicField.ParamName.ToString());
     }
 
-    public virtual bool SetValue(object newValue)
-    {
-        //if (maxValues.ContainsKey(ParamName))
-        //{
-        //    if ((float)maxValues[ParamName] < (float)newValue)
-        //    {
-        //        newValue = maxValues[ParamName];
-        //    }
-        //}
-        //return topicField.TrySetValue(newValue);
-        return true;
-    }
+    public abstract bool SetValue(object newValue);
 
     protected abstract void SetReadOnly(bool value);
 
