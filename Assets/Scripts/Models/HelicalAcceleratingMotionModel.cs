@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "HelicalAcceleratingMotionModel", menuName = "MotionModelsDropdown/HelicalAcceleratingMotionModel")]
@@ -28,18 +29,29 @@ public class HelicalAcceleratingMotionModel : HelicalMotionModel
             return linearMotionModel;
         }
     }
-    protected override void InitLinearMotionModelParams()
+
+    public override void InitializeParameters(bool isForce = false)
     {
-        LinearMotionModel.TrySetParam(ParamName.velocity,GetParam(ParamName.velocity));
-        LinearMotionModel.TrySetParam(ParamName.acceleration,GetParam(ParamName.acceleration));
+        base.InitializeParameters(isForce);
+        actions[ParamName.acceleration] = OnAccelerationChanged;
+        actions[ParamName.rotationFrequencyAcceleration] = OnRotationFrequencyAccelerationChanged;
+        foreach (var field in topicFields)
+        {
+            if (actions.ContainsKey(field.ParamName))
+                field.Property.Subscribe(actions[field.ParamName]);
+        }
     }
-    protected override void InitRotationalMotionModelParams()
+
+    private void OnRotationFrequencyAccelerationChanged( object value)
     {
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequencyAcceleration, GetParam(ParamName.rotationFrequencyAcceleration));
-        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
-        RotationalMotionModel.TrySetParam(ParamName.velocity, GetParam(ParamName.velocity));
+        rotationalMotionModel.TrySetParam(ParamName.rotationFrequencyAcceleration, value);
     }
+
+    private void OnAccelerationChanged(object value)
+    {
+        LinearMotionModel.TrySetParam(ParamName.acceleration, value);
+    }
+
     public override List<TopicField> GetRequiredParams()
     {
         var newList = new List<TopicField>();

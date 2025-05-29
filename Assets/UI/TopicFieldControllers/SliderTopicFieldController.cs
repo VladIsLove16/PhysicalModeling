@@ -41,7 +41,7 @@ public class SliderTopicFieldController : InputFieldTopicFieldController
 
     private void OnSliderValueChanged()
     {
-        if(topicField.TrySetValue(Slider.value))
+        if(topicField.TrySetValue(Slider.value,true))
         {
             SetText(Slider.value.ToString());
         }

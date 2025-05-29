@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public partial class RayTracer
+public partial class LensRayTracer
 {
     private struct BoxSurface : ISurface
     {

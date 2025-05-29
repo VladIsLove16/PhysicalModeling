@@ -132,7 +132,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
         else
         {
             RefractiveLens lens = lensMaterials[0];
-            rayPathCalculator = new RayTracer(lens.radius, lens.distance, lens.refractiveIndex, lens.position);
+            rayPathCalculator = new LensRayTracer(lens.radius, lens.distance, lens.refractiveIndex, lens.position);
         }
 
        

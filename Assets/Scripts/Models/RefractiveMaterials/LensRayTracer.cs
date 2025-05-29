@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.LowLevelPhysics;
 
-public partial class RayTracer : IRayPathCalculator
+public partial class LensRayTracer : IRayPathCalculator
 {
     private struct LensSurface : ISurface
     {
@@ -35,11 +35,11 @@ public partial class RayTracer : IRayPathCalculator
         }
     } 
     private List<ISurface> _surfaces = new List<ISurface>();
-    public RayTracer()
+    public LensRayTracer()
     {
     }
 
-    public RayTracer(float radius, float distance, float lensRefractiveIndex,Vector3 lensPosition)
+    public LensRayTracer(float radius, float distance, float lensRefractiveIndex,Vector3 lensPosition)
     {
         float thickness = radius * 2 - distance;
         var  centerFront = new Vector3(0, radius - thickness / 2, 0) + lensPosition;

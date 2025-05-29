@@ -9,7 +9,7 @@ using static UnityEngine.Rendering.DebugUI;
 [CreateAssetMenu(fileName = "GearMotionModel", menuName = "MotionModelsDropdown/GearMotionModel")]
 public class GearMotionModel : MotionModel
 {
-    Gearbox gearbox = new Gearbox();
+    Gearbox gearbox = new Gearbox();    
     private Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
         {
             { ParamName.gearCount, (int)4 },

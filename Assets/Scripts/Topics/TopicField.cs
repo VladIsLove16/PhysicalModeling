@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UniRx;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 using static UnityEngine.Rendering.DebugUI;
 
 [Serializable]
@@ -42,7 +43,13 @@ public class TopicField
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
-
+    private static Dictionary<FieldType, object> defaultValues = new Dictionary<FieldType, object>()
+    {
+        {FieldType.Float , 0f }
+        ,{FieldType.Int , (int)1},
+        {FieldType.Bool , false},
+        {FieldType.Vector3, Vector3.zero}
+    };
     public string GetStringValue()
     {
        return GetStringFromValue(Property.Value);
@@ -109,6 +116,7 @@ public class TopicField
                     float.TryParse(values[2], out float z))
                 {
                     result = true;
+                    Debug.Log(new Vector3(x, y, z));
                     return new Vector3(x, y, z);
                 }
                 else
@@ -138,7 +146,7 @@ public class TopicField
         }
     }
 
-    public bool TrySetValue(string str)
+    public bool TrySetValue(string str,bool isUserChange = false)
     {
         object value = GetValueFromString(str, out bool result);
         if (result) 
@@ -149,18 +157,24 @@ public class TopicField
         Debug.LogAssertion("Cant set (string) " + str + " to " +  ParamName  + " of type  " + FieldType);
         return false;
     }
-
-    public bool TrySetValue(object value)
+    public bool TrySetValue(object value,bool isUserChange = false)
     {
+        Debug.Log(value);
         if (value == null)
         {
-            property.Value = null;
+            Debug.LogAssertion("trying set null value!");
+            if (defaultValues.ContainsKey(FieldType))
+            {
+                SetValue(defaultValues[FieldType], isUserChange);
+            }
+            else
+                property.Value = null;
             return true;
         }
         Type valueType = value.GetType();
         if (FieldType == FieldType.Custom)
         {
-            property.SetValueAndForceNotify(value);
+            SetValue(value, isUserChange);
             return true;
         }
         if (GetFieldValueType(FieldType) != valueType)
@@ -178,10 +192,16 @@ public class TopicField
             }
         }
         object clampedValue = ClampValue(value);
-        property.SetValueAndForceNotify(value);
+        SetValue(value, isUserChange);
         return true;
     }
-
+    private void SetValue(object value, bool isUserChange = false)
+    {
+        Debug.Log("now value " + paramName + " is " + value);
+        property.SetValueAndForceNotify(value);
+        if (isUserChange)
+            Debug.Log("user changed  " + paramName + " to " + value.ToString());
+    }
     private object TryConvertValue(object value, out bool result)
     {
         return GetValueFromString(value.ToString(), out  result);
@@ -230,6 +250,7 @@ public enum ParamName
     angularVelocity,
     angleDeg,
     angleRad,
+    angleDegTraveled,
     angleRadTraveled,
     period,
     radius,
@@ -280,7 +301,9 @@ public enum ParamName
     outputAngularVelocity,
     outputFrequency,
     inputAngularVelocity,
-    inputFrequency
+    inputFrequency,
+    helicalAngle,
+    rotationalAxis
 }
 public enum FieldType {None, Float, Vector3, Int,Bool,
     Custom

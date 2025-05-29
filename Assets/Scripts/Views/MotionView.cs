@@ -5,11 +5,9 @@ using System.Collections.Generic;
 using TMPro;
 using System.Linq;
 using System;
-using static UnityEngine.GraphicsBuffer;
 using System.Collections;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
-public abstract class MotionView : MonoBehaviour
+public class MotionView : MonoBehaviour
 {
     [SerializeField] private Button toggleSimulationButton;
     [SerializeField] private Button stopSimulationButton;
@@ -38,6 +36,7 @@ public abstract class MotionView : MonoBehaviour
     {
        
         { ParamName.additionalMass, ViewType.Toggle },
+        { ParamName.helicalAngle, ViewType.Slider },
         { ParamName.isMoving, ViewType.Toggle },
         { ParamName.friction, ViewType.Slider },
         { ParamName.seed, ViewType.Slider },

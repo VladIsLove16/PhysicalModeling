@@ -55,6 +55,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         { FieldType.Vector3, Vector3.zero },
         { FieldType.Int, 0 },
         { FieldType.Bool, false },
+
     };
     protected static Dictionary<ParamName, FieldType> paramNameFieldTypes = new Dictionary<ParamName, FieldType>()
     {
@@ -131,7 +132,6 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         //    return;
         Debug.Log("InitializeParameters");
         isInitialized = true;
-        Debug.Log(topicFields.Count);
         var TopicFieldsList = GetRequiredParams();
         ClearTopicFields();
         foreach (var field in TopicFieldsList)
@@ -149,7 +149,6 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
             field.TrySetValue(defaultValue);
             AddTopicField(field);
         }
-        Debug.Log(topicFields.Count);
     }
     private void ClearTopicFields()
     {
@@ -216,7 +215,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     //    else
     //        return null;
     //}
-    public virtual bool TrySetParam(ParamName paramName, object value)
+    public virtual bool TrySetParam(ParamName paramName, object value,bool notify = true)
     {
         TopicField topicField = GetTopicField(paramName,out bool result);
         if (!result)
@@ -228,6 +227,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         {
             return true;
         }
+        Debug.LogAssertion("cant set " + value + " to " + paramName);
         return false;
     }
     public  virtual void OnDisabled()

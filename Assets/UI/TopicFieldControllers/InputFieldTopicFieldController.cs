@@ -1,7 +1,6 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 public class InputFieldTopicFieldController : TopicFieldController
 {
@@ -45,7 +44,7 @@ public class InputFieldTopicFieldController : TopicFieldController
 
     protected virtual void OnTopicFieldEndEdit()
     {
-        bool res = topicField.TrySetValue(GetText());
+        bool res = topicField.TrySetValue(GetText(),true);
         if (!res)
         {
             SetText(previousValue);
@@ -86,6 +85,6 @@ public class InputFieldTopicFieldController : TopicFieldController
             isLocalUpdate = false;
             return;
         }
-        topicField.TrySetValue(GetText());
+        topicField.TrySetValue(GetText(),true);
     }
 }

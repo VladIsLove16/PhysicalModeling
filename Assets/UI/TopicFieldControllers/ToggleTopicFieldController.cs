@@ -38,6 +38,6 @@ public class ToggleTopicFieldController : TopicFieldController
 
     protected void OnValueChanged()
     {
-        topicField.TrySetValue(Toggle.isOn);
+        topicField.TrySetValue(Toggle.isOn,true);
     }
 }
