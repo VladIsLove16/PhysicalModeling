@@ -38,6 +38,7 @@ public class ProjectileMotionModel : MotionModel
     public override Vector3 UpdatePosition(float deltaTime)
     {
         float currentTime = (float)GetParam(ParamName.time);
+        float newTime = currentTime + deltaTime;
         float accelerationTime = (float)GetParam(ParamName.accelerationStartTime); // момент, когда началось ускорение
         Vector3 acceleration = (Vector3)GetParam(ParamName.acceleration);
         Vector3 currentAcceleration;
@@ -47,18 +48,24 @@ public class ProjectileMotionModel : MotionModel
             currentAcceleration = Vector3.zero;
 
 
-        TrySetParam(ParamName.time, currentTime + deltaTime);
 
-        Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
-        Vector3 position = (Vector3)GetParam(ParamName.position);
+        Vector3 initialVelocity = (Vector3)GetParam(ParamName.velocity);
+        Vector3 initialPosition = (Vector3)GetParam(ParamName.position);
         Vector3 totalAcceleration = currentAcceleration + gravity;
 
-        Vector3 deltaPosition = velocity * deltaTime + 0.5f * totalAcceleration * deltaTime * deltaTime;
-        Vector3 newVelocity = velocity + totalAcceleration * deltaTime;
-        Vector3 newPosition = position + deltaPosition;
-
+        Vector3 deltaPosition = initialVelocity * deltaTime + 0.5f * totalAcceleration * deltaTime * deltaTime;
+        Vector3 newVelocity = initialVelocity + totalAcceleration * deltaTime;
+        Vector3 newPosition = initialPosition + deltaPosition;
+        if (newPosition.y < 0)
+        {
+            newPosition.y = 0;
+            newVelocity = Vector3.zero;
+            deltaPosition = initialPosition - newPosition;
+            newTime = currentTime;
+        }
         float pathTraveled = (float)GetParam(ParamName.pathTraveled) + deltaPosition.magnitude;
 
+        TrySetParam(ParamName.time, newTime);
         TrySetParam(ParamName.velocity, newVelocity);
         TrySetParam(ParamName.position, newPosition);
         TrySetParam(ParamName.deltaPosition, deltaPosition);
@@ -81,16 +88,16 @@ public class ProjectileMotionModel : MotionModel
         Vector3 deltaPosition = initialVelocity * time + 0.5f * totalAcceleration * time * time;
         Vector3 finalVelocity = initialVelocity + totalAcceleration * time;
         Vector3 newPosition = initialPosition + deltaPosition;
-
         float path = deltaPosition.magnitude;
 
-        TrySetParam(ParamName.time, time);
-        TrySetParam(ParamName.position, newPosition);
-        TrySetParam(ParamName.velocity, finalVelocity);
-        TrySetParam(ParamName.velocityMagnitude, finalVelocity.magnitude);
-        TrySetParam(ParamName.deltaPosition, deltaPosition);
-        TrySetParam(ParamName.pathTraveled, path);
-        TrySetParam(ParamName.distance, newPosition.magnitude);
+
+        TrySetParam(ParamName.time, time,false);
+        TrySetParam(ParamName.position, newPosition, false);
+        TrySetParam(ParamName.velocity, finalVelocity, false);
+        TrySetParam(ParamName.velocityMagnitude, finalVelocity.magnitude, false);
+        TrySetParam(ParamName.deltaPosition, deltaPosition, false);
+        TrySetParam(ParamName.pathTraveled, path, false);
+        TrySetParam(ParamName.distance, newPosition.magnitude, false);
 
         // Расчеты через вспомогательный класс:
         float flightTime = ProjectilePhysics.CalculateFlightTime(initialPosition, initialVelocity, acceleration);
@@ -98,10 +105,10 @@ public class ProjectileMotionModel : MotionModel
         Vector3 landingVelocity = ProjectilePhysics.CalculateFinalVelocity(initialVelocity, acceleration, flightTime);
         float averageSpeed = ProjectilePhysics.CalculateAverageSpeed(path, flightTime);
 
-        TrySetParam(ParamName.flightTime, flightTime);
-        TrySetParam(ParamName.range, range);
-        TrySetParam(ParamName.landingVelocity, landingVelocity);
-        TrySetParam(ParamName.averageSpeed, averageSpeed);
+        TrySetParam(ParamName.flightTime, flightTime, false);
+        TrySetParam(ParamName.range, range, false);
+        TrySetParam(ParamName.landingVelocity, landingVelocity, false);
+        TrySetParam(ParamName.averageSpeed, averageSpeed, false);
 
         return newPosition;
     }
@@ -133,19 +140,23 @@ public static class ProjectilePhysics
 {
     public static float CalculateFlightTime(Vector3 initialPosition, Vector3 velocity, Vector3 acceleration)
     {
-        // Решаем уравнение по Y: y = y0 + vy * t + 0.5 * ay * t^2 = 0 (когда приземлится)
-        float a = 0.5f * (acceleration.y - 9.81f);
+        float totalAy = acceleration.y + (-9.81f);
+
+        float a = 0.5f * totalAy;
         float b = velocity.y;
         float c = initialPosition.y;
 
         float discriminant = b * b - 4 * a * c;
-        if (discriminant < 0) return 0;
+        if (discriminant < 0) return 0f;
 
         float sqrtD = Mathf.Sqrt(discriminant);
         float t1 = (-b + sqrtD) / (2 * a);
         float t2 = (-b - sqrtD) / (2 * a);
-        return Mathf.Max(t1, t2);
+
+        float result = Mathf.Max(t1, t2);
+        return result > 0f ? result : 0f;
     }
+
 
     public static float CalculateRange(Vector3 velocity, float time)
     {

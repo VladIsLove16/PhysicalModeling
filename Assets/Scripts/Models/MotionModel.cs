@@ -216,7 +216,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     //    else
     //        return null;
     //}
-    public virtual bool TrySetParam(ParamName paramName, object value)
+    public virtual bool TrySetParam(ParamName paramName, object value, bool notify = true)
     {
         TopicField topicField = GetTopicField(paramName,out bool result);
         if (!result)
@@ -224,7 +224,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
             Debug.LogWarning(paramName + " not found");
             return false;
         }
-        if (topicField.TrySetValue(value))
+        if (topicField.TrySetValue(value, notify))
         {
             return true;
         }

@@ -72,16 +72,16 @@ public class RampMotionModel : MotionModel
         TrySetParam(ParamName.isMoving, (bool)!Mathf.Approximately(moveVector.magnitude, 0));
         return pos + moveVector;
     }
-    public override bool TrySetParam(ParamName paramName, object value)
-    {
-        Debug.Log("paramName " + paramName + " changed ");
-        if (paramName == ParamName.additionalMass)
-        {
-            Debug.Log("paramName");
+    //public override bool TrySetParam(ParamName paramName, object value)
+    //{
+    //    Debug.Log("paramName " + paramName + " changed ");
+    //    if (paramName == ParamName.additionalMass)
+    //    {
+    //        Debug.Log("paramName");
             
-        }
-        return base.TrySetParam(paramName, value);
-    }
+    //    }
+    //    return base.TrySetParam(paramName, value);
+    //}
     public override Vector3 CalculatePosition(float Time)
     {
         return Vector3.zero;

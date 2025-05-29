@@ -8,9 +8,9 @@ using UnityEngine;
 public class MotionViewModel
 {
     //public Action paramsChanged;
-    private MotionModel CurrentModel;
+    public MotionModel CurrentModel;
     public Action CurrentModelChanged;
-    public ReactiveProperty<SimulationState> simulationStateChanged = new ReactiveProperty<SimulationState>();
+    public ReactiveProperty<SimulationState> simulationState = new ReactiveProperty<SimulationState>();
     public int TopicFieldsCount => CurrentModel.TopicFieldsCount;
 
     public enum SimulationState
@@ -33,7 +33,7 @@ public class MotionViewModel
         }
         else
             Debug.Log("Initing viewmodel with" + newModel.ToString());
-        simulationStateChanged.Value = SimulationState.stoped;
+        simulationState.Value = SimulationState.stoped;
         GetFields(newModel);
         CurrentModel = newModel;
         //CurrentModel.paramsChanged += paramsChanged;
@@ -45,35 +45,26 @@ public class MotionViewModel
         return fields;
     }
 
-    private void OnModelChanged(ParamName paramName, ReactiveProperty<object> property, object value)
-    {
-        if (CurrentModel == null || CurrentModel == null)
-        { 
-            return;
-        }
-        property.SetValueAndForceNotify(value);
-    }
-
     public void StartSimulation()
     {
-        if(simulationStateChanged.Value == SimulationState.paused)
+        if(simulationState.Value == SimulationState.paused)
         {
             CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.continued);
         }
         else
             CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.started);
-        simulationStateChanged.Value = SimulationState.running;
+        simulationState.Value = SimulationState.running;
     }
     public void StopSimulation()
     {
         CurrentModel.ResetParams();
-        simulationStateChanged.Value = SimulationState.stoped;
+        simulationState.Value = SimulationState.stoped;
         CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.stoped);
     }
 
     public void PauseSimulation()
     {
-        simulationStateChanged.Value = SimulationState.paused;
+        simulationState.Value = SimulationState.paused;
         CurrentModel.OnSimulationStateChanged(MotionModel.SimulationState.paused);
     }
 
@@ -106,5 +97,11 @@ public class MotionViewModel
     internal List<TopicField> GetFields(bool recreation = false)
     {
          return GetFields(CurrentModel, recreation);
+    }
+
+    internal void CalculatePosition()
+    {
+      float time = (float)  TryGetParam(ParamName.time, out bool result);
+        CurrentModel.CalculatePosition(time);
     }
 }

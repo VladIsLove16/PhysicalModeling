@@ -150,17 +150,17 @@ public class TopicField
         return false;
     }
 
-    public bool TrySetValue(object value)
+    public bool TrySetValue(object value,bool notify = true)
     {
         if (value == null)
         {
-            property.Value = null;
+            Debug.LogAssertion("trying set null value");
+            SetValue(value, false);
             return true;
         }
         Type valueType = value.GetType();
         if (FieldType == FieldType.Custom)
         {
-            property.SetValueAndForceNotify(value);
             return true;
         }
         if (GetFieldValueType(FieldType) != valueType)
@@ -178,10 +178,16 @@ public class TopicField
             }
         }
         object clampedValue = ClampValue(value);
-        property.SetValueAndForceNotify(value);
+        SetValue(value, notify);
         return true;
     }
-
+    private void SetValue(object value, bool notify = true )
+    {
+        if(notify)
+            property.SetValueAndForceNotify(value);
+        else
+            property.Value = value;
+    }
     private object TryConvertValue(object value, out bool result)
     {
         return GetValueFromString(value.ToString(), out  result);
@@ -280,7 +286,8 @@ public enum ParamName
     outputAngularVelocity,
     outputFrequency,
     inputAngularVelocity,
-    inputFrequency
+    inputFrequency,
+    helicalAngle
 }
 public enum FieldType {None, Float, Vector3, Int,Bool,
     Custom
