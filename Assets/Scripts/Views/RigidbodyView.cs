@@ -73,7 +73,7 @@ public class RigidbodyView : MotionView
     {
         Debug.Log("Rb view + ViewModel_OnSimulationStateChanged");
         base.ViewModel_OnSimulationStateChanged();
-        var state = viewModel.simulationStateChanged.Value;
+        var state = viewModel.simulationState.Value;
         switch (state)
         {
            case MotionViewModel.SimulationState.paused:

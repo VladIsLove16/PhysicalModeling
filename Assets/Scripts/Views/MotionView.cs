@@ -71,7 +71,7 @@ public abstract class MotionView : MonoBehaviour
     {
         if (viewModel == null)
             return;
-        if (viewModel.simulationStateChanged.Value == MotionViewModel.SimulationState.running)
+        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
         {
             var currentPosition = viewModel.Update(Time.deltaTime);
         }
@@ -84,7 +84,7 @@ public abstract class MotionView : MonoBehaviour
         viewModel = motionViewModel;
         viewModel.paramsChanged += RebuildUI;
 
-        viewModel.simulationStateChanged.Subscribe(_ => ViewModel_OnSimulationStateChanged()).AddTo(disposables);
+        viewModel.simulationState.Subscribe(_ => ViewModel_OnSimulationStateChanged()).AddTo(disposables);
 
         toggleSimulationButton.onClick.RemoveAllListeners();
         toggleSimulationButton.onClick.AddListener(OnToggleSimulationButtonClicked);
@@ -105,7 +105,7 @@ public abstract class MotionView : MonoBehaviour
     protected virtual void OnToggleSimulationButtonClicked()
     {
         Debug.Log("OnToggleSimulationButtonClicked");
-        if (viewModel.simulationStateChanged.Value == MotionViewModel.SimulationState.running)
+        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
             viewModel.PauseSimulation();
         else
             viewModel.StartSimulation();
@@ -113,7 +113,7 @@ public abstract class MotionView : MonoBehaviour
 
     protected virtual void ViewModel_OnSimulationStateChanged()
     {
-        var state = viewModel.simulationStateChanged.Value;
+        var state = viewModel.simulationState.Value;
         toggleSimulationButtonText.text = simulationButtonTexts[state];
         Debug.Log("MotionView +  Simulation state Setted " + state);
     }
@@ -165,6 +165,10 @@ public abstract class MotionView : MonoBehaviour
 
     protected virtual void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)
     {
+        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.stoped)
+            viewModel.CalculatePosition();
+
+        //Debug.Log("trying set " + newValue + " to " + topicFieldController.FieldType + " with  " + topicFieldController.Value);
         if (!topicFieldController.SetValue(newValue))
             Debug.Log("ViewModel_OnPropertyChanged went wrong");
         //(GetStringFromValue(topicFieldControllerPrefab.ParamName));

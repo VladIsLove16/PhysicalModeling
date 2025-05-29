@@ -141,7 +141,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
             Debug.LogWarning(paramName + " not found");
             return false;
         }
-        if (topicField.TrySetValue(value))
+        if (topicField.TrySetValue(value, notify))
         {
             return true;
         }

@@ -191,9 +191,19 @@ public class TopicField
         return false;
     }
 
-    public bool TrySetValue(object value)
+    public bool TrySetValue(object value,bool notify = true)
     {
+        if (value == null)
+        {
+            Debug.LogAssertion("trying set null value");
+            SetValue(value, false);
+            return true;
+        }
         Type valueType = value.GetType();
+        if (FieldType == FieldType.Custom)
+        {
+            return true;
+        }
         if (GetFieldValueType(FieldType) != valueType)
         {
             object convertedValue = TryConvertValue(value, out bool result);
@@ -209,10 +219,16 @@ public class TopicField
             }
         }
         object clampedValue = ClampValue(value);
-        property.SetValueAndForceNotify(value);
+        SetValue(value, notify);
         return true;
     }
-
+    private void SetValue(object value, bool notify = true )
+    {
+        if(notify)
+            property.SetValueAndForceNotify(value);
+        else
+            property.Value = value;
+    }
     private object TryConvertValue(object value, out bool result)
     {
         return GetValueFromString(value.ToString(), out  result);
@@ -302,6 +318,19 @@ public enum ParamName
     additionalMass,
     position2,
     mass2Acceleration,
-    isMoving
+    isMoving,
+    gearCount,
+    module,
+    teethCount,
+    gearBox,
+    totalGearRatio,
+    outputAngularVelocity,
+    outputFrequency,
+    inputAngularVelocity,
+    inputFrequency,
+    helicalAngle
+}
+public enum FieldType {None, Float, Vector3, Int,Bool,
+    Custom
 }
 public enum FieldType { Float, Vector3, Int,Bool }

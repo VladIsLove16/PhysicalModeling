@@ -64,7 +64,7 @@ public class RefractionLensView : MotionView
     protected override void ViewModel_OnSimulationStateChanged()
     {
         //base.ViewModel_OnSimulationStateChanged();
-        //switch (viewModel.simulationStateChanged.Value)
+        //switch (viewModel.simulationState.Value)
         //{
         //    case MotionViewModel.SimulationState.stoped:
         //        object param = viewModel.TryGetParam(ParamName.respawnObstacles, out bool result);
