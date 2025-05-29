@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 [CreateAssetMenu(fileName = "HelicalJerkMotionModel", menuName = "MotionModelsDropdown/HelicalJerkMotionModel")]
 public class HelicalJerkMotionModel : HelicalAcceleratingMotionModel
@@ -28,19 +31,27 @@ public class HelicalJerkMotionModel : HelicalAcceleratingMotionModel
             return linearMotionModel;
         }
     }
-    protected override void InitLinearMotionModelParams()
+    public override void InitializeParameters(bool isForce = false)
     {
-        LinearMotionModel.TrySetParam(ParamName.velocity, GetParam(ParamName.velocity));
-        LinearMotionModel.TrySetParam(ParamName.acceleration, GetParam(ParamName.acceleration));
-        LinearMotionModel.TrySetParam(ParamName.jerk, GetParam(ParamName.jerk));
+        base.InitializeParameters(isForce);
+        actions[ParamName.rotationFrequencyJerk] = OnRotationFrequencyJerkChanged;
+        actions[ParamName.jerk] = OnJerkChanged;
+        foreach (var field in topicFields)
+        {
+            if (actions.ContainsKey(field.ParamName))
+                field.Property.Subscribe(actions[field.ParamName]);
+        }
     }
-    protected override void InitRotationalMotionModelParams()
+
+    private void OnJerkChanged(object value)
     {
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequencyAcceleration, GetParam(ParamName.rotationFrequencyAcceleration));
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequencyJerk , GetParam(ParamName.rotationFrequencyJerk));
-        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
-        RotationalMotionModel.TrySetParam(ParamName.velocity, GetParam(ParamName.velocity));
+        linearMotionModel?.TrySetParam(ParamName.jerk, value);
+    }
+
+    private void OnRotationFrequencyJerkChanged(object value)
+    {
+        RotationalMotionModel.TrySetParam(ParamName.rotationFrequencyJerk, value);
+
     }
     public override List<TopicField> GetRequiredParams()
     {

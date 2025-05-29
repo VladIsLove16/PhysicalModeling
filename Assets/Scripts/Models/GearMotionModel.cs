@@ -5,6 +5,15 @@ using System;
 [CreateAssetMenu(fileName = "GearMotionModel", menuName = "MotionModelsDropdown/GearMotionModel")]
 public class GearMotionModel : MotionModel
 {
+    Gearbox gearbox = new Gearbox();    
+    private Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
+        {
+            { ParamName.gearCount, (int)4 },
+            { ParamName.inputAngularVelocity, 1f},
+            { ParamName.inputFrequency, 1f},
+            { ParamName.module, 2.0f },
+            { ParamName.teethCount, (int)16 }
+    };
     protected override Dictionary<ParamName, object> DefaultValues
     {
         get

@@ -48,6 +48,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         { FieldType.Vector3, Vector3.zero },
         { FieldType.Int, 0 },
         { FieldType.Bool, false },
+
     };
 
     protected virtual Dictionary< ParamName, object> DefaultValues
@@ -145,6 +146,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         {
             return true;
         }
+        Debug.LogAssertion("cant set " + value + " to " + paramName);
         return false;
     }
     public bool IsReadonly(ParamName paramName)

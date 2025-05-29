@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UniRx;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 using static UnityEngine.Rendering.DebugUI;
 
 [Serializable]
@@ -79,7 +80,13 @@ public class TopicField
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
-
+    private static Dictionary<FieldType, object> defaultValues = new Dictionary<FieldType, object>()
+    {
+        {FieldType.Float , 0f }
+        ,{FieldType.Int , (int)1},
+        {FieldType.Bool , false},
+        {FieldType.Vector3, Vector3.zero}
+    };
     public string GetStringValue()
     {
        return GetStringFromValue(Property.Value);
@@ -150,6 +157,7 @@ public class TopicField
                     float.TryParse(values[2], out float z))
                 {
                     result = true;
+                    Debug.Log(new Vector3(x, y, z));
                     return new Vector3(x, y, z);
                 }
                 else
@@ -179,7 +187,7 @@ public class TopicField
         }
     }
 
-    public bool TrySetValue(string str)
+    public bool TrySetValue(string str,bool isUserChange = false)
     {
         object value = GetValueFromString(str, out bool result);
         if (result) 
@@ -193,6 +201,7 @@ public class TopicField
 
     public bool TrySetValue(object value,bool notify = true)
     {
+        Debug.Log(value);
         if (value == null)
         {
             Debug.LogAssertion("trying set null value");
@@ -277,6 +286,7 @@ public enum ParamName
     angularVelocity,
     angleDeg,
     angleRad,
+    angleDegTraveled,
     angleRadTraveled,
     period,
     radius,
@@ -329,6 +339,8 @@ public enum ParamName
     inputAngularVelocity,
     inputFrequency,
     helicalAngle
+    helicalAngle,
+    rotationalAxis
 }
 public enum FieldType {None, Float, Vector3, Int,Bool,
     Custom

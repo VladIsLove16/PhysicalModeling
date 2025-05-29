@@ -56,7 +56,6 @@ public class RotationalMotionModel : MotionModel
             AngleRad = deltaAngleRad,
             Path = deltaPath,
             RotationFrequency = rotationFrequency,
-            RotationFrequencyAcceleration = 0,
             NumberOfRevolutions = deltaNumberOfRevolutions
         };
     }
@@ -71,7 +70,7 @@ public class RotationalMotionModel : MotionModel
         float time = (float)GetParam(ParamName.time) + deltaTime;
 
         Vector3 newPosition, deltaPosition;
-        GetDeltaPos((float)GetParam(ParamName.radius), angleRadTraveled, out newPosition, out deltaPosition);
+        GetDeltaPos((float)GetParam(ParamName.radius), angleRadTraveled, (Vector3)GetParam(ParamName.rotationalAxis), out newPosition, out deltaPosition);
 
         float velocityMagnitude = deltaMotion.Path / deltaTime;
 
@@ -81,7 +80,6 @@ public class RotationalMotionModel : MotionModel
         TrySetParam(ParamName.deltaPathTraveled, deltaMotion.Path);
         TrySetParam(ParamName.angularVelocity, deltaMotion.AngularVelocity);
         TrySetParam(ParamName.rotationFrequency, deltaMotion.RotationFrequency);
-        TrySetParam(ParamName.rotationFrequencyAcceleration, deltaMotion.RotationFrequencyAcceleration);
         TrySetParam(ParamName.velocityMagnitude, velocityMagnitude);
         TrySetParam(ParamName.angleRadTraveled, angleRadTraveled);
         TrySetParam(ParamName.angleRad, angleRadTraveled % (2 * Mathf.PI));
@@ -91,7 +89,7 @@ public class RotationalMotionModel : MotionModel
         return newPosition;
     }
 
-    private void GetDeltaPos(float radius, float angleRadTraveled, out Vector3 newPosition, out Vector3 deltaPosition)
+    private void GetDeltaPos(float radius, float angleRadTraveled,Vector3 rotationalAxis, out Vector3 newPosition, out Vector3 deltaPosition)
     {
         // 1. Локальная точка на окружности (XY-плоскость)
         Vector3 localPoint = new Vector3(
@@ -101,8 +99,8 @@ public class RotationalMotionModel : MotionModel
         );
 
         // 2. Вектор скорости = ось вращения (нормализуем)
-        Vector3 velocity = ((Vector3)GetParam(ParamName.velocity)).normalized;
-        if (velocity == Vector3.zero)
+        Vector3 velocity = rotationalAxis.normalized;
+        if (rotationalAxis == Vector3.zero)
             velocity = Vector3.forward; // fallback, если скорость 0
 
         // 3. Строим вращение, которое ориентирует локальную XY плоскость перпендикулярно velocity
@@ -130,7 +128,7 @@ public class RotationalMotionModel : MotionModel
         {
            new TopicField(ParamName.radius, FieldType.Float,false),
            new TopicField(ParamName.rotationFrequency, FieldType.Float,false),
-           new TopicField(ParamName.velocity,FieldType.Vector3, false),
+           new TopicField(ParamName.rotationalAxis,FieldType.Vector3, false),
            new TopicField(ParamName.position, FieldType.Vector3,true),
            new TopicField(ParamName.deltaPosition, FieldType.Vector3,true),
            new TopicField(ParamName.pathTraveled,FieldType.Float,true),

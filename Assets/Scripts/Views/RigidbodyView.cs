@@ -1,7 +1,6 @@
 ﻿using System;
 using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 public class RigidbodyView : MotionView
 {
