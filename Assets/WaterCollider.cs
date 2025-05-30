@@ -1,28 +1,38 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class WaterCollider : MonoBehaviour
 {
     private const float g = 9.81f;
-    [SerializeField] LayerMask layerMask;
     [SerializeField] float waterDensity = 1000f;
-    [SerializeField] ForceMode ForceMode = ForceMode.Acceleration;
-
+    [SerializeField] float dampingCoefficientLinear = 0.5f;
+    [SerializeField] float dampingCoefficientQuadratic = 0.2f;
+    //[SerializeField] ForceMode ForceMode = ForceMode.Acceleration;
+    [SerializeField] List<FloatingObjectBase> floatingObjects;
     private void FixedUpdate()
     {
         Simulate();
     }
 
+    public Vector3 GetVelocity(int index)
+    {
+        if (floatingObjects.Count <= index)
+            throw new ArgumentException("floatingObjects.Count <= index is not available");
+        return floatingObjects[index].Rigidbody.linearVelocity;
+    }
+    public void SetVolume(int index, float value)
+    {
+        if (floatingObjects.Count <= index)
+            throw new ArgumentException("floatingObjects.Count <= index is not available");
+        floatingObjects[index].SetVolume(value);
+    }
+
     private void Simulate()
     {
-        Collider[] hits = Physics.OverlapBox(transform.position, transform.localScale / 2, Quaternion.identity, layerMask);
-        foreach (Collider hit in hits)
+        foreach (FloatingObjectBase floatingObject in floatingObjects)
         {
-            IFloatingObject floatingObject = hit.GetComponent<IFloatingObject>();
-            if (floatingObject == null)
-            {
-                Debug.LogAssertion("collider " + hit.gameObject.name + " is in layerMask " + layerMask.ToString() + " but is not IFloatingObject");
-                continue;
-            }
             ApplyTotalForce(floatingObject);
         }
     }
@@ -35,22 +45,27 @@ public class WaterCollider : MonoBehaviour
             Debug.LogAssertion("floatingObject.Rigidbody is null on " + floatingObject.transform.name);
             return;
         }
+
         float objVolume = floatingObject.GetVolume();
-        float ArchimedForceMagnitude = GetArchimedForce(floatingObject) * Time.fixedDeltaTime;
-        float gravityForceMagnitude = floatingObject.GetGravityForce() * Time.fixedDeltaTime;
-        Vector3 appliyngForce = Vector3.up * (ArchimedForceMagnitude - gravityForceMagnitude);
-        Debug.Log(ArchimedForceMagnitude + " - " + gravityForceMagnitude + "  = " + appliyngForce);
-        rigidbody.AddForce(appliyngForce, ForceMode);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
+        float archimedesForce = GetArchimedForce(floatingObject);
+        float gravityForce = floatingObject.GetGravityForce();
+        float totalForce = archimedesForce - gravityForce;
+        totalForce = AddDamping(totalForce, floatingObject);
         
+        float acceleration = totalForce / floatingObject.Mass;
+        Vector3 applyingAcceleration = Vector3.up * acceleration;
+        rigidbody.AddForce(applyingAcceleration, ForceMode.Acceleration);
     }
 
-    private void OnTriggerStay(Collider other)
+    private float AddDamping(float totalForce, IFloatingObject floatingObject)
     {
-       
+        Vector3 linearVelocity = floatingObject.Rigidbody.linearVelocity;
+        float verticalVelocity = Vector3.Dot(linearVelocity, Vector3.up); 
+        float dampingForce = -verticalVelocity * dampingCoefficientLinear
+                     - Mathf.Sign(verticalVelocity) * verticalVelocity * verticalVelocity * dampingCoefficientQuadratic;
+        dampingForce *= floatingObject.Mass;   
+        totalForce += dampingForce;
+        return totalForce;
     }
 
     private float GetArchimedForce(IFloatingObject floatingObject)
@@ -60,11 +75,6 @@ public class WaterCollider : MonoBehaviour
         float force = CalculateArchimedesForce(waterDensity, diveVolume);
         return force;
     }
-
-    //public float CalculateObjectVolume(Vector3 size)
-    //{
-    //    return size.x*size.y*size.z;
-    //}
 
     private float CalculateArchimedesForce(float density, float volume)
     {
@@ -97,8 +107,6 @@ public class WaterCollider : MonoBehaviour
     }
     private float CalculateSurfaceLowestPoint(Vector3 size, Vector3 position)
     {
-        //Vector3 size = objTransform.localScale;
-        //Vector3 position = objTransform.localPosition;
         float y = position.y - size.y/2;
         return y;
     }

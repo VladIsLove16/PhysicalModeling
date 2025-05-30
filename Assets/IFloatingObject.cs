@@ -9,7 +9,14 @@ public interface IFloatingObject
 
     public float GetGravityForce()
     {
-        return Density * IFloatingObject.g * GetVolume();
+        return Mass * IFloatingObject.g;
     }
     public float GetVolume();
+    float Mass
+    {
+        get
+        {
+            return Density * GetVolume();
+        }
+    }
 }
