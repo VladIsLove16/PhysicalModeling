@@ -90,7 +90,8 @@ public class MotionViewModel
         result = topicField != null;
         if(!result)
         {
-            Debug.LogAssertion("cant get param " + paramName + " from model");
+            Debug.Log("cant get param " + paramName + " from model");
+            return 0f;
         }
         return topicField.Value;
     }
@@ -101,7 +102,11 @@ public class MotionViewModel
 
     internal void CalculatePosition()
     {
-      float time = (float)  TryGetParam(ParamName.time, out bool result);
+        float time = (float)  TryGetParam(ParamName.time, out bool result);
+        if (!result)
+        {
+            time = 0f;
+        }
         CurrentModel.CalculatePosition(time);
     }
 }

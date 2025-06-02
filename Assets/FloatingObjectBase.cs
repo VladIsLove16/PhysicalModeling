@@ -26,6 +26,11 @@ public abstract class FloatingObjectBase : MonoBehaviour, IFloatingObject
         editedVolume = value;
     }
 
+    internal void SetDensity(float density)
+    {
+        this.density = density;
+    }
+
     public float Density { get => density; set => density = value; }
 
     public Rigidbody Rigidbody => rb == null ? GetComponent<Rigidbody>() : rb;

@@ -19,6 +19,8 @@ public class MotionController : MonoBehaviour
     [SerializeField] private RefractionLensView RefractionView;
     [SerializeField] private RefractionMaterialsView RefractionMaterialsView;
     [SerializeField] private GearView GearView;
+    [SerializeField] private WaterView WaterView;
+    [SerializeField] private PistonView PistonView;
     [SerializeField] private PointA pointA;
     [SerializeField] private MotionView CurrentView;
     private MotionViewModel ViewModel;
@@ -74,6 +76,10 @@ public class MotionController : MonoBehaviour
             CurrentView = RefractionMaterialsView;
         else if (CurrentMotionModel is GearMotionModel gearMotionModel)
             CurrentView = GearView;
+        else if (CurrentMotionModel is WaterMotionModel waterMotionModel)
+            CurrentView = WaterView;
+        else if (CurrentMotionModel is PistionMotionModel pistionMotionModel)
+            CurrentView = PistonView;
         else 
             CurrentView = Viewtr;
         Debug.Log("Current view setted to " + CurrentView.name);

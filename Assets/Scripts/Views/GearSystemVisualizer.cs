@@ -18,6 +18,7 @@ public class GearSystemVisualizer : MonoBehaviour
     Gearbox gearbox = null;
     public void GenerateSystem(Gearbox gearbox)
     {
+        Debug.Log("Generation");
         if (gearbox == null)
             return;
         this.gearbox = gearbox;

@@ -18,7 +18,7 @@ public class TopicField
     public object MinValue;
     private object maxValue;
     private object minValue;
-
+    public ViewType ViewType;
     public ParamName ParamName => paramName;
     public FieldType FieldType => type;
     public bool IsReadOnly => isReadOnly;
@@ -42,7 +42,6 @@ public class TopicField
         this.isReadOnly = isReadonly;
         //property.Subscribe(_ => OnPropertyChanged());
     }
-
     public string GetStringValue()
     {
        return GetStringFromValue(Property.Value);
@@ -155,12 +154,12 @@ public class TopicField
         if (value == null)
         {
             Debug.LogAssertion("trying set null value");
-            SetValue(value, false);
             return true;
         }
         Type valueType = value.GetType();
         if (FieldType == FieldType.Custom)
         {
+            SetValue(value, false);
             return true;
         }
         if (GetFieldValueType(FieldType) != valueType)
@@ -287,7 +286,14 @@ public enum ParamName
     outputFrequency,
     inputAngularVelocity,
     inputFrequency,
-    helicalAngle
+    helicalAngle,
+    volume,
+    density,
+    piston1Square,
+    piston2Square,
+    pistonHeightDelta,
+    weight,
+    applyingForce
 }
 public enum FieldType {None, Float, Vector3, Int,Bool,
     Custom

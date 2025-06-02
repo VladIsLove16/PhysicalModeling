@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static UnityEngine.Rendering.DebugUI;
 
 public class WaterCollider : MonoBehaviour
 {
@@ -28,6 +29,13 @@ public class WaterCollider : MonoBehaviour
             throw new ArgumentException("floatingObjects.Count <= index is not available");
         floatingObjects[index].SetVolume(value);
     }
+    internal void SetDensity(int index, float density)
+    {
+        if (floatingObjects.Count <= index)
+            throw new ArgumentException("floatingObjects.Count <= index is not available");
+        floatingObjects[index].SetDensity(density);
+    }
+
 
     private void Simulate()
     {
@@ -110,4 +118,5 @@ public class WaterCollider : MonoBehaviour
         float y = position.y - size.y/2;
         return y;
     }
+
 }

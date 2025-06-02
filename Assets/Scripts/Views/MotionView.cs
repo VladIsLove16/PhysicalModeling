@@ -36,20 +36,24 @@ public abstract class MotionView : MonoBehaviour
     };
     private readonly Dictionary<ParamName, ViewType> topicFieldsViewTypes = new()
     {
-       
+        { ParamName.angleDeg, ViewType.Slider },
         { ParamName.additionalMass, ViewType.Toggle },
         { ParamName.isMoving, ViewType.Toggle },
+        { ParamName.density, ViewType.inputField },
+        { ParamName.distance, ViewType.Slider },
         { ParamName.friction, ViewType.Slider },
         { ParamName.seed, ViewType.Slider },
         { ParamName.pointAReached, ViewType.Toggle },
-        { ParamName.angleDeg, ViewType.Slider },
+        { ParamName.gearBox, ViewType.inputField },
+        { ParamName.volume, ViewType.inputField },
         { ParamName.respawnObstacles, ViewType.Toggle },
         { ParamName.unityPhycicsCalculation, ViewType.Toggle },
         { ParamName.xPosition, ViewType.Slider },
         { ParamName.rayAngle, ViewType.Slider },
         { ParamName.refractiveIndex, ViewType.Slider },
         { ParamName.radius, ViewType.Slider },
-        { ParamName.distance, ViewType.Slider },
+        { ParamName.weight, ViewType.Slider },
+        { ParamName.applyingForce, ViewType.Slider },
 
         {ParamName.material1_Size,ViewType.inputField },
         {ParamName.material1_Position,ViewType.inputField },
@@ -138,7 +142,7 @@ public abstract class MotionView : MonoBehaviour
         Debug.Log("TopicField Instantiated " + topicField.ParamName);
 
         TopicFieldController prefab;
-        if (topicFieldsViewTypes.TryGetValue(topicField.ParamName, out ViewType viewType))
+        if (GetViewType(topicField, out ViewType viewType))
             switch (viewType)
             {
                 case ViewType.inputField:
@@ -169,6 +173,16 @@ public abstract class MotionView : MonoBehaviour
 
         uiDisposables.Add(subscription);
         inputFields[paramName] = instance;
+    }
+
+    private bool GetViewType(TopicField topicField, out ViewType viewType)
+    {
+        if(!topicFieldsViewTypes.TryGetValue(topicField.ParamName, out viewType))
+        {
+            viewType = topicField.ViewType;
+            return true;
+        }
+        return true;
     }
 
     protected virtual void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)

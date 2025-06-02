@@ -1,14 +1,32 @@
 ﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
+using System.Linq;
 public class WaterView : MotionView
 {
     [SerializeField] private  WaterCollider WaterCollider;
     private Dictionary<ParamName, Action<object>> actions = new Dictionary<ParamName, Action<object>>();
+    public override void OnEnabled()
+    {
+        base.OnEnabled();
+        actions[ParamName.volume] = OnVolumeChanged;
+        actions[ParamName.density] = OnDensityChanged;
+    }
+    private void OnVolumeChanged(object value)
+    {
+        float volume = (float)value;
+        WaterCollider.SetVolume(0, volume);
+    }
+    private void OnDensityChanged(object value)
+    {
+        float density = (float)value;
+        WaterCollider.SetDensity(0, density);
+    }
     public override void OnDisabled()
     {
         base.OnDisabled();
-        foreach (var key in actions.Keys)
+        var keys = actions.Keys.ToArray();
+        foreach (var key in keys)
         {
             actions[key] = null;
         }
@@ -20,4 +38,3 @@ public class WaterView : MotionView
             action(newValue);
     }
 }
-  

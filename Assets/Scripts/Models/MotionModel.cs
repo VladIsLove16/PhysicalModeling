@@ -33,7 +33,8 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     }
     public TopicField GetTopicField(ParamName paramName)
     {
-        return topicFields.FirstOrDefault(x => x.ParamName == paramName);
+        TopicField field = topicFields.FirstOrDefault(x => x.ParamName == paramName);
+        return field;
     }
 
     //private Dictionary<ParamName, ReactiveProperty<object>> paramValues;
@@ -64,6 +65,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         { ParamName.additionalMass,FieldType.Bool } ,
         { ParamName.distance,FieldType.Float },
         { ParamName.deltaPosition,FieldType.Vector3 },
+        { ParamName.density,FieldType.Float },
         { ParamName.friction,FieldType.Float } ,
         { ParamName.force,FieldType.Float } ,
         { ParamName.forceAcceleration,FieldType.Float },
@@ -138,19 +140,29 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         {
             if(field.FieldType == FieldType.None)
             {
-                var type = paramNameFieldTypes[field.ParamName];
+                var type = GetFieldType(field.ParamName);
                 field.SetType(type, true);
             }
             if (MaxValues.TryGetValue(field.ParamName, out object maxValue))
                 field.SetMaxValue(maxValue);
             if(MinValues.TryGetValue(field.ParamName, out object minValue))
                 field.SetMinValue(minValue);
-            object defaultValue = GetDefaultValue(field);
-            field.TrySetValue(defaultValue);
+                object defaultValue = GetDefaultValue(field);
+            if (defaultValue != null)
+                field.TrySetValue(defaultValue);
             AddTopicField(field);
         }
         Debug.Log(topicFields.Count);
     }
+
+    private FieldType GetFieldType(ParamName paramName)
+    {
+        if (paramNameFieldTypes.ContainsKey(paramName))
+            return paramNameFieldTypes[paramName];
+        else
+            return FieldType.Float;
+    }
+
     private void ClearTopicFields()
     {
         topicFields.Clear();
