@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using System.Linq;
-using static UnityEditor.PlayerSettings;
 using System;
 using UniRx;
 

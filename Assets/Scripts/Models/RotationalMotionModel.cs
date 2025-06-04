@@ -81,6 +81,7 @@ public class RotationalMotionModel : MotionModel
         TrySetParam(ParamName.deltaPathTraveled, deltaMotion.Path);
         TrySetParam(ParamName.angularVelocity, deltaMotion.AngularVelocity);
         TrySetParam(ParamName.rotationFrequency, deltaMotion.RotationFrequency);
+        TrySetParam(ParamName.period,  1/ (float)GetParam(ParamName.rotationFrequency));
         TrySetParam(ParamName.rotationFrequencyAcceleration, deltaMotion.RotationFrequencyAcceleration);
         TrySetParam(ParamName.velocityMagnitude, velocityMagnitude);
         TrySetParam(ParamName.angleRadTraveled, angleRadTraveled);

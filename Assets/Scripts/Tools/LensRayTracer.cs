@@ -1,100 +1,85 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.LowLevelPhysics;
+using Unity.VisualScripting;
 
-public partial class RayTracer : IRayPathCalculator
+public partial class MathematicalRayPathCalculator : IRayPathCalculator
 {
-    private struct LensSurface : ISurface
-    {
-        public float radius;
-        public Vector3 center;
-        public float refractiveIndex;
-        public float RefractiveIndex { 
-            get
-            {
-                return refractiveIndex;
-            }
-            set
-            {
-                refractiveIndex = value;
-            }
-        }
-        public LensSurface(Vector3 center, float radius, float refractiveIndex)
-        {
-            this.center = center;
-            this.radius = radius;
-            this.refractiveIndex = refractiveIndex;
-        }
-        public bool GetIntersection(Vector3 start, Vector3 direction, out Vector3 intersectionPoint)
-        {
-          return RayPhysics.RaySphereIntersect(start, direction, center, radius, out intersectionPoint);
-        }
-        public Vector3 GetNormal(Vector3 intersectionPoint)
-        {
-            return (intersectionPoint-center).normalized;
-        }
-    } 
+   
     private List<ISurface> _surfaces = new List<ISurface>();
-    public RayTracer()
+    private List<MultiMaterialRefraction.IRefractivePhysicMaterial> refractiveMaterials;
+    private float maxRayLength;
+
+
+    public MathematicalRayPathCalculator(List<MultiMaterialRefraction.IRefractivePhysicMaterial> refractiveMaterials, float maxRayLength)
     {
+        this.refractiveMaterials = refractiveMaterials;
+        this.maxRayLength = maxRayLength;
+
+        foreach(var  material in refractiveMaterials)
+        {
+            _surfaces.AddRange(material.GetSurfaces());
+        }
     }
 
-    public RayTracer(float radius, float distance, float lensRefractiveIndex,Vector3 lensPosition)
-    {
-        float thickness = radius * 2 - distance;
-        var  centerFront = new Vector3(0, radius - thickness / 2, 0) + lensPosition;
-        var  centerBack = new Vector3(0, -radius + thickness / 2f, 0) + lensPosition;
-        LensSurface lensSurface1 = new LensSurface(centerFront,radius, lensRefractiveIndex);
-        LensSurface lensSurface2 = new LensSurface(centerBack, radius, 1f);
-        _surfaces.Add(lensSurface1);
-        _surfaces.Add(lensSurface2);
-    }
-    public List<Vector3> CalculateRayPath(Vector3 start, Vector3 direction, float maxLength, int maxBounces, float initialRefractiveIndex = 1.0f)
+    public List<Vector3> CalculateRayPath(Vector3 start, Vector3 direction, float maxLength, int maxBounces)
     {
         List<Vector3> points = new List<Vector3> { start };
 
         Vector3 currentPos = start;
         Vector3 currentDir = direction.normalized;
         float remainingLength = maxLength;
-
-        for (int i = 0; i < _surfaces.Count; i++)
+        float n1, n2;
+        for (int bounce = 0; bounce < maxBounces; bounce++)
         {
-            Vector3 nextHit, normal;
-            float n1, n2;
-            if (!_surfaces[i].GetIntersection(currentPos, currentDir, out nextHit))
+            for (int i = 0; i < _surfaces.Count; i++)
             {
-                Debug.LogAssertion("GetIntersection not foubd on surface " + i);
-                continue;
+                Vector3 nextHit, normal;
+                if (!_surfaces[i].GetIntersection(currentPos, currentDir, out nextHit))
+                {
+                    Debug.Log("GetIntersection not foubd on surface " + i + " continue");
+                    continue;
+                }
+                else
+                    Debug.Log("GetIntersection  found on surface " + i);
+                normal = _surfaces[i].GetNormal(nextHit);
+                
+                n1 = bounce % 2 == 0 ? IRayPathCalculator.AIRREFRACTION : _surfaces[i].RefractiveIndex;
+                n2 = bounce % 2 == 0 ? _surfaces[i].RefractiveIndex : IRayPathCalculator.AIRREFRACTION;
+                Debug.Log("bounce + " + bounce + " with n1 : " + n1 + " n2 : " + n2 + " on surface " + i  + " in  " + nextHit);
+                //ориентация нормали
+                if (Vector3.Dot(currentDir, normal) > 0)
+                    normal = -normal;
+
+                DebugDrawer.AddRay(new Ray(nextHit, -normal), Color.red);
+                DebugDrawer.AddRay(new Ray(currentPos + 0.01f * Vector3.one, currentDir), Color.blue);
+                Vector3 refracted;
+                if (!RayPhysics.ComputeSneliusRefractedDirection(currentDir, normal, n1, n2, out refracted))
+                {
+                    Debug.LogAssertion("Full refraction on surface " + i);
+                    break; // Полное внутреннее отражение
+                }
+
+                DebugDrawer.AddRay(new Ray(nextHit, refracted), Color.yellow);
+                remainingLength = CalculateRamainingLength(currentPos, remainingLength, nextHit);
+                if (remainingLength <= 0) break;
+
+                AddPoint(points, nextHit);
+                currentPos = nextHit + 0.01f* currentDir;
+                currentDir = refracted;
+                i=_surfaces.Count;
             }
-            normal = _surfaces[i].GetNormal(nextHit);
-            n1 = i == 0 ? initialRefractiveIndex : _surfaces[i - 1].RefractiveIndex;
-            n2 = _surfaces[i].RefractiveIndex;
-            // Автоматическая ориентация нормали
-            if (Vector3.Dot(currentDir, normal) > 0)
-                normal = -normal;
-
-            DebugDrawer.AddRay(new Ray(nextHit, -normal), Color.red);   
-            DebugDrawer.AddRay(new Ray(currentPos+0.01f *Vector3.one, currentDir), Color.blue);
-            Vector3 refracted;
-            if (!RayPhysics.ComputeSneliusRefractedDirection(currentDir, normal, n1 , n2, out refracted))
-            {
-
-                Debug.LogAssertion("Full refraction on surface " + i);
-                break; // Полное внутреннее отражение
-            }
-
-            DebugDrawer.AddRay(new Ray(nextHit, refracted), Color.yellow);
-            float segmentLength = Vector3.Distance(currentPos, nextHit);
-            remainingLength -= segmentLength;
-            if (remainingLength <= 0) break;
-
-            AddPoint(points, nextHit);
-            currentPos = nextHit;
-            currentDir = refracted;
         }
 
         AddPoint(points, currentPos + currentDir * remainingLength);
         return points;
+    }
+
+    private static float CalculateRamainingLength(Vector3 currentPos, float remainingLength, Vector3 nextHit)
+    {
+        float segmentLength = Vector3.Distance(currentPos, nextHit);
+        remainingLength -= segmentLength;
+        return remainingLength;
     }
 
     private void AddPoint(List<Vector3> points, Vector3 point)

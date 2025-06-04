@@ -4,7 +4,6 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 using Unity.VisualScripting;
 
 public class MotionController : MonoBehaviour

@@ -27,6 +27,5 @@ public class LineGizmoExample : MonoBehaviour
 
         // Display the distance
         float distance = Vector3.Distance(transform.position, endPoint.position);
-        UnityEditor.Handles.Label(midpoint, $"Distance: {distance:F2}");
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 public class InputFieldTopicFieldController : TopicFieldController
 {

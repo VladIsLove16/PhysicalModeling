@@ -7,7 +7,6 @@ using System.Linq;
 using System;
 using static UnityEngine.GraphicsBuffer;
 using System.Collections;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 public abstract class MotionView : MonoBehaviour
 {
@@ -139,7 +138,6 @@ public abstract class MotionView : MonoBehaviour
     protected void CreateTopicField(TopicField topicField)
     {
         var paramName = topicField.ParamName;
-        Debug.Log("TopicField Instantiated " + topicField.ParamName);
 
         TopicFieldController prefab;
         if (GetViewType(topicField, out ViewType viewType))

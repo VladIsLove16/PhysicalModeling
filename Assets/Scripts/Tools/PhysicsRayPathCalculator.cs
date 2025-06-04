@@ -12,39 +12,53 @@ public class PhysicsRayPathCalculator : IRayPathCalculator
         this.maxRayLength = maxRayLength;
     }
 
-    public List<Vector3> CalculateRayPath(Vector3 start, Vector3 direction, float maxLength, int maxBounces, float initialRefractiveIndex = 1.0f)
+    public List<Vector3> CalculateRayPath(Vector3 start, Vector3 rayDirection, float maxLength, int maxBounces)
     {
         List<Vector3> points = new List<Vector3>();
         Vector3 currentOrigin = start;
-        Vector3 currentDirection = direction.normalized;
-        float currentRefractiveIndex = initialRefractiveIndex;
+        rayDirection = rayDirection.normalized;
         float remainingLength = maxLength;
         points.Add(currentOrigin);
 
         for (int bounce = 0; bounce < maxBounces; bounce++)
         {
-            if (!RaycastToNextMaterial(currentOrigin, currentDirection, out RaycastHit hit, out MultiMaterialRefraction.IRefractivePhysicMaterial hitMaterial))
-            {
+
+            if (!RaycastToNextMaterial(currentOrigin, rayDirection, out RaycastHit hit, out MultiMaterialRefraction.IRefractivePhysicMaterial hitMaterial))
                 break;
-            }                
+            DebugDrawer.AddRay(new Ray(hit.point + 0.01f * Vector3.one, rayDirection), Color.blue);
+            DebugDrawer.AddRay(new Ray(hit.point, -hit.normal), Color.red);
+
             points.Add(hit.point);
 
-            if (!RayPhysics.ComputeSneliusRefractedDirection(currentDirection, hit.normal, currentRefractiveIndex, hitMaterial.RefractiveIndex(), out Vector3 directionInside))
+            if (!RayPhysics.ComputeSneliusRefractedDirection(rayDirection, hit.normal, IRayPathCalculator.AIRREFRACTION, hitMaterial.RefractiveIndex(), out Vector3 directionInside))
                 break;
+            DebugDrawer.AddRay(new Ray(hit.point, directionInside), Color.yellow);
 
             if (!TryFindExitFromMaterial(hit.point, directionInside, hitMaterial.GetCollider(), out RaycastHit exitHit))
                 break;
 
+            if (!RayPhysics.ComputeSneliusRefractedDirection(directionInside, -exitHit.normal, hitMaterial.RefractiveIndex(), IRayPathCalculator.AIRREFRACTION, out Vector3 directionOutside))
+                break;
+
+            DebugDrawer.AddRay(new Ray(exitHit.point + 0.01f * Vector3.one, directionInside), Color.blue);
+            DebugDrawer.AddRay(new Ray(exitHit.point, exitHit.normal), Color.red);
+            DebugDrawer.AddRay(new Ray(exitHit.point, directionOutside), Color.yellow);
             points.Add(exitHit.point);
-            float segmentLength = Vector3.Distance(exitHit.point, hit.point);
-            remainingLength -= segmentLength;
-            if (remainingLength <= 0) break;
+            CalculateRayLegth(ref remainingLength, hit, ref exitHit);
+            if (remainingLength <= 0)
+                break;
             currentOrigin = exitHit.point;
-            currentRefractiveIndex = 1.0f;
+            rayDirection = directionOutside;
         }
 
-        points.Add(currentOrigin + currentDirection * remainingLength);
+        points.Add(currentOrigin + rayDirection * remainingLength);
         return points;
+    }
+
+    private static void CalculateRayLegth(ref float remainingLength, RaycastHit hit, ref RaycastHit exitHit)
+    {
+        float segmentLength = Vector3.Distance(exitHit.point, hit.point);
+        remainingLength -= segmentLength;
     }
 
     private bool RaycastToNextMaterial(Vector3 origin, Vector3 direction, out RaycastHit hit, out MultiMaterialRefraction.IRefractivePhysicMaterial material)

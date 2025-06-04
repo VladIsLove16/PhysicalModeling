@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static ObstacleGenerator;
+using static ObstacleDataGenerator;
 
 public class ObstacleSpawner : MonoBehaviour
 {
     [Header("Prefabs (должны быть одинаково отсортированы)")]
-    //public GameObject[] obstaclePrefabs;
-    public GameObject AccelerationObstacle;
-    public GameObject NonKinemationObstacle;
-    public GameObject KinemationObstacle;
-    private const int OBSTACLELENGTH = 3;
+    public List<GameObject> obstaclePrefabs;
+    private int OBSTACLELENGTH => obstaclePrefabs.Count;
     [Header("Параметры генерации")]
     public int seed = 12345;
     public int obstacleCount = 5;
@@ -50,7 +47,7 @@ public class ObstacleSpawner : MonoBehaviour
 
     private List<ObstacleData> GenerateObstaclesData()
     {
-        ObstacleGenerator.GenerationParams generationParams = new ObstacleGenerator.GenerationParams()
+        ObstacleDataGenerator.GenerationParams generationParams = new ObstacleDataGenerator.GenerationParams()
         {
             seed = seed,
             areaMax = areaMax,
@@ -59,7 +56,7 @@ public class ObstacleSpawner : MonoBehaviour
             prefabCount = OBSTACLELENGTH,
             fullRandomGen = false,
         };
-        List<ObstacleData> generated = ObstacleGenerator.GenerateObstacles(generationParams);
+        List<ObstacleData> generated = ObstacleDataGenerator.GenerateObstacles(generationParams);
         return generated;
     }
 
@@ -85,14 +82,15 @@ public class ObstacleSpawner : MonoBehaviour
         foreach (var data in obstacleDataList)
         {
             GameObject prefab;
-            if (data.isAccelerator)
-                prefab = AccelerationObstacle;
-            else if (data.isMovable)
+           if(data.prefabIndex > obstacleCount)
             {
-                prefab = NonKinemationObstacle;
+                prefab = obstaclePrefabs[obstacleCount - 1];
+
             }
             else
-                prefab = KinemationObstacle;
+            {
+                prefab = obstaclePrefabs[data.prefabIndex-1];
+            }
             GameObject instance = Instantiate(prefab, data.position, Quaternion.identity, transform);
             generatedObstacles.Add(instance);
         }

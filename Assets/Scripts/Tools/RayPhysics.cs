@@ -23,8 +23,10 @@ public static class RayPhysics
         return true;
     }
 
-    public static bool RaySphereIntersect(Vector3 rayOrigin, Vector3 rayDir, Vector3 sphereCenter, float radius, out Vector3 hitPoint)
+    public static bool RayLensSurfaceIntersect(Vector3 rayOrigin, Vector3 rayDir, Vector3 sphereCenter, float radius, float yMin, float yMax, out Vector3 hitPoint)
     {
+        hitPoint = Vector3.zero;
+
         Vector3 oc = rayOrigin - sphereCenter;
         float a = Vector3.Dot(rayDir, rayDir);
         float b = 2.0f * Vector3.Dot(oc, rayDir);
@@ -32,25 +34,34 @@ public static class RayPhysics
         float discriminant = b * b - 4 * a * c;
 
         if (discriminant < 0)
-        {
-            hitPoint = Vector3.zero;
             return false;
-        }
 
         float sqrtDiscriminant = Mathf.Sqrt(discriminant);
         float t1 = (-b - sqrtDiscriminant) / (2 * a);
         float t2 = (-b + sqrtDiscriminant) / (2 * a);
-        float t = (t1 > 0) ? t1 : t2;
 
-        if (t > 0)
+        // Проверим оба варианта пересечения
+        float[] tCandidates = new float[] { t1, t2 };
+
+        foreach (float t in tCandidates)
         {
-            hitPoint = rayOrigin + t * rayDir;
-            return true;
+            if (t <= 0)
+                continue;
+
+            Vector3 point = rayOrigin + t * rayDir;
+            float y = point.y;
+
+            if (y >= yMin && y <= yMax)
+            {
+                hitPoint = point;
+                return true;
+            }
         }
 
-        hitPoint = Vector3.zero;
         return false;
     }
+
+
     public static bool RayBoxIntersect(Ray ray, Bounds bounds, out Vector3 intersectionPoint)
     {
         intersectionPoint = Vector3.zero;
