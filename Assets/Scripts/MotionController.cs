@@ -20,6 +20,7 @@ public class MotionController : MonoBehaviour
     [SerializeField] private GearView GearView;
     [SerializeField] private WaterView WaterView;
     [SerializeField] private PistonView PistonView;
+    [SerializeField] private SubmarineView SubmarineView;
     [SerializeField] private PointA pointA;
     [SerializeField] private MotionView CurrentView;
     private MotionViewModel ViewModel;
@@ -79,6 +80,8 @@ public class MotionController : MonoBehaviour
             CurrentView = WaterView;
         else if (CurrentMotionModel is PistionMotionModel pistionMotionModel)
             CurrentView = PistonView;
+        else if (CurrentMotionModel is SubmarineMotionModel submarineMotionModel)
+            CurrentView = SubmarineView;
         else 
             CurrentView = Viewtr;
         Debug.Log("Current view setted to " + CurrentView.name);

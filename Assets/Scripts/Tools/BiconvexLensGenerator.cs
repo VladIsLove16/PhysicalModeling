@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using static MultiMaterialRefraction;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class BiconvexLensGenerator : MonoBehaviour
@@ -33,6 +33,10 @@ public class BiconvexLensGenerator : MonoBehaviour
     public void OnValidate()
     {
         GenerateLensMesh();
+    }
+    public void GenerateLensMesh(RefractiveLens lens)
+    {
+        GenerateLensMesh(lens.radius, lens.distance, lens.width, lens.position);
     }
     public void GenerateLensMesh(float radius,float distance,float witdh, Vector3 position)
     {

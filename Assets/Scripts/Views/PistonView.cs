@@ -29,7 +29,6 @@ public class PistonView : MotionView
             pistonVisualController.ResetSizes();
         }
     }
-
     private void OnPiston1SquareChanged(object value)
     {
         pistonVisualController.SetSquare(0,(float)value);

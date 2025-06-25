@@ -1,13 +1,11 @@
-﻿using UnityEngine.UI;
-using UnityEngine;
-using UniRx;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using System.Linq;
-using System;
-using static UnityEngine.GraphicsBuffer;
-using System.Collections;
-
+using UniRx;
+using UnityEngine;
+using UnityEngine.InputSystem.XR;
+using UnityEngine.UI;
 public abstract class MotionView : MonoBehaviour
 {
     [SerializeField] private Button toggleSimulationButton;
@@ -41,6 +39,7 @@ public abstract class MotionView : MonoBehaviour
         { ParamName.density, ViewType.inputField },
         { ParamName.distance, ViewType.Slider },
         { ParamName.friction, ViewType.Slider },
+        { ParamName.helicalAngle, ViewType.Slider },
         { ParamName.seed, ViewType.Slider },
         { ParamName.pointAReached, ViewType.Toggle },
         { ParamName.gearBox, ViewType.inputField },
@@ -118,7 +117,6 @@ public abstract class MotionView : MonoBehaviour
     {
         var state = viewModel.simulationState.Value;
         toggleSimulationButtonText.text = simulationButtonTexts[state];
-        Debug.Log("MotionView +  Simulation state Setted " + state);
     }
     
     protected virtual void RebuildUI(bool recreation = false)
@@ -126,21 +124,31 @@ public abstract class MotionView : MonoBehaviour
         ClearUI();
         CreateTopicFields(recreation);
     }
-
+  
     protected virtual void CreateTopicFields(bool recreation = false)
     {
         var topicFields = viewModel.GetFields(recreation);
         foreach (var field in topicFields)
         {
-            CreateTopicField(field);
+
+            CreateTopicField(field.ParamName, field.Value);
+        }
+        viewModel.PropertyChanged += OnViewModel_PropertyChanged; 
+    }
+
+    protected virtual void OnViewModel_PropertyChanged(ParamName paramName, object newValue)
+    {
+        if (inputFields.TryGetValue(paramName, out var field))
+        {
+            field.SetValue(newValue);
+            ViewModel_OnPropertyChanged(field, newValue);
         }
     }
-    protected void CreateTopicField(TopicField topicField)
-    {
-        var paramName = topicField.ParamName;
 
+    protected void CreateTopicField(ParamName paramName,object defaultValue)
+    {
         TopicFieldController prefab;
-        if (GetViewType(topicField, out ViewType viewType))
+        if (GetViewType(paramName, out ViewType viewType))
             switch (viewType)
             {
                 case ViewType.inputField:
@@ -158,36 +166,49 @@ public abstract class MotionView : MonoBehaviour
             prefab = inputFieldPrefab;
 
         var instance = Instantiate(prefab, inputFieldsContainer);
-        instance.Setup(topicField);
-        var subscription = topicField.Property.Skip(1).Subscribe(value =>
+        switch (viewType)
         {
-            if (value == null)
-            {
-                Debug.LogAssertion("try to set null value");
-                return;
-            }
-            ViewModel_OnPropertyChanged(instance, value);
-        });
-
-        uiDisposables.Add(subscription);
+            case ViewType.inputField:
+            default:
+                InputFieldTopicFieldController prefabController = (InputFieldTopicFieldController)instance;
+                prefabController.Setup(viewModel.IsReadOnly(paramName), paramName, viewModel.GetFieldType(paramName));
+                break;
+            case ViewType.Slider:
+                SliderTopicFieldController sliderTopicFieldController = instance as SliderTopicFieldController;
+                sliderTopicFieldController.Setup(viewModel.IsReadOnly(paramName), paramName, viewModel.GetFieldType(paramName), viewModel.GetMinValue(paramName), viewModel.GetMaxValue(paramName));
+                break;
+            case ViewType.Toggle:
+                ToggleTopicFieldController toggleTopicFieldController = (ToggleTopicFieldController)instance;
+                toggleTopicFieldController.Setup(viewModel.IsReadOnly(paramName), paramName);
+                break;
+        }
+        instance.SetValue(defaultValue);
+        instance.UserChangeTopicFieldValue += OnTopicFieldContoller_UserChangeTopicFieldValue;
+        //uiDisposables.Add(subscription);
         inputFields[paramName] = instance;
     }
 
-    private bool GetViewType(TopicField topicField, out ViewType viewType)
+    protected virtual void OnTopicFieldContoller_UserChangeTopicFieldValue(string arg1, TopicFieldController controller)
     {
-        if(!topicFieldsViewTypes.TryGetValue(topicField.ParamName, out viewType))
+        Debug.Log(controller.ParamName + " changed ");
+        if (viewModel.OnUserChangeParam(controller.ParamName, arg1))
         {
-            viewType = topicField.ViewType;
-            return true;
+            
+        }
+    }
+
+    private bool GetViewType(ParamName paramName, out ViewType viewType)
+    {
+        if(!topicFieldsViewTypes.TryGetValue(paramName, out viewType))
+        {
+            viewType = ViewType.inputField;
         }
         return true;
     }
-
     protected virtual void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)
     {
-        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.stoped)
+        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.stoped && !topicFieldController.IsReadOnly)
             viewModel.CalculatePosition();
-
         //Debug.Log("trying set " + newValue + " to " + topicFieldController.FieldType + " with  " + topicFieldController.Value);
         if (!topicFieldController.SetValue(newValue))
             Debug.Log("ViewModel_OnPropertyChanged went wrong");

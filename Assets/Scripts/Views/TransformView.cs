@@ -12,8 +12,4 @@ public class TransformView : MotionView
             MovingObject.position = (Vector3)newValue;
         }
     }
-    protected override void ViewModel_OnSimulationStateChanged()
-    {
-        Debug.Log("TransformView + ViewModel_OnSimulationStateChanged");
-    }
 }

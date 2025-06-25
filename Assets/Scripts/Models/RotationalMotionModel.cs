@@ -69,9 +69,10 @@ public class RotationalMotionModel : MotionModel
         float pathTraveled = (float)GetParam(ParamName.pathTraveled) + deltaMotion.Path;
         float numberOfRevolutions = (float)GetParam(ParamName.numberOfRevolutions) + deltaMotion.NumberOfRevolutions;
         float time = (float)GetParam(ParamName.time) + deltaTime;
+        float radius = (float)GetParam(ParamName.radius);
 
         Vector3 newPosition, deltaPosition;
-        GetDeltaPos((float)GetParam(ParamName.radius), angleRadTraveled, out newPosition, out deltaPosition);
+        GetDeltaPos(radius, angleRadTraveled, out newPosition, out deltaPosition);
 
         float velocityMagnitude = deltaMotion.Path / deltaTime;
 
@@ -80,9 +81,7 @@ public class RotationalMotionModel : MotionModel
         TrySetParam(ParamName.pathTraveled, pathTraveled);
         TrySetParam(ParamName.deltaPathTraveled, deltaMotion.Path);
         TrySetParam(ParamName.angularVelocity, deltaMotion.AngularVelocity);
-        TrySetParam(ParamName.rotationFrequency, deltaMotion.RotationFrequency);
         TrySetParam(ParamName.period,  1/ (float)GetParam(ParamName.rotationFrequency));
-        TrySetParam(ParamName.rotationFrequencyAcceleration, deltaMotion.RotationFrequencyAcceleration);
         TrySetParam(ParamName.velocityMagnitude, velocityMagnitude);
         TrySetParam(ParamName.angleRadTraveled, angleRadTraveled);
         TrySetParam(ParamName.angleRad, angleRadTraveled % (2 * Mathf.PI));
@@ -102,12 +101,12 @@ public class RotationalMotionModel : MotionModel
         );
 
         // 2. Вектор скорости = ось вращения (нормализуем)
-        Vector3 velocity = ((Vector3)GetParam(ParamName.velocity)).normalized;
-        if (velocity == Vector3.zero)
+        object velocity = GetParam(ParamName.velocity);
+        if (velocity == null || (Vector3)velocity == Vector3.zero)
             velocity = Vector3.forward; // fallback, если скорость 0
 
         // 3. Строим вращение, которое ориентирует локальную XY плоскость перпендикулярно velocity
-        Quaternion rotation = Quaternion.LookRotation(velocity);
+        Quaternion rotation = Quaternion.LookRotation((Vector3)velocity);
 
         // 4. Преобразуем точку в глобальное пространство
         newPosition = rotation * localPoint;
@@ -131,12 +130,13 @@ public class RotationalMotionModel : MotionModel
         {
            new TopicField(ParamName.radius, FieldType.Float,false),
            new TopicField(ParamName.rotationFrequency, FieldType.Float,false),
-           new TopicField(ParamName.velocity,FieldType.Vector3, false),
+
            new TopicField(ParamName.position, FieldType.Vector3,true),
            new TopicField(ParamName.deltaPosition, FieldType.Vector3,true),
            new TopicField(ParamName.pathTraveled,FieldType.Float,true),
            new TopicField(ParamName.deltaPathTraveled ,FieldType.Float,true),
            new TopicField(ParamName.angularVelocity,FieldType.Float, true),
+           new TopicField(ParamName.velocity,FieldType.Vector3, true),
            new TopicField(ParamName.velocityMagnitude,FieldType.Float, true),
            new TopicField(ParamName.time,FieldType.Float, true),
            new TopicField(ParamName.angleRad, FieldType.Float, true),

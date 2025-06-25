@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class MotionViewModel
 {
@@ -12,6 +14,8 @@ public class MotionViewModel
     public Action CurrentModelChanged;
     public ReactiveProperty<SimulationState> simulationState = new ReactiveProperty<SimulationState>();
     public int TopicFieldsCount => CurrentModel.TopicFieldsCount;
+
+    public Action<ParamName,object> PropertyChanged { get; internal set; }
 
     public enum SimulationState
     {
@@ -34,7 +38,11 @@ public class MotionViewModel
         else
             Debug.Log("Initing viewmodel with" + newModel.ToString());
         simulationState.Value = SimulationState.stoped;
-        GetFields(newModel);
+        List<TopicField>fields = GetFields(newModel);
+        foreach (TopicField field in fields)
+        {
+            field.Property.Skip(1).Subscribe((newValue) => PropertyChanged.Invoke(field.ParamName, newValue));
+        }
         CurrentModel = newModel;
         //CurrentModel.paramsChanged += paramsChanged;
         CurrentModelChanged?.Invoke();
@@ -72,15 +80,15 @@ public class MotionViewModel
     {
         return CurrentModel.UpdatePosition(deltaTime);
     }
-    //private void CommitChanges(ParamName paramName, object newValue)
+    //private void CommitChanges(ParamName ParamName, object newValue)
     //{
     //    Debug.Log("Success");
-    //    if (paramName == ParamName.time)
+    //    if (ParamName == ParamName.time)
     //    {
     //        PauseSimulation();
     //        CurrentModel.CalculatePosition((float)newValue);
     //    }
-    //    CurrentModel.SetParam(paramName, newValue);
+    //    CurrentModel.SetParam(ParamName, newValue);
     //}
 
     
@@ -108,5 +116,95 @@ public class MotionViewModel
             time = 0f;
         }
         CurrentModel.CalculatePosition(time);
+    }
+
+    internal bool IsReadOnly(ParamName paramName)
+    {
+       return CurrentModel.GetTopicField(paramName).IsReadOnly;
+    }
+
+    internal object GetMinValue(ParamName paramName)
+    {
+        return CurrentModel.GetTopicField(paramName).MinValue;
+    }
+
+    internal object GetMaxValue(ParamName paramName)
+    {
+       return CurrentModel.GetTopicField(paramName).MaxValue;
+    }
+
+    internal FieldType GetFieldType(ParamName paramName)
+    {
+     return   CurrentModel.GetTopicField(paramName).FieldType;
+    }
+    private object GetValueFromString(string value, FieldType FieldType,out bool result)
+    {
+        switch (FieldType)
+        {
+            case FieldType.Float:
+                result = float.TryParse(value, out float floatValue);
+                if (result)
+                    return floatValue;
+                else
+                    return 0f;
+            case FieldType.Int:
+                result = int.TryParse(value, out int intValue);
+                if (result)
+                    return intValue;
+                else
+                    return 0;
+            case FieldType.Vector3:
+                string[] values = value.Split(';');
+
+                if (values.Length == 3 &&
+                    float.TryParse(values[0], out float x) &&
+                    float.TryParse(values[1], out float y) &&
+                    float.TryParse(values[2], out float z))
+                {
+                    result = true;
+                    return new Vector3(x, y, z);
+                }
+                else
+                {
+                    result = false;
+                    return Vector3.zero;
+                }
+            case FieldType.Bool:
+                if (value == false.ToString())
+                {
+                    result = true;
+                    return false;
+                }
+                else if (value == true.ToString())
+                {
+                    result = true;
+                    return true;
+                }
+                else
+                {
+                    result = false;
+                    return false;
+                }
+            default:
+                result = false;
+                return null;
+        }
+    }
+    internal bool OnUserChangeParam(ParamName paramName, string str)
+    {
+        FieldType fieldType = GetFieldType(paramName); 
+        object value = GetValueFromString(str, fieldType, out bool result);
+        Debug.Log("OnUserChangeParam" + result);
+        if (!result)
+        {
+            Debug.LogWarning("GetValueFromString failed " + paramName + " " + str);
+            return false;
+        }
+        return  CurrentModel.TrySetParam(paramName, value,false);
+    }
+
+    internal void TrySetParam(ParamName density1, float density2)
+    {
+        CurrentModel.TrySetParam(density1, density2, false);
     }
 }

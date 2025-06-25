@@ -103,7 +103,7 @@ public partial class MultiMaterialRefraction : MonoBehaviour
     {
         foreach(var mat in lensMaterials)
         {
-            biconvexLensMesh.GenerateLensMesh(mat);
+            biconvexLensMesh.GenerateLensMesh(lens);
         }
     }
 

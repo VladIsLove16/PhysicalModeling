@@ -66,6 +66,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         { ParamName.distance,FieldType.Float },
         { ParamName.deltaPosition,FieldType.Vector3 },
         { ParamName.density,FieldType.Float },
+        { ParamName.densityCount,FieldType.Int },
         { ParamName.friction,FieldType.Float } ,
         { ParamName.force,FieldType.Float } ,
         { ParamName.forceAcceleration,FieldType.Float },
@@ -85,6 +86,7 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         { ParamName.outputFrequency,FieldType.Float } ,
         { ParamName.position,FieldType.Vector3 } ,
         { ParamName.position2,FieldType.Vector3 } ,
+        { ParamName.Submarine,FieldType.Custom } ,
         { ParamName.totalGearRatio,FieldType.Float } ,
         { ParamName.teethCount,FieldType.Int } ,
         { ParamName.xPosition,FieldType.Float } ,
@@ -219,9 +221,9 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
             return null;
     }
 
-    //public object GetParam(ParamName paramName,out bool res)
+    //public object GetParam(ParamName ParamName,out bool res)
     //{
-    //    TopicField topicField = GetTopicField(paramName);
+    //    TopicField topicField = GetTopicField(ParamName);
     //    res = topicField != null;
     //    if(res)
     //        return topicField.Value;
@@ -230,8 +232,8 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
     //}
     public virtual bool TrySetParam(ParamName paramName, object value, bool notify = true)
     {
-        TopicField topicField = GetTopicField(paramName,out bool result);
-        if (!result)
+        TopicField topicField = GetTopicField(paramName,out bool topicFieldExistResult);
+        if (!topicFieldExistResult)
         {
             Debug.LogWarning(paramName + " not found");
             return false;
@@ -240,8 +242,11 @@ public abstract class MotionModel : ScriptableObject, IMovementStrategy
         {
             return true;
         }
+        Debug.LogWarning("set param failed");
         return false;
     }
+
+   
     public  virtual void OnDisabled()
     {
         

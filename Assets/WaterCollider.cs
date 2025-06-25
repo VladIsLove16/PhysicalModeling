@@ -12,11 +12,20 @@ public class WaterCollider : MonoBehaviour
     [SerializeField] float dampingCoefficientQuadratic = 0.2f;
     //[SerializeField] ForceMode ForceMode = ForceMode.Acceleration;
     [SerializeField] List<FloatingObjectBase> floatingObjects;
-    private void FixedUpdate()
+    private float xVelocity = 0f;
+    public void CustomUpdate()
     {
         Simulate();
     }
 
+    public void ResetSimulation()
+    {
+        floatingObjects[0].transform.position = new Vector3(-6,0,0);
+        foreach (FloatingObjectBase floatingObject in floatingObjects)
+        {
+            floatingObject.Rigidbody.linearVelocity = Vector3.zero;
+        }
+    }
     public Vector3 GetVelocity(int index)
     {
         if (floatingObjects.Count <= index)
@@ -42,6 +51,8 @@ public class WaterCollider : MonoBehaviour
         foreach (FloatingObjectBase floatingObject in floatingObjects)
         {
             ApplyTotalForce(floatingObject);
+            Debug.Log(xVelocity);
+            floatingObject.transform.position += new Vector3(xVelocity * Time.deltaTime, 0, 0);
         }
     }
 
@@ -117,6 +128,15 @@ public class WaterCollider : MonoBehaviour
     {
         float y = position.y - size.y/2;
         return y;
+    }
+
+    internal void SetVelocity(float obj)
+    {
+        xVelocity = obj;
+    }
+    public void SetDensity(float density)
+    {
+        floatingObjects[0].Density = density;
     }
 
 }

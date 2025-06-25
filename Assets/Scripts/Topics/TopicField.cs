@@ -18,7 +18,6 @@ public class TopicField
     public object MinValue;
     private object maxValue;
     private object minValue;
-    public ViewType ViewType;
     public ParamName ParamName => paramName;
     public FieldType FieldType => type;
     public bool IsReadOnly => isReadOnly;
@@ -26,13 +25,13 @@ public class TopicField
     public ReactiveProperty<object> Property => property;
     public TopicField() { }
 
-    //[Obsolete("Используйте метод TopicField(ParamName paramName) вместо этого.")]
+    //[Obsolete("Используйте метод TopicField(ParamName ParamName) вместо этого.")]
     public TopicField(ParamName paramName, FieldType type = FieldType.None, bool isReadonly = false)
     {
         this.paramName = paramName;
         this.type = type;
         this.isReadOnly = isReadonly;
-        //property.Subscribe(_ => OnPropertyChanged());
+        //property.Subscribe(_ => PropertyChanged());
     }
 
     public TopicField(ParamName paramName, bool isReadonly = false, FieldType type = FieldType.None)
@@ -40,11 +39,7 @@ public class TopicField
         this.paramName = paramName;
         this.type = type;
         this.isReadOnly = isReadonly;
-        //property.Subscribe(_ => OnPropertyChanged());
-    }
-    public string GetStringValue()
-    {
-       return GetStringFromValue(Property.Value);
+        //property.Subscribe(_ => PropertyChanged());
     }
 
     public void SetType(FieldType type, bool isForce = false)
@@ -64,92 +59,8 @@ public class TopicField
             _ => typeof(float)
         };
     }
-    public string GetStringFromValue(object obj)
-    {
-        if(obj == null)
-        {
-            Debug.Log("why is null " + obj);
-            return "null value";
-        }
-        string valueText = obj switch
-        {
-            float floatValue => floatValue.ToString("0.00"),
-            int intValue => intValue.ToString(),
-            Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.0000")}",
-            string stringValue => stringValue,
-            bool boolValue => boolValue == true ? true.ToString() : false.ToString(),
-            _ => obj.ToString()
-        };
-        return valueText;
-    }
 
-    public object GetValueFromString(string value, out bool result)
-    {
-        switch (FieldType)
-        {
-            case FieldType.Float:
-                result = float.TryParse(value, out float floatValue);
-                if (result)
-                    return floatValue;
-                else
-                    return 0f;
-            case FieldType.Int:
-                result = int.TryParse(value, out int intValue);
-                if (result)
-                    return intValue;
-                else
-                    return 0;
-            case FieldType.Vector3:
-                string[] values = value.Split(';');
-
-                if (values.Length == 3 &&
-                    float.TryParse(values[0], out float x) &&
-                    float.TryParse(values[1], out float y) &&
-                    float.TryParse(values[2], out float z))
-                {
-                    result = true;
-                    return new Vector3(x, y, z);
-                }
-                else
-                {
-                    result = false;
-                    return Vector3.zero;
-                }
-            case FieldType.Bool:
-                if (value == false.ToString())
-                {
-                    result = true;
-                    return false;
-                }
-                else if (value == true.ToString())
-                {
-                    result = true;
-                    return true;
-                }
-                else
-                {
-                    result = false;
-                    return false;
-                }
-            default:
-                result = false;
-                return null;
-        }
-    }
-
-    public bool TrySetValue(string str)
-    {
-        object value = GetValueFromString(str, out bool result);
-        if (result) 
-        {
-            TrySetValue(value);
-            return true;
-        }
-        Debug.LogAssertion("Cant set (string) " + str + " to " +  ParamName  + " of type  " + FieldType);
-        return false;
-    }
-
-    public bool TrySetValue(object value,bool notify = true)
+    public bool TrySetValue(object value, bool notify = true)
     {
         if (value == null)
         {
@@ -164,17 +75,17 @@ public class TopicField
         }
         if (GetFieldValueType(FieldType) != valueType)
         {
-            object convertedValue = TryConvertValue(value, out bool result);
-            if (result)
-            {
-                value = convertedValue;
-            }
-            else
-            {
-                Debug.LogAssertion("Convertion (value) " + value + " of type " + valueType + " to " + ParamName + " of type  " + FieldType + " failed");
-                return false;
-                //Debug.LogAssertion("Cant set (value) " + value + " of type " + valueType + " to " + ParamName + " of type  " + FieldType);
-            }
+            Debug.LogAssertion("not coincidental types" + value + " of type " + valueType + " to " + ParamName + " of type  " + FieldType);
+            //object convertedValue = TryConvertValue(value, out bool result);
+            //if (result)
+            //{
+            //    value = convertedValue;
+            //}
+            //else
+            //{
+            //    Debug.LogAssertion("Convertion (value) " + value + " of type " + valueType + " to " + ParamName + " of type  " + FieldType + " failed");
+            //    return false;
+            //}
         }
         object clampedValue = ClampValue(value);
         SetValue(value, notify);
@@ -182,22 +93,20 @@ public class TopicField
     }
     private void SetValue(object value, bool notify = true )
     {
+        Debug.Log("new value " + paramName + " " + value.ToString());
         if(notify)
             property.SetValueAndForceNotify(value);
         else
             property.Value = value;
     }
-    private object TryConvertValue(object value, out bool result)
-    {
-        return GetValueFromString(value.ToString(), out  result);
-    }
+    
 
     private object ClampValue(object value)
     {
         if (MaxValue == null || MinValue == null)
         {
             return value;
-        }
+        } 
         if (value is float fValue)
         {
             fValue = Mathf.Clamp(fValue, (float)MinValue, (float)MaxValue);
@@ -293,7 +202,17 @@ public enum ParamName
     piston2Square,
     pistonHeightDelta,
     weight,
-    applyingForce
+    applyingForce,
+    startingPosition,
+    Submarine,
+    densityCount,
+    startTime,
+    startTime1,
+    density1,
+    startTime2,
+    density2,
+    density3,
+    startTime3
 }
 public enum FieldType {None, Float, Vector3, Int,Bool,
     Custom

@@ -28,33 +28,37 @@ public class HelicalAcceleratingMotionModel : HelicalMotionModel
             return linearMotionModel;
         }
     }
-    protected override void InitLinearMotionModelParams()
-    {
-        LinearMotionModel.TrySetParam(ParamName.velocity,GetParam(ParamName.velocity));
-        LinearMotionModel.TrySetParam(ParamName.acceleration,GetParam(ParamName.acceleration));
-    }
-    protected override void InitRotationalMotionModelParams()
-    {
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequencyAcceleration, GetParam(ParamName.rotationFrequencyAcceleration));
-        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
-        RotationalMotionModel.TrySetParam(ParamName.velocity, GetParam(ParamName.velocity));
-    }
     public override List<TopicField> GetRequiredParams()
     {
         var newList = new List<TopicField>();
 
-        newList.Add(new TopicField(ParamName.acceleration, FieldType.Vector3, false));
-        newList.Add(new TopicField(ParamName.rotationFrequencyAcceleration, FieldType.Float, false));
+        newList.Add(new TopicField(ParamName.acceleration, FieldType.Float, false));
         newList.AddRange(base.GetRequiredParams());
         return newList;
     }
-    public override Vector3 UpdatePosition(float deltaTime)
+    protected override Vector3 GetLinearDeltaPosition(float deltaTime, float velocity, float angle)
     {
-        Vector3 pos = base.UpdatePosition(deltaTime);
-        TrySetParam(ParamName.velocity,LinearMotionModel.GetParam(ParamName.velocity));
-        TrySetParam(ParamName.rotationFrequency,RotationalMotionModel.GetParam(ParamName.rotationFrequency));
-        return pos;
+        float step = CalculateHelicalStepFromVelocity(velocity, angle);
+        float acceleration = (float) GetParam(ParamName.acceleration);  
+        float stepacceleration = CalculateHelicalStepFromVelocity(acceleration, angle);
+        LinearMotionModel.TrySetParam(ParamName.velocity, new Vector3(0, step, 0));
+        LinearMotionModel.TrySetParam(ParamName.acceleration, new Vector3(0, stepacceleration, 0));
+        LinearMotionModel.UpdatePosition(deltaTime);
+        Vector3 linearDeltaPosition = (Vector3)LinearMotionModel.GetParam(ParamName.deltaPosition);
+        return linearDeltaPosition;
+    }
+
+    protected override Vector3 GetRotationalDeltaPosition(float deltaTime, float velocity, float angle)
+    {
+        float rotationFrequency = CalculateHelicalFrequencyFromVelocity(velocity, angle);
+        float acceleration = (float)GetParam(ParamName.acceleration);
+        float rotationFrequencyacceleration = CalculateHelicalFrequencyFromVelocity(acceleration, angle);
+        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, rotationFrequency);
+        RotationalMotionModel.TrySetParam(ParamName.rotationFrequencyAcceleration, rotationFrequencyacceleration);
+        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
+        RotationalMotionModel.UpdatePosition(deltaTime);
+        Vector3 rotationalDeltaPosition = (Vector3)RotationalMotionModel.GetParam(ParamName.deltaPosition);
+        return rotationalDeltaPosition;
     }
 }
 

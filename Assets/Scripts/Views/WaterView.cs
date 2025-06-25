@@ -11,6 +11,7 @@ public class WaterView : MotionView
         base.OnEnabled();
         actions[ParamName.volume] = OnVolumeChanged;
         actions[ParamName.density] = OnDensityChanged;
+        actions[ParamName.velocityMagnitude] = OnDensityChanged;
     }
     private void OnVolumeChanged(object value)
     {

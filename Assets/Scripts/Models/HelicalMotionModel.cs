@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [CreateAssetMenu(fileName = "HelicalMotionModel", menuName = "MotionModelsDropdown/HelicalMotionModel")]
 public class HelicalMotionModel : MotionModel
@@ -33,14 +35,17 @@ public class HelicalMotionModel : MotionModel
         { ParamName.radius, 1f },
         { ParamName.angularVelocity, 1f },
         { ParamName.rotationFrequency, 1f },
+        { ParamName.helicalAngle, 45f },
     };
     private static Dictionary<ParamName, object> maxValues = new Dictionary<ParamName, object>()
     {
         { ParamName.radius, 5f },
+        { ParamName.helicalAngle, 89f },
     };
     private static Dictionary<ParamName, object> minValues = new Dictionary<ParamName, object>()
     {
         { ParamName.radius, 0f },
+        { ParamName.helicalAngle, 0f },
     };
     protected virtual MotionModel RotationalMotionModel
     {
@@ -68,70 +73,77 @@ public class HelicalMotionModel : MotionModel
     public override Vector3 UpdatePosition(float deltaTime)
     {
         float radius = (float)GetParam(ParamName.radius);
-        float rotationFrequency = (float)GetParam(ParamName.rotationFrequency);
-        //Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
+        float velocityMagnitude = (float)GetParam(ParamName.velocityMagnitude);
+        float helicalAngle = (float)GetParam(ParamName.helicalAngle);
         float time = (float)GetParam(ParamName.time)+deltaTime;
 
         Vector3 helicalDeltaPosition, helicalPosition;
-        CalculateDeltaPosition(deltaTime, out helicalDeltaPosition, out helicalPosition);
+        CalculateDeltaPosition(deltaTime, velocityMagnitude, helicalAngle, out helicalDeltaPosition, out helicalPosition);
 
         float helicalDeltaPath, helicalPath;
         CalculateDeltaPath(out helicalDeltaPath, out helicalPath);
-        float
-        //h;
-        //if (velocity == Vector3.zero)
-        //    h = 0;
-        //else
-            h = CalculateHelicalStepFromVelocity();
-        float newHelicalAngle = CalculateAngle(h, radius);
-        TrySetParam(ParamName.helicalAngle, newHelicalAngle);
+
         TrySetParam(ParamName.time, time);
         TrySetParam(ParamName.position, helicalPosition);
         TrySetParam(ParamName.pathTraveled, helicalPath);
+        TrySetParam(ParamName.rotationFrequency, RotationalMotionModel.GetParam(ParamName.rotationFrequency));
         TrySetParam(ParamName.angularVelocity, RotationalMotionModel.GetParam(ParamName.angularVelocity));
         TrySetParam(ParamName.period, RotationalMotionModel.GetParam(ParamName.period));
-        //TrySetParam(ParamName.velocity, velocity);
         TrySetParam(ParamName.angleRadTraveled, RotationalMotionModel.GetParam(ParamName.angleRadTraveled));
         TrySetParam(ParamName.angleRad, RotationalMotionModel.GetParam(ParamName.angleRad));
         TrySetParam(ParamName.numberOfRevolutions, RotationalMotionModel.GetParam(ParamName.numberOfRevolutions));
-        TrySetParam(ParamName.rotationFrequency, rotationFrequency);
         return helicalPosition;
     }
-    protected float CalculateHelicalStepFromVelocity()
+
+    protected float CalculateHelicalFrequencyFromVelocity(float velocityMagnitude, float helicalAngle)
     {
-        Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
-        float frequency = (float)GetParam(ParamName.rotationFrequency);
-        if (frequency == 0f) return 0f;
+        float d = (float)GetParam(ParamName.radius) * 2;
+        float angleRad = helicalAngle * Mathf.Deg2Rad;
+        float frequency;
+        if (d == 0)
+            frequency = 0;
+        else
+            frequency = (velocityMagnitude * Mathf.Cos(angleRad)) / (Mathf.PI * d);
 
-        float period = 1f / frequency;
+        return frequency;
+    }
 
-        Vector3 axis = velocity.normalized;
-        float axialSpeed = Vector3.Dot(velocity, axis.normalized);
-
-        float step = axialSpeed * period;
+    protected float CalculateHelicalStepFromVelocity(float velocityMagnitude, float helicalAngle)
+    {
+        float angleRad = helicalAngle * Mathf.Deg2Rad;
+        float step = velocityMagnitude * Mathf.Sin(angleRad);
         return step;
     }
 
-    protected void CalculateDeltaPosition(float deltaTime, out Vector3 helicalDeltaPosition, out Vector3 helicalPosition)
+    protected void CalculateDeltaPosition(float deltaTime, float velocity, float angle, out Vector3 helicalDeltaPosition, out Vector3 helicalPosition)
     {
-        Vector3 linearDeltaPosition = GetLinearDeltaPosition(deltaTime);
-        Vector3 rotationalDeltaPosition = GetRotationalDeltaPosition(deltaTime);
+        Vector3 linearDeltaPosition = GetLinearDeltaPosition(deltaTime, velocity, angle);
+        Vector3 rotationalDeltaPosition = GetRotationalDeltaPosition(deltaTime, velocity,  angle);
         helicalDeltaPosition = linearDeltaPosition + rotationalDeltaPosition;
         Vector3 pos = (Vector3)GetParam(ParamName.position);
         helicalPosition = pos + helicalDeltaPosition;
     }
 
-    protected Vector3 GetLinearDeltaPosition(float deltaTime)
+    protected virtual Vector3 GetLinearDeltaPosition(float deltaTime, float velocity, float angle)
     {
-        InitLinearMotionModelParams();
+        float step = CalculateHelicalStepFromVelocity(velocity, angle);
+        LinearMotionModel.TrySetParam(ParamName.velocity, new Vector3(0,step, 0));
         LinearMotionModel.UpdatePosition(deltaTime);
         Vector3 linearDeltaPosition = (Vector3)LinearMotionModel.GetParam(ParamName.deltaPosition);
         return linearDeltaPosition;
     }
 
-    protected Vector3 GetRotationalDeltaPosition(float deltaTime)
+    protected virtual Vector3 GetRotationalDeltaPosition(float deltaTime, float velocity, float angle)
     {
-        InitRotationalMotionModelParams();
+        float rotationFrequency = CalculateHelicalFrequencyFromVelocity(velocity, angle);
+        if(rotationFrequency == 0 )
+        {
+            RotationalMotionModel.TrySetParam(ParamName.velocity, Vector3.forward);
+        }
+        else
+            RotationalMotionModel.TrySetParam(ParamName.velocity, Vector3.up);
+        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
+        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, rotationFrequency);
         RotationalMotionModel.UpdatePosition(deltaTime);
         Vector3 rotationalDeltaPosition = (Vector3)RotationalMotionModel.GetParam(ParamName.deltaPosition);
         return rotationalDeltaPosition;
@@ -140,23 +152,18 @@ public class HelicalMotionModel : MotionModel
     public override Vector3 CalculatePosition(float time)
     {
         float radius = (float)GetParam(ParamName.radius);
-        float rotationFrequency = (float)GetParam(ParamName.rotationFrequency);
-        //Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
+        float velocityMagnitude = (float)GetParam(ParamName.velocityMagnitude);
+        float helicalAngle = (float)GetParam(ParamName.helicalAngle);
 
         Vector3 helicalDeltaPosition, helicalPosition;
-        CalculateDeltaPosition(time, out helicalDeltaPosition, out helicalPosition);
+        CalculateDeltaPosition(time, velocityMagnitude, helicalAngle, out helicalDeltaPosition, out helicalPosition);
 
         float helicalDeltaPath, helicalPath;
         CalculateDeltaPath(out helicalDeltaPath, out helicalPath);
-        float
-        //h;
-        //if (velocity == Vector3.zero)
-        //    h = 0;
-        //else
-            h = CalculateHelicalStepFromVelocity();
-        float newHelicalAngle = CalculateAngle(h, radius);
-        TrySetParam(ParamName.helicalAngle, newHelicalAngle);
-        TrySetParam(ParamName.time, time);
+
+        float step = CalculateHelicalStepFromVelocity(velocityMagnitude, helicalAngle);
+        float rotationFrequency = CalculateHelicalFrequencyFromVelocity(velocityMagnitude, helicalAngle);
+
         TrySetParam(ParamName.position, helicalPosition);
         TrySetParam(ParamName.pathTraveled, helicalPath);
         TrySetParam(ParamName.angularVelocity, RotationalMotionModel.GetParam(ParamName.angularVelocity));
@@ -170,42 +177,33 @@ public class HelicalMotionModel : MotionModel
     }
     protected void CalculateDeltaPath(out float helicalDeltaPath, out float helicalPath)
     {
-        float linearDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
+        float linearDeltaPath = (float)LinearMotionModel.GetParam(ParamName.deltaPathTraveled);
         float rotationalDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
         helicalDeltaPath = (float)Mathf.Sqrt(linearDeltaPath * linearDeltaPath + rotationalDeltaPath * rotationalDeltaPath);
         helicalPath = (float)GetParam(ParamName.pathTraveled) + helicalDeltaPath;
     }
-    protected virtual void InitLinearMotionModelParams()
-    {
-        LinearMotionModel.TrySetParam(ParamName.velocity, GetParam(ParamName.velocity));
-    }
+    //protected virtual void InitLinearMotionModelParams()
+    //{
+    //    LinearMotionModel.TrySetParam(ParamName.velocity, new Vector3(0, step, 0));
+    //}
 
 
-    protected virtual void InitRotationalMotionModelParams()
-    {
-        RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
-        RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
-        RotationalMotionModel.TrySetParam(ParamName.velocity,GetParam(ParamName.velocity));
-    }
-    protected float CalculateAngle(float h, float radius)
-    {
-        float d = radius * 2;
-        float tanAngle = h / Mathf.PI / d;
-        float angle = Mathf.Atan(tanAngle) * Mathf.Rad2Deg;
-        return angle;
-    }
+    //protected virtual void InitRotationalMotionModelParams()
+    //{
+    //    RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
+    //    RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
+    //}
     public override List<TopicField> GetRequiredParams()
     {
         return new List<TopicField>
         {
-            new TopicField(ParamName.velocity, FieldType.Vector3, false),
+            new TopicField(ParamName.velocityMagnitude, FieldType.Float, false),
             new TopicField(ParamName.radius, FieldType.Float, false),
-            new TopicField(ParamName.rotationFrequency, FieldType.Float, false),
+            new TopicField(ParamName.helicalAngle, FieldType.Float, false),
 
-            new TopicField(ParamName.helicalAngle, FieldType.Float, true),
+            new TopicField(ParamName.rotationFrequency, FieldType.Float, true),
             new TopicField(ParamName.time, FieldType.Float, true),
             new TopicField(ParamName.position, FieldType.Vector3, true),
-            new TopicField(ParamName.velocityMagnitude, FieldType.Float, true),
             new TopicField(ParamName.pathTraveled, FieldType.Float, true),
             new TopicField(ParamName.angularVelocity, FieldType.Float, true),
             new TopicField(ParamName.period, FieldType.Float, true),

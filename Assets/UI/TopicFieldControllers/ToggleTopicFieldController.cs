@@ -10,9 +10,9 @@ public class ToggleTopicFieldController : TopicFieldController
     {
         base.Start();
     }
-    public override void Setup(TopicField topicField, string defaultValue = "enter property")
+    public new void Setup(bool isReadOnly, ParamName paramName, string defaultValue = "enter property")
     {
-        base.Setup(topicField, defaultValue);
+        base.Setup(isReadOnly, paramName, defaultValue);
         Toggle.onValueChanged.AddListener((boolean) => OnValueChanged());
     }
 
@@ -38,6 +38,6 @@ public class ToggleTopicFieldController : TopicFieldController
 
     protected void OnValueChanged()
     {
-        topicField.TrySetValue(Toggle.isOn);
+        UserChangeTopicFieldValue?.Invoke(Toggle.isOn.ToString(), this);
     }
 }

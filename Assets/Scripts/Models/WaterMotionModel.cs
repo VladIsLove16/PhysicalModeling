@@ -51,8 +51,9 @@ public class WaterMotionModel : MotionModel
     {
         return new List<TopicField>()
         {
-            new TopicField(ParamName.density,false),
+            new TopicField(ParamName.density, FieldType.Float,false),
             new TopicField(ParamName.volume,false)
         };
     }
+   
 }

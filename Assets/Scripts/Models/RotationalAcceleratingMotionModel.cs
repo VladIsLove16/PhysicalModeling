@@ -38,8 +38,8 @@ public class RotationalAcceleratingMotionModel : RotationalMotionModel
     public override List<TopicField> GetRequiredParams()
     {
         List<TopicField> fields = new();
-        fields.Add(new TopicField(ParamName.rotationFrequencyAcceleration, FieldType.Float, false));
         fields.Add(new TopicField(ParamName.rotationFrequencyJerk, FieldType.Float, false));
+        fields.Add(new TopicField(ParamName.rotationFrequencyAcceleration, FieldType.Float, false));
         fields.AddRange(base.GetRequiredParams());
         return fields;
     }

@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
 
 public class InputFieldTopicFieldController : TopicFieldController
 {
-    public Action OnTopicFieldEndEdited;
     [SerializeField] private TMP_InputField inputField;
     private string previousValue;
     private bool isLocalUpdate;
@@ -14,10 +14,10 @@ public class InputFieldTopicFieldController : TopicFieldController
         
     }
 
-    public override void Setup(TopicField topicField, string defaultValue = "enter property")
+    public void Setup(bool isReadOnly, ParamName paramName, FieldType fieldType,  string defaultValue = "enter property")
     {
-        base.Setup(topicField, defaultValue);
-        switch (FieldType)
+        base.Setup(isReadOnly, paramName);
+        switch (fieldType)
         {
             case FieldType.Float:
                 inputField.contentType = TMP_InputField.ContentType.DecimalNumber;
@@ -30,25 +30,15 @@ public class InputFieldTopicFieldController : TopicFieldController
                 break;
         }
         inputField.onEndEdit.RemoveAllListeners();
-        inputField.onEndEdit.AddListener(_ => OnTopicFieldEndEdit());
+        inputField.onEndEdit.AddListener(_ => On_TopicFieldEndEdit());
         inputField.onValueChanged.AddListener((str) => OnValueChanged());
         inputField.onSelect.AddListener(OnSelect);
-        Debug.Log("Setup  :  InputFieldTopicFieldController " +  topicField.ParamName +  "  with value " + topicField.Value);
-        if(topicField.Value==null)
-        {
-            Debug.Log("topicField.Value==null" + topicField.ParamName);
-            return;
-        }
-        SetText(topicField.GetStringFromValue(topicField.Value));
+        SetText(defaultValue);
     }
 
-    protected virtual void OnTopicFieldEndEdit()
+    protected virtual void On_TopicFieldEndEdit()
     {
-        bool res = topicField.TrySetValue(GetText());
-        if (!res)
-        {
-            SetText(previousValue);
-        }
+        TopicFieldEndEdited?.Invoke(GetText());
     }
 
     protected override  string GetText()
@@ -71,20 +61,41 @@ public class InputFieldTopicFieldController : TopicFieldController
     {
         previousValue = arg0;
     }
+    protected string GetStringFromValue(object obj)
+    {
+        if (obj == null)
+        {
+            Debug.Log("why is null " + obj);
+            return "null value";
+        }
+        string valueText = obj switch
+        {
+            float floatValue => floatValue.ToString("0.00"),
+            int intValue => intValue.ToString(),
+            Vector3 v => $"{v.x.ToString("0.00")};{v.y.ToString("0.00")};{v.z.ToString("0.0000")}",
+            string stringValue => stringValue,
+            bool boolValue => boolValue == true ? true.ToString() : false.ToString(),
+            _ => obj.ToString()
+        };
+        return valueText;
+    }
 
     public override bool SetValue(object newValue)
     {
-        SetText(topicField.GetStringFromValue(newValue));
+        isLocalUpdate = true;
+        SetText(GetStringFromValue(newValue));
         return true;
     }
 
     protected void OnValueChanged()
     {
+        Debug.Log("value changed");
         if(isLocalUpdate)
         {
             isLocalUpdate = false;
+            Debug.Log("value changed locally");
             return;
         }
-        topicField.TrySetValue(GetText());
+        UserChangeTopicFieldValue?.Invoke(GetText(),this);
     }
 }

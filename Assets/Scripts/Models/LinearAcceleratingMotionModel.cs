@@ -11,7 +11,11 @@ public class LinearAcceleratingMotionModel : MotionModel
         Vector3 deltaPos = GetDeltaPosition(deltaTime);
         Vector3 newPosition = (Vector3)GetParam(ParamName.position) + deltaPos;
         Vector3 newVelocity = GetVelocity(deltaTime);
+        float time = (float)GetParam(ParamName.time);
 
+        float accelerationTime = (float)GetParam(ParamName.accelerationStartTime); // момент, когда началось ускорение
+        if (time < accelerationTime)
+            acceleration = Vector3.zero;
         TrySetParam(ParamName.time,(float)GetParam(ParamName.time) + deltaTime);
         TrySetParam(ParamName.position,newPosition);
         TrySetParam(ParamName.pathTraveled,(float)GetParam(ParamName.pathTraveled) + deltaPos.magnitude);
@@ -27,12 +31,13 @@ public class LinearAcceleratingMotionModel : MotionModel
     {
         Vector3 acceleration = GetAcceleration(time);
         Vector3 velocity = (Vector3)GetParam(ParamName.velocity);
+        Vector3 startPos = (Vector3)GetParam(ParamName.startingPosition);
         Vector3 deltaPos = GetDeltaPosition(time);
-        Vector3 newPosition = deltaPos;
+        Vector3 newPosition = deltaPos + startPos;
         Vector3 newVelocity = GetVelocity(time);
 
-        TrySetParam(ParamName.time, (float)GetParam(ParamName.time));
-        TrySetParam(ParamName.position, newPosition) ;
+        TrySetParam(ParamName.position, newPosition);
+        TrySetParam(ParamName.time, time);
         TrySetParam(ParamName.pathTraveled, (float)GetParam(ParamName.pathTraveled));
         TrySetParam(ParamName.distance, (newPosition.magnitude));
         TrySetParam(ParamName.velocity, newVelocity);
@@ -47,9 +52,12 @@ public class LinearAcceleratingMotionModel : MotionModel
         {
            new TopicField(ParamName.velocity, FieldType.Vector3,false),
            new TopicField(ParamName.acceleration, FieldType.Vector3,false),
-           new TopicField(ParamName.time, FieldType.Float,false),
-           new TopicField(ParamName.position, FieldType.Vector3,false),
-           new TopicField(ParamName.velocityMagnitude, FieldType.Float,false),
+           new TopicField(ParamName.accelerationStartTime, FieldType.Float,false),
+           new TopicField(ParamName.startingPosition, FieldType.Vector3,false),
+
+           new TopicField(ParamName.time, FieldType.Float,true),
+           new TopicField(ParamName.position, FieldType.Vector3,true),
+           new TopicField(ParamName.velocityMagnitude, FieldType.Float,true),
            new TopicField(ParamName.pathTraveled,FieldType.Float,true),
            new TopicField(ParamName.distance,FieldType.Float, true),
            new TopicField(ParamName.deltaPosition,FieldType.Vector3, true),

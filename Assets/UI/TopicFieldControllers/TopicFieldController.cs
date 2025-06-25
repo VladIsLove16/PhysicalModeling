@@ -6,37 +6,28 @@ using UnityEngine;
 
 public abstract class TopicFieldController : MonoBehaviour
 {
-    public Action OnTopicFieldValueChanged;
+    public Action<string, TopicFieldController> UserChangeTopicFieldValue;
+    public Action<string> TopicFieldEndEdited;
     public bool IsInvokeOnValueChanged;
-    public FieldType FieldType => topicField.FieldType;
-    public object Value => topicField.Value;
-    public ParamName ParamName => topicField.ParamName;
     [SerializeField] TextMeshProUGUI label;
-    protected TopicField topicField;
+    public bool IsReadOnly;
+    public ParamName ParamName;
     protected virtual void Start()
     {
         
     }
-
     private void SetLabel(string newText)
     {
         label.text = newText;
     }
 
-    //public virtual void Setup(TopicField topicField, object MaxValue = null, string defaultValue = "enter property")
-    //{
-    //    this.topicField = topicField;
-    //    Debug.Log(" Setup  " + GetType().ToString());
-    //    SetReadOnly(topicField.IsReadOnly);
-    //    SetDefaultValue();
-    //    SetLabel(topicField.ParamName.ToString());
-    //}
-    public virtual void Setup(TopicField topicField, string defaultValue = "enter property")
+    public void Setup(bool isReadOnly, ParamName paramName, string defaultValue = "enter property")
     {
-        this.topicField = topicField;
-        Debug.Log(" Setup  " + GetType().ToString());
-        SetReadOnly(topicField.IsReadOnly);
-        SetLabel(topicField.ParamName.ToString());
+        this.IsReadOnly = isReadOnly;
+        this.ParamName = paramName;
+        Debug.Log(" Setup  " + GetType().ToString() + paramName.ToString());
+        SetReadOnly(isReadOnly);
+        SetLabel(paramName.ToString());
     }
 
     public abstract bool SetValue(object newValue);
