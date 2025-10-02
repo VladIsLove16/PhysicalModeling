@@ -36,11 +36,12 @@ public class ObstacleSpawner : MonoBehaviour
     public void SpawnObstaclesWithNewSeed()
     {
         GenerateSeed();
-        SpawnObstacles();
+        ReSpawnObstacles();
     }
-    [ContextMenu("SpawnObstacles")]
-    public void SpawnObstacles()
+    [ContextMenu("ReSpawnObstacles")]
+    public void ReSpawnObstacles()
     {
+        ClearObstacles();
         List<ObstacleData> generated = GenerateObstaclesData();
         InstantiateObstacles(generated);
     }
@@ -68,8 +69,8 @@ public class ObstacleSpawner : MonoBehaviour
 #if UNITY_EDITOR
             if (!Application.isPlaying)
                 DestroyImmediate(obstacle);
-            else
-                Destroy(obstacle);
+#else
+            Destroy(obstacle);
 #endif
         }
         generatedObstacles.Clear();
@@ -77,20 +78,10 @@ public class ObstacleSpawner : MonoBehaviour
 
     void InstantiateObstacles(List<ObstacleData> obstacleDataList)
     {
-        if(clearObstaclesOnGeneration)
-            ClearObstacles();
         foreach (var data in obstacleDataList)
         {
             GameObject prefab;
-           if(data.prefabIndex > obstacleCount)
-            {
-                prefab = obstaclePrefabs[obstacleCount - 1];
-
-            }
-            else
-            {
-                prefab = obstaclePrefabs[data.prefabIndex-1];
-            }
+            prefab = obstaclePrefabs[data.prefabIndex];
             GameObject instance = Instantiate(prefab, data.position, Quaternion.identity, transform);
             generatedObstacles.Add(instance);
         }

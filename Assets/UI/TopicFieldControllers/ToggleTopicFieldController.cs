@@ -30,7 +30,7 @@ public class ToggleTopicFieldController : TopicFieldController
     {
         if (newValue is bool)
         {
-            Toggle.isOn = (bool)newValue;
+            SuppressUserChangeNotification(() => Toggle.isOn = (bool)newValue);
             return true;
         }
         return false;
@@ -38,6 +38,6 @@ public class ToggleTopicFieldController : TopicFieldController
 
     protected void OnValueChanged()
     {
-        UserChangeTopicFieldValue?.Invoke(Toggle.isOn.ToString(), this);
+        RaiseUserValueChanged(GetText());
     }
 }

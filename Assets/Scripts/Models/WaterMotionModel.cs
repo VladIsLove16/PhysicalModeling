@@ -6,8 +6,8 @@ public class WaterMotionModel : MotionModel
 {
     private Dictionary<ParamName, object> defaultValues = new Dictionary<ParamName, object>()
         {
-            { ParamName.density,   900  },
-            { ParamName.volume, 8 },
+            { ParamName.density, 900f },
+            { ParamName.volume, 8f },
     };
     protected override Dictionary<ParamName, object> DefaultValues
     {
@@ -33,8 +33,8 @@ public class WaterMotionModel : MotionModel
             return new Dictionary<ParamName, object>()
         {
 
-            { ParamName.density,   0  },
-            { ParamName.volume, 0 },
+            { ParamName.density, 0f },
+            { ParamName.volume, 0f },
     };
         }
     }
@@ -57,3 +57,4 @@ public class WaterMotionModel : MotionModel
     }
    
 }
+

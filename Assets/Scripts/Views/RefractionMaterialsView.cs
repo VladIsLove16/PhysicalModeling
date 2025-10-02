@@ -87,7 +87,7 @@ public class RefractionMaterialsView : MotionView
         //        if (result)
         //        {
         //            if ((bool)param)
-        //                obstacleSpawner.SpawnObstacles();
+        //                obstacleSpawner.ReSpawnObstacles();
         //        }
         //        break;
         //}

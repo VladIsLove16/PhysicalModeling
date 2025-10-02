@@ -200,11 +200,12 @@ public class MotionViewModel
             Debug.LogWarning("GetValueFromString failed " + paramName + " " + str);
             return false;
         }
-        return  CurrentModel.TrySetParam(paramName, value,false);
+        return CurrentModel.TrySetParam(paramName, value, true);
     }
 
     internal void TrySetParam(ParamName density1, float density2)
     {
-        CurrentModel.TrySetParam(density1, density2, false);
+        CurrentModel.TrySetParam(density1, density2, true);
     }
 }
+

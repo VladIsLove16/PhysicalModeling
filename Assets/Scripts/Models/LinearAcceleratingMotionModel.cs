@@ -13,7 +13,7 @@ public class LinearAcceleratingMotionModel : MotionModel
         Vector3 newVelocity = GetVelocity(deltaTime);
         float time = (float)GetParam(ParamName.time);
 
-        float accelerationTime = (float)GetParam(ParamName.accelerationStartTime); // момент, когда началось ускорение
+        float accelerationTime = (float)GetParam(ParamName.accelerationStartTime);
         if (time < accelerationTime)
             acceleration = Vector3.zero;
         TrySetParam(ParamName.time,(float)GetParam(ParamName.time) + deltaTime);

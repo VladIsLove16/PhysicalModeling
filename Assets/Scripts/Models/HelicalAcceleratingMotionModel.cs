@@ -28,6 +28,14 @@ public class HelicalAcceleratingMotionModel : HelicalMotionModel
             return linearMotionModel;
         }
     }
+    public override Vector3 UpdatePosition(float deltaTime)
+    {
+        float acceleration = (float)GetParam(ParamName.acceleration);
+        float velocityMagnitude = (float)GetParam(ParamName.velocityMagnitude);
+        float newVelocityMagnitude = velocityMagnitude + acceleration * deltaTime;
+        TrySetParam(ParamName.velocityMagnitude, newVelocityMagnitude);
+        return base.UpdatePosition(deltaTime);
+    }
     public override List<TopicField> GetRequiredParams()
     {
         var newList = new List<TopicField>();
@@ -39,7 +47,8 @@ public class HelicalAcceleratingMotionModel : HelicalMotionModel
     protected override Vector3 GetLinearDeltaPosition(float deltaTime, float velocity, float angle)
     {
         float step = CalculateHelicalStepFromVelocity(velocity, angle);
-        float acceleration = (float) GetParam(ParamName.acceleration);  
+        float acceleration = (float)GetParam(ParamName.acceleration);
+
         float stepacceleration = CalculateHelicalStepFromVelocity(acceleration, angle);
         LinearMotionModel.TrySetParam(ParamName.velocity, new Vector3(0, step, 0));
         LinearMotionModel.TrySetParam(ParamName.acceleration, new Vector3(0, stepacceleration, 0));

@@ -191,12 +191,17 @@ public abstract class MotionView : MonoBehaviour
     protected virtual void OnTopicFieldContoller_UserChangeTopicFieldValue(string arg1, TopicFieldController controller)
     {
         Debug.Log(controller.ParamName + " changed ");
-        if (viewModel.OnUserChangeParam(controller.ParamName, arg1))
-        {
-            
-        }
+        if (!viewModel.OnUserChangeParam(controller.ParamName, arg1))
+            return;
+
+        if (ShouldRecalculateAfterUserChange(controller))
+            viewModel.CalculatePosition();
     }
 
+    protected virtual bool ShouldRecalculateAfterUserChange(TopicFieldController controller)
+    {
+        return viewModel.simulationState.Value == MotionViewModel.SimulationState.stoped && !controller.IsReadOnly;
+    }
     private bool GetViewType(ParamName paramName, out ViewType viewType)
     {
         if(!topicFieldsViewTypes.TryGetValue(paramName, out viewType))
@@ -207,12 +212,8 @@ public abstract class MotionView : MonoBehaviour
     }
     protected virtual void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)
     {
-        if (viewModel.simulationState.Value == MotionViewModel.SimulationState.stoped && !topicFieldController.IsReadOnly)
-            viewModel.CalculatePosition();
-        //Debug.Log("trying set " + newValue + " to " + topicFieldController.FieldType + " with  " + topicFieldController.Value);
         if (!topicFieldController.SetValue(newValue))
             Debug.Log("ViewModel_OnPropertyChanged went wrong");
-        //(GetStringFromValue(topicFieldControllerPrefab.ParamName));
     }
     private void ClearUI()
     {

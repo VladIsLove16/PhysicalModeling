@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
-using System.Linq;
 
 public class SubmarineView : MotionView
 {
@@ -12,6 +11,8 @@ public class SubmarineView : MotionView
     int currentIndex = 0;
     private void Update()
     {
+        if (viewModel == null || WaterCollider == null || submarine == null)
+            return;
         if (viewModel.simulationState.Value == MotionViewModel.SimulationState.running)
         {
             time += Time.deltaTime;
@@ -22,29 +23,38 @@ public class SubmarineView : MotionView
             {
                 float density = submarine.GetDensity(currentIndex);
                 Debug.Log("current density " + density);
-                WaterCollider.SetDensity(density);
+                WaterCollider?.SetDensity(density);
                 viewModel.TrySetParam(ParamName.density, density);
                 currentIndex++;
             }
-            WaterCollider.CustomUpdate();
+            WaterCollider?.CustomUpdate();
         }
         else
         {
             time = 0f;
-            WaterCollider.ResetSimulation();
+            WaterCollider?.ResetSimulation();
             currentIndex = 0;
         }
     }
     protected override void ViewModel_OnPropertyChanged(TopicFieldController topicFieldController, object newValue)
     {
         base.ViewModel_OnPropertyChanged(topicFieldController, newValue);
-        bool result = actions.TryGetValue(topicFieldController.ParamName, out var action);
-        if (result)
+        if (actions.TryGetValue(topicFieldController.ParamName, out var action))
             action(newValue);
     }
     public override void Init(MotionViewModel motionViewModel)
     {
         base.Init(motionViewModel);
+
+        if (WaterCollider == null)
+        {
+            Debug.LogError("SubmarineView requires WaterCollider reference");
+            actions.Clear();
+            submarine = null;
+            return;
+        }
+
+        actions.Clear();
         submarine = new();
         Add();
         actions[ParamName.volume] = OnVolumeChanged;
@@ -56,17 +66,30 @@ public class SubmarineView : MotionView
         actions[ParamName.startTime2] = (value) => submarine.SetTime(2, value);
         actions[ParamName.density3] = (value) => submarine.SetDensity(3, value);
         actions[ParamName.startTime3] = (value) => submarine.SetTime(3, value);
+
+        var initialVolume = viewModel.TryGetParam(ParamName.volume, out _);
+        OnVolumeChanged(initialVolume);
+
+        var initialVelocity = viewModel.TryGetParam(ParamName.velocityMagnitude, out _);
+        OnvelocityMagnitudeChanged(initialVelocity);
+
+        var initialDensity = viewModel.TryGetParam(ParamName.density, out _);
+        WaterCollider?.SetDensity(ToFloat(initialDensity));
+        WaterCollider?.ResetSimulation();
+        currentIndex = 0;
+        time = 0f;
     }
+
     private void Add()
     {
         object val = viewModel.TryGetParam(ParamName.density, out bool result);
-        float.TryParse(val.ToString(),out float density);
-        float density1 = (float)viewModel.TryGetParam(ParamName.density1, out bool result1);
-        float density2 = (float)viewModel.TryGetParam(ParamName.density2, out bool result2);
-        float density3 = (float)viewModel.TryGetParam(ParamName.density3, out bool result3);
-        float time1 = (float)viewModel.TryGetParam(ParamName.startTime1, out bool result11);
-        float time2 = (float)viewModel.TryGetParam(ParamName.startTime2, out bool result22);
-        float time3 = (float)viewModel.TryGetParam(ParamName.startTime3, out bool result33);
+        float density = ToFloat(val);
+        float density1 = ToFloat(viewModel.TryGetParam(ParamName.density1, out bool result1));
+        float density2 = ToFloat(viewModel.TryGetParam(ParamName.density2, out bool result2));
+        float density3 = ToFloat(viewModel.TryGetParam(ParamName.density3, out bool result3));
+        float time1 = ToFloat(viewModel.TryGetParam(ParamName.startTime1, out bool result11));
+        float time2 = ToFloat(viewModel.TryGetParam(ParamName.startTime2, out bool result22));
+        float time3 = ToFloat(viewModel.TryGetParam(ParamName.startTime3, out bool result33));
         submarine.Add(new Submarine.SubmarineInfo(density, 0f));
         submarine.Add(new Submarine.SubmarineInfo(density1, time1));
         submarine.Add(new Submarine.SubmarineInfo(density2, time2));
@@ -78,31 +101,38 @@ public class SubmarineView : MotionView
     {
         time = 0f;
         Debug.LogWarning("SubmarineChanged");
-        WaterCollider.ResetSimulation();
+        WaterCollider?.ResetSimulation();
         currentIndex = 0;
     }
 
     private void OnvelocityMagnitudeChanged(object obj)
     {
-        Debug.LogWarning("new vel " + (float)obj);
+        float velocity = ToFloat(obj);
+        Debug.LogWarning("new vel " + velocity);
         //currentIndex  = 0;
         //WaterCollider.ResetSimulation();
-        WaterCollider.SetVelocity((float)obj);
+        WaterCollider?.SetVelocity(velocity);
     }
+
 
     private void OnVolumeChanged(object value)
     {
-        float volume = (float)value;
-        WaterCollider.SetVolume(0, volume);
+        float volume = ToFloat(value);
+        WaterCollider?.SetVolume(0, volume);
     }
     public override void OnDisabled()
     {
         base.OnDisabled();
-        var keys = actions.Keys.ToArray();
-        foreach (var key in keys)
-        {
-            actions[key] = null;
-        }
+        actions.Clear();
+        submarine = null;
+    }
+
+    private static float ToFloat(object value)
+    {
+        if (value == null)
+            return 0f;
+
+        return float.TryParse(value.ToString(), out var result) ? result : 0f;
     }
 }
 public class Submarine
@@ -170,25 +200,38 @@ public class Submarine
 
     internal void SetDensity(int index, object value)
     {
+        if (index < 0 || index >= Volumes.Count)
+            return;
+
+        float floatValue = value is float f ? f : Convert.ToSingle(value);
         if (Volumes[index] == null)
         {
-            Volumes[index] = new SubmarineInfo((float)value, 0f);
+            Volumes[index] = new SubmarineInfo(floatValue, 0f);
         }
         else
         {
-            Volumes[index].SetDensity((float)value);
+            Volumes[index].SetDensity(floatValue);
         }
     }
 
     internal void SetTime(int index, object value)
     {
+        if (index < 0 || index >= Volumes.Count)
+            return;
+
+        float floatValue = value is float f ? f : Convert.ToSingle(value);
         if (Volumes[index] == null)
         {
-            Volumes[index] = new SubmarineInfo(0f, (float)value);
+            Volumes[index] = new SubmarineInfo(0f, floatValue);
         }
         else
         {
-            Volumes[index].SetTime((float)value);
+            Volumes[index].SetTime(floatValue);
         }
     }
 }
+
+
+
+
+

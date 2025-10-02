@@ -2,54 +2,69 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.DebugUI;
 
 public class SliderTopicFieldController : InputFieldTopicFieldController
 {
-    [SerializeField] Slider Slider;
-    private bool isLocalSliderUpdate;
+    [SerializeField] private Slider Slider;
+    private FieldType sliderFieldType;
+    private bool isSynchronizingSliderValue;
+
     protected override void Start()
     {
         base.Start();
     }
-    public void Setup(bool isReadOnly, ParamName paramName, FieldType fieldType,object minValue, object maxValue, string defaultValue = "enter property")
+
+    public void Setup(bool isReadOnly, ParamName paramName, FieldType fieldType, object minValue, object maxValue, string defaultValue = "enter property")
     {
-        Debug.Log("Slider setup"); 
-        base.Setup(isReadOnly, paramName,fieldType, defaultValue);
-        Slider.onValueChanged.AddListener((str) => OnSliderValueChanged());
+        Debug.Log("Slider setup");
+        sliderFieldType = fieldType;
+        base.Setup(isReadOnly, paramName, fieldType, defaultValue);
+        Slider.onValueChanged.AddListener(_ => OnSliderValueChanged());
         Slider.wholeNumbers = fieldType != FieldType.Float;
         if (maxValue != null && minValue != null)
         {
             if (fieldType == FieldType.Float)
-            {
                 ClampSlider(fieldType, (float)minValue, (float)maxValue);
-            }
             else
                 ClampSlider(fieldType, (int)minValue, (int)maxValue);
         }
     }
+
     private void ClampSlider(FieldType fieldType, float min, float max)
     {
-            Slider.maxValue = (float)max;
-            Slider.minValue = (float)min;
+        Slider.maxValue = max;
+        Slider.minValue = min;
     }
-    private void ClampSlider(FieldType fieldType, int min,int max)
+
+    private void ClampSlider(FieldType fieldType, int min, int max)
     {
-        Slider.maxValue = (int)max;
-        Slider.minValue = (int)min;
+        Slider.maxValue = max;
+        Slider.minValue = min;
     }
 
     private void OnSliderValueChanged()
     {
-        Debug.Log("OnSliderValueChanged");
-        SetText(Slider.value.ToString());
-        if(isLocalSliderUpdate)
-        {
-            isLocalSliderUpdate = false;
+        if (isSynchronizingSliderValue)
             return;
+
+        Debug.Log("OnSliderValueChanged");
+
+        object valueForText = Slider.value;
+        if (sliderFieldType == FieldType.Int)
+        {
+            int rounded = Mathf.RoundToInt(Slider.value);
+            if (!Mathf.Approximately(rounded, Slider.value))
+            {
+                isSynchronizingSliderValue = true;
+                Slider.value = rounded;
+                isSynchronizingSliderValue = false;
+            }
+            valueForText = rounded;
         }
-        Debug.Log("UserChangeTopicFieldValue OnSliderValueChanged");
-        UserChangeTopicFieldValue?.Invoke(Slider.value.ToString(),this);
+
+        string valueString = GetStringFromValue(valueForText);
+        SetText(valueString);
+        RaiseUserValueChanged(valueString);
     }
 
     protected override void SetReadOnly(bool value)
@@ -62,18 +77,17 @@ public class SliderTopicFieldController : InputFieldTopicFieldController
     {
         Debug.Log(" slider new value  " + newValue);
         base.SetValue(newValue);
-        if (newValue is float)
+        if (newValue is float floatValue)
         {
-            isLocalSliderUpdate = true;
-            Slider.value = (float)newValue;
+            SuppressUserChangeNotification(() => Slider.value = floatValue);
             return true;
         }
-        else if(newValue is int)
+        if (newValue is int intValue)
         {
-            isLocalSliderUpdate = true;
-            Slider.value = (int)newValue;
+            SuppressUserChangeNotification(() => Slider.value = intValue);
             return true;
         }
         return false;
     }
 }
+

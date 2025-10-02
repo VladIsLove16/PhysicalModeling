@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [CreateAssetMenu(fileName = "HelicalMotionModel", menuName = "MotionModelsDropdown/HelicalMotionModel")]
 public class HelicalMotionModel : MotionModel
@@ -72,20 +71,19 @@ public class HelicalMotionModel : MotionModel
 
     public override Vector3 UpdatePosition(float deltaTime)
     {
-        float radius = (float)GetParam(ParamName.radius);
         float velocityMagnitude = (float)GetParam(ParamName.velocityMagnitude);
         float helicalAngle = (float)GetParam(ParamName.helicalAngle);
-        float time = (float)GetParam(ParamName.time)+deltaTime;
+        float time = (float)GetParam(ParamName.time) + deltaTime;
 
         Vector3 helicalDeltaPosition, helicalPosition;
         CalculateDeltaPosition(deltaTime, velocityMagnitude, helicalAngle, out helicalDeltaPosition, out helicalPosition);
-
         float helicalDeltaPath, helicalPath;
         CalculateDeltaPath(out helicalDeltaPath, out helicalPath);
 
         TrySetParam(ParamName.time, time);
         TrySetParam(ParamName.position, helicalPosition);
         TrySetParam(ParamName.pathTraveled, helicalPath);
+        TrySetParam(ParamName.deltaPathTraveled, helicalDeltaPath);
         TrySetParam(ParamName.rotationFrequency, RotationalMotionModel.GetParam(ParamName.rotationFrequency));
         TrySetParam(ParamName.angularVelocity, RotationalMotionModel.GetParam(ParamName.angularVelocity));
         TrySetParam(ParamName.period, RotationalMotionModel.GetParam(ParamName.period));
@@ -94,7 +92,6 @@ public class HelicalMotionModel : MotionModel
         TrySetParam(ParamName.numberOfRevolutions, RotationalMotionModel.GetParam(ParamName.numberOfRevolutions));
         return helicalPosition;
     }
-
     protected float CalculateHelicalFrequencyFromVelocity(float velocityMagnitude, float helicalAngle)
     {
         float d = (float)GetParam(ParamName.radius) * 2;
@@ -115,7 +112,7 @@ public class HelicalMotionModel : MotionModel
         return step;
     }
 
-    protected void CalculateDeltaPosition(float deltaTime, float velocity, float angle, out Vector3 helicalDeltaPosition, out Vector3 helicalPosition)
+    protected virtual void CalculateDeltaPosition(float deltaTime, float velocity, float angle, out Vector3 helicalDeltaPosition, out Vector3 helicalPosition)
     {
         Vector3 linearDeltaPosition = GetLinearDeltaPosition(deltaTime, velocity, angle);
         Vector3 rotationalDeltaPosition = GetRotationalDeltaPosition(deltaTime, velocity,  angle);
@@ -151,21 +148,23 @@ public class HelicalMotionModel : MotionModel
 
     public override Vector3 CalculatePosition(float time)
     {
-        float radius = (float)GetParam(ParamName.radius);
         float velocityMagnitude = (float)GetParam(ParamName.velocityMagnitude);
         float helicalAngle = (float)GetParam(ParamName.helicalAngle);
 
         Vector3 helicalDeltaPosition, helicalPosition;
         CalculateDeltaPosition(time, velocityMagnitude, helicalAngle, out helicalDeltaPosition, out helicalPosition);
+        helicalDeltaPosition = SanitizeVector(helicalDeltaPosition);
+        helicalPosition = SanitizeVector(helicalPosition);
 
         float helicalDeltaPath, helicalPath;
         CalculateDeltaPath(out helicalDeltaPath, out helicalPath);
 
-        float step = CalculateHelicalStepFromVelocity(velocityMagnitude, helicalAngle);
         float rotationFrequency = CalculateHelicalFrequencyFromVelocity(velocityMagnitude, helicalAngle);
 
         TrySetParam(ParamName.position, helicalPosition);
         TrySetParam(ParamName.pathTraveled, helicalPath);
+        TrySetParam(ParamName.deltaPathTraveled, helicalDeltaPath);
+        TrySetParam(ParamName.deltaPosition, helicalDeltaPosition);
         TrySetParam(ParamName.angularVelocity, RotationalMotionModel.GetParam(ParamName.angularVelocity));
         TrySetParam(ParamName.period, RotationalMotionModel.GetParam(ParamName.period));
         //TrySetParam(ParamName.velocity, velocity);
@@ -175,24 +174,45 @@ public class HelicalMotionModel : MotionModel
         TrySetParam(ParamName.rotationFrequency, rotationFrequency);
         return helicalPosition;
     }
+
+    private Vector3 SanitizeVector(Vector3 helicalPosition)
+    {
+        return helicalPosition;
+    }
+
     protected void CalculateDeltaPath(out float helicalDeltaPath, out float helicalPath)
     {
-        float linearDeltaPath = (float)LinearMotionModel.GetParam(ParamName.deltaPathTraveled);
-        float rotationalDeltaPath = (float)RotationalMotionModel.GetParam(ParamName.deltaPathTraveled);
-        helicalDeltaPath = (float)Mathf.Sqrt(linearDeltaPath * linearDeltaPath + rotationalDeltaPath * rotationalDeltaPath);
-        helicalPath = (float)GetParam(ParamName.pathTraveled) + helicalDeltaPath;
+        float linearDeltaPath = GetFloatParam(LinearMotionModel, ParamName.deltaPathTraveled);
+        float rotationalDeltaPath = GetFloatParam(RotationalMotionModel, ParamName.deltaPathTraveled);
+        helicalDeltaPath = Mathf.Sqrt(linearDeltaPath * linearDeltaPath + rotationalDeltaPath * rotationalDeltaPath);
+        helicalPath = GetFloatParam(ParamName.pathTraveled) + helicalDeltaPath;
     }
-    //protected virtual void InitLinearMotionModelParams()
-    //{
-    //    LinearMotionModel.TrySetParam(ParamName.velocity, new Vector3(0, step, 0));
-    //}
 
 
+    private static float GetFloatParam(MotionModel source, ParamName paramName)
+    {
+        if (source == null)
+            return 0f;
+
+        object value = source.GetParam(paramName);
+        return value is float floatValue ? floatValue : 0f;
+    }
+
+    private float GetFloatParam(ParamName paramName)
+    {
+        object value = GetParam(paramName);
+        return value is float floatValue ? floatValue : 0f;
+    }
     //protected virtual void InitRotationalMotionModelParams()
     //{
     //    RotationalMotionModel.TrySetParam(ParamName.radius, GetParam(ParamName.radius));
     //    RotationalMotionModel.TrySetParam(ParamName.rotationFrequency, GetParam(ParamName.rotationFrequency));
     //}
+    private static Vector3 SafeDivide(Vector3 value, float divisor)
+    {
+        return Mathf.Approximately(divisor, 0f) ? Vector3.zero : value / divisor;
+    }
+
     public override List<TopicField> GetRequiredParams()
     {
         return new List<TopicField>
@@ -205,12 +225,33 @@ public class HelicalMotionModel : MotionModel
             new TopicField(ParamName.time, FieldType.Float, true),
             new TopicField(ParamName.position, FieldType.Vector3, true),
             new TopicField(ParamName.pathTraveled, FieldType.Float, true),
+            new TopicField(ParamName.deltaPathTraveled, FieldType.Float, true),
             new TopicField(ParamName.angularVelocity, FieldType.Float, true),
             new TopicField(ParamName.period, FieldType.Float, true),
             new TopicField(ParamName.angleRad, FieldType.Float, true),
+            new TopicField(ParamName.angleRadTraveled, FieldType.Float, true),
             new TopicField(ParamName.numberOfRevolutions, FieldType.Float, true)
         };
     }
 }
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

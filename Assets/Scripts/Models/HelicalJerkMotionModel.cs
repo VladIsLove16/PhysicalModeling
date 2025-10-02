@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "HelicalJerkMotionModel", menuName = "MotionModelsDropdown/HelicalJerkMotionModel")]
-public class HelicalJerkMotionModel : HelicalAcceleratingMotionModel
+public class HelicalJerkMotionModel : HelicalMotionModel
 {
     protected override MotionModel RotationalMotionModel
     {
@@ -28,9 +28,21 @@ public class HelicalJerkMotionModel : HelicalAcceleratingMotionModel
             return linearMotionModel;
         }
     }
+    public override Vector3 UpdatePosition(float deltaTime)
+    {
+        float acceleration = (float)GetParam(ParamName.acceleration);
+        float jerk = (float)GetParam(ParamName.jerk);
+        float velocityMagnitude = (float)GetParam(ParamName.velocityMagnitude);
+        float newacceleration = acceleration + jerk * deltaTime;
+        float newVelocityMagnitude = velocityMagnitude + acceleration * deltaTime + jerk * 0.5f * deltaTime * deltaTime;
+        TrySetParam(ParamName.velocityMagnitude, newVelocityMagnitude);
+        TrySetParam(ParamName.acceleration, newacceleration);
+        return base.UpdatePosition(deltaTime);
+    }
     public override List<TopicField> GetRequiredParams()
     {
         List<TopicField> newList = new();
+        newList.Add(new TopicField(ParamName.acceleration, FieldType.Float, false));
         newList.Add(new TopicField(ParamName.jerk, FieldType.Float, false));
         newList.AddRange(base.GetRequiredParams());
         return newList;

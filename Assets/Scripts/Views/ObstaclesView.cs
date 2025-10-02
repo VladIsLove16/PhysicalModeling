@@ -1,49 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
+
 public class ObstaclesView : MotionView
 {
-    [SerializeField] ObstacleSpawner obstacleSpawner;
-    [SerializeField] GameObject MovingDirectionArrow;
+    [SerializeField] private ObstacleSpawner obstacleSpawner;
     [SerializeField] public GameObject MovingObject;
-    [SerializeField] bool clearObstaclesOnGeneration = true;
-    // Инициализация словаря
-    Dictionary<ParamName, Action<object>> actions = new Dictionary<ParamName, Action<object>>();
+    [SerializeField] private GameObject MovingDirectionArrow;
+    [SerializeField] private bool clearObstaclesOnGeneration = true;
+
+    private readonly Dictionary<ParamName, Action<object>> actions = new();
+    private MotionViewModel.SimulationState lastSimulationState = MotionViewModel.SimulationState.stoped;
+
     protected override void Start()
     {
+        base.Start();
         obstacleSpawner.clearObstaclesOnGeneration = clearObstaclesOnGeneration;
     }
+
     public override void OnEnabled()
     {
         base.OnEnabled();
+
+        actions.Clear();
+        obstacleSpawner.clearObstaclesOnGeneration = clearObstaclesOnGeneration;
+
+        lastSimulationState = viewModel != null ? viewModel.simulationState.Value : MotionViewModel.SimulationState.stoped;
+
         actions[ParamName.seed] = value =>
         {
             obstacleSpawner.SetSeed((int)value);
-            obstacleSpawner.SpawnObstacles();
+            obstacleSpawner.ReSpawnObstacles();
         };
+
         actions[ParamName.angleDeg] = value =>
         {
-            if (MovingDirectionArrow != null)
-            {
-                MovingDirectionArrow.transform.eulerAngles = new Vector3(0, -(float)value, 0);
-                MovingDirectionArrow.transform.position = Vector3.zero + MovingDirectionArrow.transform.right;
-            }
+            if (MovingDirectionArrow == null)
+                return;
+
+            float angle = (float)value;
+            MovingDirectionArrow.transform.eulerAngles = new Vector3(0, -angle, 0);
+            MovingDirectionArrow.transform.position = Vector3.zero + MovingDirectionArrow.transform.right;
         };
-        actions[ParamName.obstaclesMass] = value =>
-        {
-            obstacleSpawner.SetObstaclesMass((float)value);
-        };
-        obstacleSpawner.SpawnObstacles();
+
+        actions[ParamName.obstaclesMass] = value => obstacleSpawner.SetObstaclesMass((float)value);
+
+        obstacleSpawner.ReSpawnObstacles();
     }
+
     public override void OnDisabled()
     {
         base.OnDisabled();
-        actions[ParamName.seed] = null;
-        actions[ParamName.angleDeg] = null;
-        actions[ParamName.obstaclesMass] = null;
+        actions.Clear();
         obstacleSpawner.ClearObstacles();
     }
 
@@ -53,19 +61,22 @@ public class ObstaclesView : MotionView
         if (actions.TryGetValue(topicFieldController.ParamName, out var action))
             action(newValue);
     }
+
     protected override void ViewModel_OnSimulationStateChanged()
     {
         base.ViewModel_OnSimulationStateChanged();
-        switch (viewModel.simulationState.Value)
+
+        var state = viewModel != null ? viewModel.simulationState.Value : MotionViewModel.SimulationState.stoped;
+
+        switch (state)
         {
             case MotionViewModel.SimulationState.stoped:
                 object param = viewModel.TryGetParam(ParamName.respawnObstacles, out bool result);
-                if(result)
-                {
-                    if((bool)param)
-                        obstacleSpawner.SpawnObstacles();
-                }
+                if (result && param is bool shouldRespawn && shouldRespawn)
+                    obstacleSpawner.ReSpawnObstacles();
                 break;
         }
+
+        lastSimulationState = state;
     }
 }

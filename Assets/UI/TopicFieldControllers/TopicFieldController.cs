@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using TMPro;
-using UniRx;
 using UnityEngine;
 
 public abstract class TopicFieldController : MonoBehaviour
@@ -12,6 +10,34 @@ public abstract class TopicFieldController : MonoBehaviour
     [SerializeField] TextMeshProUGUI label;
     public bool IsReadOnly;
     public ParamName ParamName;
+    private int userChangeNotificationSuppressionDepth;
+
+    protected bool IsUserChangeNotificationSuppressed => userChangeNotificationSuppressionDepth > 0;
+
+    protected void SuppressUserChangeNotification(Action action)
+    {
+        if (action == null)
+            throw new ArgumentNullException(nameof(action));
+
+        userChangeNotificationSuppressionDepth++;
+        try
+        {
+            action();
+        }
+        finally
+        {
+            userChangeNotificationSuppressionDepth = Math.Max(0, userChangeNotificationSuppressionDepth - 1);
+        }
+    }
+
+    protected void RaiseUserValueChanged(string newValue)
+    {
+        if (IsUserChangeNotificationSuppressed)
+            return;
+
+        UserChangeTopicFieldValue?.Invoke(newValue, this);
+    }
+
     protected virtual void Start()
     {
         
