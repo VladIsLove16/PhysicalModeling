@@ -288,7 +288,7 @@ MonoBehaviour:
   SubmarineView: {fileID: 479617571}
   pointA: {fileID: 1284391686}
   CurrentView: {fileID: 0}
-  Started: {fileID: 11400000, guid: e69e5d16c3200a7479c3c3ecae413cf6, type: 2}
+  Started: {fileID: 11400000, guid: be2bd987c51454b449b0201097bd690d, type: 2}
 --- !u!1 &111792157
 GameObject:
   m_ObjectHideFlags: 0
@@ -4649,23 +4649,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 648716716063384109, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 648716716063384109, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 648716716063384109, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 309.8583
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 648716716063384109, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -43.865
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 706587916662610178, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1817290183787868591, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -4674,22 +4674,22 @@ PrefabInstance:
     - target: {fileID: 1817290183787868591, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
       value: 
-      objectReference: {fileID: 11400000, guid: e69e5d16c3200a7479c3c3ecae413cf6, type: 2}
+      objectReference: {fileID: 11400000, guid: be2bd987c51454b449b0201097bd690d, type: 2}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 278.87247
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -43.865
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2496175006305749600, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMax.y
@@ -4715,6 +4715,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 75161661}
+    - target: {fileID: 3283017110054495238, guid: fe799043162794f4b80b321a301a0337, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
+      value: 
+      objectReference: {fileID: 11400000, guid: 8a5e82f2454f47e4b9e7e176dbd6da29, type: 2}
     - target: {fileID: 4097968898276773290, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_Name
       value: TopicUI
@@ -4874,7 +4878,7 @@ PrefabInstance:
     - target: {fileID: 8492672594982613871, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
       value: 
-      objectReference: {fileID: 11400000, guid: 80b3ec68807532246946abc7c0018b97, type: 2}
+      objectReference: {fileID: 11400000, guid: 2dc2f91d120b1f340b26c742d9fbcb6c, type: 2}
     - target: {fileID: 8930650170383107104, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_text
       value: "\u0417\u0430\u0434\u0430\u0447\u0430123"
@@ -4893,7 +4897,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9198094689304311947, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
