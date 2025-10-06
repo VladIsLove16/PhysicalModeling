@@ -23,6 +23,7 @@ public class MotionController : MonoBehaviour
     [SerializeField] private SubmarineView SubmarineView;
     [SerializeField] private PointA pointA;
     [SerializeField] private MotionView CurrentView;
+    [SerializeField] private MotionModel Started;
     private MotionViewModel ViewModel;
     public MotionModel CurrentMotionModel { get; private set; }
 
@@ -31,7 +32,7 @@ public class MotionController : MonoBehaviour
         MotionModelsDropdown.ClearOptions();
         MotionModelsDropdown.AddOptions(MotionModels.Select(m => m.Title).ToList());
 
-        CurrentMotionModel = MotionModels[0];
+        CurrentMotionModel = Started;
         CurrentMotionModel.InitializeParameters();
 
         ViewModel = new MotionViewModel(CurrentMotionModel);
@@ -45,8 +46,12 @@ public class MotionController : MonoBehaviour
         if (selectedIndex < 0 || selectedIndex >= MotionModels.Count)
             return;
 
+        SetModel(MotionModels[selectedIndex]);
+    }
+    public void SetModel(MotionModel motionModel)
+    {
+        CurrentMotionModel = motionModel;
         CurrentMotionModel.OnDisabled();
-        CurrentMotionModel = MotionModels[selectedIndex];
         CurrentMotionModel.InitializeParameters();
         if (CurrentMotionModel is HitMotionModel hitMotionModel)
             hitMotionModel.Init(Viewrb.MovingObjectrb, Viewrb.HittedObjectrb);
@@ -82,7 +87,7 @@ public class MotionController : MonoBehaviour
             CurrentView = PistonView;
         else if (CurrentMotionModel is SubmarineMotionModel submarineMotionModel)
             CurrentView = SubmarineView;
-        else 
+        else
             CurrentView = Viewtr;
         Debug.Log("Current view setted to " + CurrentView.name);
         CurrentView.OnEnabled();

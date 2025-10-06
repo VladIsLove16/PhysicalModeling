@@ -207,14 +207,11 @@ public class ObstaclesMotionModel : MotionModel
     {
         return new List<TopicField>
         {
-           new TopicField(ParamName.position, FieldType.Vector3,false),
            new TopicField(ParamName.velocityMagnitude, FieldType.Float,false),
            new TopicField(ParamName.angleDeg, FieldType.Float,false),
            new TopicField(ParamName.mass, FieldType.Float,false),
            new TopicField(ParamName.obstaclesMass, FieldType.Float,false),
            new TopicField(ParamName.pointAReached, FieldType.Bool,true),
-           new TopicField(ParamName.seed, FieldType.Int,false),
-           new TopicField(ParamName.respawnObstacles, FieldType.Bool,false),
         };
     }
 
