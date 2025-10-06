@@ -288,7 +288,7 @@ MonoBehaviour:
   SubmarineView: {fileID: 479617571}
   pointA: {fileID: 1284391686}
   CurrentView: {fileID: 0}
-  Started: {fileID: 11400000, guid: 2b11b0fbe723ec644a039d3f7d43fda4, type: 2}
+  Started: {fileID: 11400000, guid: e69e5d16c3200a7479c3c3ecae413cf6, type: 2}
 --- !u!1 &111792157
 GameObject:
   m_ObjectHideFlags: 0
@@ -4674,22 +4674,22 @@ PrefabInstance:
     - target: {fileID: 1817290183787868591, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
       value: 
-      objectReference: {fileID: 11400000, guid: 2b11b0fbe723ec644a039d3f7d43fda4, type: 2}
+      objectReference: {fileID: 11400000, guid: e69e5d16c3200a7479c3c3ecae413cf6, type: 2}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 278.87247
       objectReference: {fileID: 0}
     - target: {fileID: 2103285856657739349, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -43.865
       objectReference: {fileID: 0}
     - target: {fileID: 2496175006305749600, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_AnchorMax.y
@@ -4893,7 +4893,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9198094689304311947, guid: fe799043162794f4b80b321a301a0337, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
