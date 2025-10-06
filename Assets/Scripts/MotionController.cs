@@ -5,7 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
-
+using System;
+[Serializable]
+public struct LabConfig
+{
+    public int index;
+    public MotionModel[] motionModels;
+}
 public class MotionController : MonoBehaviour
 {
     [SerializeField] private List<MotionModel> MotionModels; // Список всех моделей
@@ -23,16 +29,18 @@ public class MotionController : MonoBehaviour
     [SerializeField] private SubmarineView SubmarineView;
     [SerializeField] private PointA pointA;
     [SerializeField] private MotionView CurrentView;
-    [SerializeField] private MotionModel Started;
+    [SerializeField] private LabConfig[] configs;
+    
     private MotionViewModel ViewModel;
     public MotionModel CurrentMotionModel { get; private set; }
+   public int LabConfig;
 
     private void Start()
     {
         MotionModelsDropdown.ClearOptions();
         MotionModelsDropdown.AddOptions(MotionModels.Select(m => m.Title).ToList());
 
-        CurrentMotionModel = Started;
+        CurrentMotionModel = configs.First(x=> x.index == LabConfig).motionModels[0];
         CurrentMotionModel.InitializeParameters();
 
         ViewModel = new MotionViewModel(CurrentMotionModel);

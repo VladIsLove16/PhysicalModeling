@@ -94,6 +94,7 @@ public class ObstaclesMotionModel : MotionModel
                 break;
             case SimulationState.continued:
                 Time.timeScale = 1.0f;
+                SetupVelocity();
                 break;
             case SimulationState.started:
                 timeScaleBeforeSimulation = Time.timeScale;
@@ -143,9 +144,12 @@ public class ObstaclesMotionModel : MotionModel
 
     private void SetupVelocity()
     {
-        if (movingObject == null || movingObjectrb == null)
+        if ( movingObjectrb == null)
         {
-            Debug.LogWarning("ObstaclesMotionModel.SetupVelocity called before initialization");
+            if (!movingObject.TryGetComponent(out movingObjectrb))
+                movingObjectrb = movingObject.AddComponent<Rigidbody>();
+             if ( movingObjectrb == null)
+                Debug.LogWarning("ObstaclesMotionModel.SetupVelocity called before initialization");
             return;
         }
 
