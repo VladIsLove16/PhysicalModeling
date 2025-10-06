@@ -11,7 +11,8 @@ public class RigidbodyView : MotionView
         {
             if (_movingObjectrb == null)
             {
-                _movingObjectrb = MovingObject.AddComponent<Rigidbody>();
+                MovingObject.AddComponent<Rigidbody>();
+                _movingObjectrb = MovingObject.GetComponent<Rigidbody>();
                 _movingObjectrb.collisionDetectionMode = CollisionDetectionMode.Continuous;
             }
             return _movingObjectrb;

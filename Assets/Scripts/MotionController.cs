@@ -32,6 +32,11 @@ public class MotionController : MonoBehaviour
     [SerializeField] private LabConfig[] configs;
     
     private MotionViewModel ViewModel;
+    [SerializeField] private GameObject TopicButtons;
+    [SerializeField] private Button TopicButton1;
+    
+     [SerializeField]private Button TopicButton2;
+     [SerializeField]private Button TopicButton3;
     public MotionModel CurrentMotionModel { get; private set; }
    public int LabConfig;
 
@@ -39,12 +44,24 @@ public class MotionController : MonoBehaviour
     {
         MotionModelsDropdown.ClearOptions();
         MotionModelsDropdown.AddOptions(MotionModels.Select(m => m.Title).ToList());
+        LabConfig config = configs.First(x => x.index == LabConfig);
+        if (config.motionModels.Length < 3)
+            TopicButton3.gameObject.SetActive(false);
+        else
+            TopicButton3.onClick .AddListener(()=> SetModel(config.motionModels[2]));
+        if (config.motionModels.Length < 2)
+        {
+            TopicButton2.gameObject.SetActive(false);
+            TopicButtons.gameObject.SetActive(false);
+        }
+        else
+        {
+            TopicButton2.onClick.AddListener(() => SetModel(config.motionModels[1]));
+            TopicButton1.onClick.AddListener(() => SetModel(config.motionModels[0]));
+        }
 
-        CurrentMotionModel = configs.First(x=> x.index == LabConfig).motionModels[0];
-        CurrentMotionModel.InitializeParameters();
-
-        ViewModel = new MotionViewModel(CurrentMotionModel);
-        InitView();
+        SetModel(config.motionModels[0]);
+       
 
         MotionModelsDropdown.onValueChanged.AddListener(OnMotionModelChanged);
     }
@@ -58,21 +75,24 @@ public class MotionController : MonoBehaviour
     }
     public void SetModel(MotionModel motionModel)
     {
+         Debug.LogWarning(" SetModel " + motionModel.Title);
         CurrentMotionModel = motionModel;
         CurrentMotionModel.OnDisabled();
         CurrentMotionModel.InitializeParameters();
         if (CurrentMotionModel is HitMotionModel hitMotionModel)
             hitMotionModel.Init(Viewrb.MovingObjectrb, Viewrb.HittedObjectrb);
         else if (CurrentMotionModel is ObstaclesMotionModel obstaclesMotionModel)
+        {
             obstaclesMotionModel.Init(Viewobs.MovingObject, pointA);
-        //else if (CurrentMotionModel is RefractionLensMotionModel refractionLensMotionModel)
-        //    refractionLensMotionModel
+        }
         CurrentMotionModel.OnEnabled();
+        ViewModel = new MotionViewModel(CurrentMotionModel);
         ViewModel.Init(CurrentMotionModel);
         InitView();
     }
     private void InitView()
     {
+        Viewrb.MovingObjectrb.gameObject.SetActive(false);
         if (CurrentView != null)
             CurrentView.OnDisabled();
         if (CurrentMotionModel is HitMotionModel hitMotionModel)

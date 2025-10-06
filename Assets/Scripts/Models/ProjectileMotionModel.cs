@@ -198,7 +198,6 @@ public class ProjectileMotionModelAngled : ProjectileMotionModel
             new TopicField(ParamName.angleDeg, FieldType.Float, false), // начальная скорость
             new TopicField(ParamName.acceleration, FieldType.Vector3, false), // ускорение после t
             new TopicField(ParamName.accelerationStartTime, FieldType.Float, false), // время, когда начинается ускорение
-            new TopicField(ParamName.angleDeg, FieldType.Float, false),
             // Выходные
             new TopicField(ParamName.time, FieldType.Float, true), // текущее время
             new TopicField(ParamName.velocityMagnitude, FieldType.Float, true), // модуль скорости в текущий момент

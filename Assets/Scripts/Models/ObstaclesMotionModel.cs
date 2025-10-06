@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UniRx.Triggers;
+using Unity.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "ObstaclesMotionModel", menuName = "MotionModelsDropdown/ObstaclesMotionModel")]
@@ -36,6 +37,7 @@ public class ObstaclesMotionModel : MotionModel
 
     public void Init(GameObject movingObject, PointA pointA)
     {
+        Debug.Log("inited");
         if (movingObject == null)
         {
             Debug.LogError("ObstaclesMotionModel.Init called with null movingObject");
